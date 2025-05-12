@@ -10,36 +10,44 @@ import SwiftUI
 struct MainTabView: View {
     @State private var selectedTab = 0
     @StateObject private var projectViewModel = ProjectViewModel()
+    @StateObject private var vocationalTestViewModel = VocationalTestViewModel()
     
     var body: some View {
         TabView(selection: $selectedTab) {
+            // Vocational Test Tab
+            WelcomeView(viewModel: vocationalTestViewModel)
+                .tabItem {
+                    Label("Discover", systemImage: "lightbulb.fill")
+                }
+                .tag(0)
+            
             // Projects Tab
             ProjectListView(viewModel: projectViewModel)
                 .tabItem {
                     Label("Projects", systemImage: "folder")
                 }
-                .tag(0)
+                .tag(1)
             
             // Dashboard Tab (Placeholder)
             dashboardView
                 .tabItem {
                     Label("Dashboard", systemImage: "chart.bar")
                 }
-                .tag(1)
+                .tag(2)
             
             // Team Tab (Placeholder)
             teamView
                 .tabItem {
                     Label("Team", systemImage: "person.3")
                 }
-                .tag(2)
+                .tag(3)
             
             // Settings Tab (Placeholder)
             settingsView
                 .tabItem {
                     Label("Settings", systemImage: "gear")
                 }
-                .tag(3)
+                .tag(4)
         }
         .accentColor(AppTheme.Colors.primary)
     }
