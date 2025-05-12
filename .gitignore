@@ -1,0 +1,89 @@
+# Xcode
+.DS_Store
+*.xcuserstate
+*.xcscmblueprint
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata
+*.xcworkspace/*
+!*.xcworkspace/contents.xcworkspacedata
+DerivedData/
+.idea/
+*.hmap
+
+# Swift Package Manager
+.build/
+Packages/
+Package.resolved
+
+# CocoaPods
+Pods/
+*.xcworkspace
+!Podfile
+!Podfile.lock
+
+# Carthage
+Carthage/Build/
+Carthage/Checkouts/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# Archives
+*.xcarchive
+
+# Crashlytics
+crashlytics-build.properties
+
+# Firebase
+GoogleService-Info.plist
+
+# Xcode Server
+integration.json
+
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# SwiftPM binary artifacts
+.artifacts/
+
+# SwiftPM index store
+.index/
+
+# Build artifacts
+*.o
+*.d
+*.a
+*.so
+*.dSYM.zip
+*.dSYM
+
+# Logs
+*.log
+
+# Others
+*.swp
+*.lock
+*.tmp
+*.env
+.env.*
+*.bak
+
+# Test / Coverage
+*.xctest
+*.gcno
+*.gcda
+*.profdata
+codecov.yml
+TestResults/
+
+# Mac system files
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+*.tmproj
