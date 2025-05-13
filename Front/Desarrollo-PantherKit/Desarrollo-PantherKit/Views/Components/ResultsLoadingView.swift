@@ -5,7 +5,7 @@ struct ResultsLoadingView: View {
     @State private var isPulsing = false
     @State private var currentMessageIndex = 0
     @State private var progress: CGFloat = 0.0
-    
+
     let loadingMessages = [
         "Analizando tus respuestas...",
         "Calculando tu perfil STEM...",
@@ -22,28 +22,26 @@ struct ResultsLoadingView: View {
     
     var body: some View {
         ZStack {
-            // Fondo con gradiente
+            // Fondo de gradiente 100% opaco
             LinearGradient(
                 gradient: Gradient(colors: [
-                    Color(red: 0.91, green: 0.95, blue: 0.98).opacity(0.9),
-                    Color(red: 0.98, green: 0.94, blue: 0.93).opacity(0.9)
+                    Color(red: 0.91, green: 0.95, blue: 0.98),
+                    Color(red: 0.98, green: 0.94, blue: 0.93)
                 ]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
-            
-            // Contenido principal
+            .edgesIgnoringSafeArea(.bottom)
+
             VStack(spacing: 40) {
-                // Cohete con animaciones
+                // Cohete animado
                 ZStack {
-                    // Cohete principal
                     Text("🚀")
                         .font(.system(size: 80))
                         .rotationEffect(.degrees(isRotating ? 12 : -12))
                         .offset(y: isPulsing ? -20 : 0)
-                        .shadow(color: Color.white.opacity(0.3), radius: 10, x: 0, y: 0)
+                        .shadow(color: Color.white.opacity(0.3), radius: 10)
                     
-                    // Efecto de estela
                     if isPulsing {
                         Circle()
                             .fill(
@@ -60,27 +58,23 @@ struct ResultsLoadingView: View {
                             .frame(width: 120, height: 40)
                             .offset(y: 60)
                             .blur(radius: 15)
-                            .opacity(isPulsing ? 1 : 0)
                     }
                 }
-                
-                // Contenido de texto
+
+                // Mensajes y barra de progreso
                 VStack(spacing: 20) {
-                    // Mensaje principal
                     Text(loadingMessages[currentMessageIndex])
                         .font(.system(size: 20, weight: .bold, design: .rounded))
                         .foregroundColor(Color(red: 0.2, green: 0.2, blue: 0.4))
-                        .shadow(color: Color.white.opacity(0.5), radius: 2, x: 0, y: 1)
+                        .shadow(color: Color.white.opacity(0.5), radius: 2)
                         .transition(.opacity.combined(with: .scale))
                     
-                    // Mensaje secundario
                     Text(rocketMessages[currentMessageIndex])
                         .font(.system(size: 14, weight: .bold, design: .rounded))
                         .foregroundColor(Color(red: 0.2, green: 0.2, blue: 0.4))
-                        .shadow(color: Color.white.opacity(0.5), radius: 2, x: 0, y: 1)
+                        .shadow(color: Color.white.opacity(0.5), radius: 2)
                         .transition(.opacity)
                     
-                    // Barra de progreso
                     progressBar
                 }
                 .padding(.horizontal, 40)
@@ -89,8 +83,8 @@ struct ResultsLoadingView: View {
             .padding(.bottom, 60)
         }
         .cornerRadius(30, corners: [.topLeft, .topRight])
-        .edgesIgnoringSafeArea(.bottom)
-        .frame(height: UIScreen.main.bounds.height * 0.7)
+        // Eleva el panel al 85% de la altura de pantalla
+        .frame(height: UIScreen.main.bounds.height * 0.85, alignment: .bottom)
         .onAppear {
             startAnimations()
             startMessageCycle()
@@ -116,7 +110,7 @@ struct ResultsLoadingView: View {
                     )
                 )
                 .frame(width: progress * UIScreen.main.bounds.width * 0.7, height: 12)
-                .shadow(color: Color(red: 0.2, green: 0.6, blue: 1.0).opacity(0.5), radius: 5, x: 0, y: 0)
+                .shadow(color: Color(red: 0.2, green: 0.6, blue: 1.0).opacity(0.5), radius: 5)
             
             Text("\(Int(progress * 100))%")
                 .font(.system(size: 12, weight: .bold, design: .rounded))
@@ -135,7 +129,6 @@ struct ResultsLoadingView: View {
         withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
             isRotating = true
         }
-        
         withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true).delay(0.5)) {
             isPulsing = true
         }
@@ -153,10 +146,7 @@ struct ResultsLoadingView: View {
         Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
             withAnimation(.linear(duration: 0.1)) {
                 if progress < 1.0 {
-                    progress += 0.01
-                    if progress > 0.8 {
-                        progress += 0.02
-                    }
+                    progress += (progress > 0.8 ? 0.03 : 0.01)
                 } else {
                     timer.invalidate()
                 }
@@ -165,6 +155,10 @@ struct ResultsLoadingView: View {
     }
 }
 
-#Preview {
-    ResultsLoadingView()
+#if DEBUG
+struct ResultsLoadingView_Previews: PreviewProvider {
+    static var previews: some View {
+        ResultsLoadingView()
+    }
 }
+#endif
