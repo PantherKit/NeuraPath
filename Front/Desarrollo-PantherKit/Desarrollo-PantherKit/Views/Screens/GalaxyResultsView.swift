@@ -127,26 +127,53 @@ struct GalaxyResultsView: View {
                 .cornerRadius(AppTheme.Layout.cornerRadiusM)
                 .padding()
                 
-                // Share button
-                Button(action: {
-                    // Share functionality would go here
-                }) {
-                    HStack {
-                        Image(systemName: "square.and.arrow.up")
-                        Text("Compartir mis resultados")
-                    }
-                    .font(.system(size: AppTheme.Typography.body, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(
-                        LinearGradient(
-                            gradient: Gradient(colors: [Color.purple, Color.blue]),
-                            startPoint: .leading,
-                            endPoint: .trailing
+                VStack(spacing: AppTheme.Layout.spacingM) {
+                    // Share button
+                    Button(action: {
+                        // Share functionality would go here
+                    }) {
+                        HStack {
+                            Image(systemName: "square.and.arrow.up")
+                            Text("Compartir mis resultados")
+                        }
+                        .font(.system(size: AppTheme.Typography.body, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.purple, Color.blue]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
                         )
-                    )
-                    .cornerRadius(AppTheme.Layout.cornerRadiusM)
-                    .shadow(color: Color.purple.opacity(0.5), radius: 10, x: 0, y: 5)
+                        .cornerRadius(AppTheme.Layout.cornerRadiusM)
+                        .shadow(color: Color.purple.opacity(0.5), radius: 10, x: 0, y: 5)
+                    }
+                    
+                    // Return to home button
+                    Button(action: {
+                        // Return to MainTabView
+                        if let window = UIApplication.shared.windows.first {
+                            window.rootViewController = UIHostingController(rootView: MainTabView())
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: "house.fill")
+                            Text("Volver al inicio")
+                        }
+                        .font(.system(size: AppTheme.Typography.body, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.blue, Color.green]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(AppTheme.Layout.cornerRadiusM)
+                        .shadow(color: Color.blue.opacity(0.5), radius: 10, x: 0, y: 5)
+                    }
                 }
                 .padding(.bottom, AppTheme.Layout.spacingL)
             }
@@ -262,6 +289,8 @@ struct GalaxyResultsView: View {
             }
         }
         .navigationBarHidden(true)
+        .toolbar(.hidden, for: .tabBar)
+        .ignoresSafeArea(.all, edges: .bottom)
     }
 }
 

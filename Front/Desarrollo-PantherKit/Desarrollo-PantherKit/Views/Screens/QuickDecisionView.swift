@@ -173,6 +173,8 @@ struct QuickDecisionView: View {
                 timer?.invalidate()
             }
             .navigationBarHidden(true)
+            .toolbar(.hidden, for: .tabBar)
+            .ignoresSafeArea(.all, edges: .bottom)
             
             // Feedback overlay
             if showFeedback {
@@ -188,9 +190,10 @@ struct QuickDecisionView: View {
                 }
             }
         }
-        .navigationDestination(isPresented: $showNextScreen) {
-            CareerSwipeView(viewModel: viewModel)
-        }
+        // .navigationDestination(isPresented: $showNextScreen) {
+        //     CareerSwipeView(viewModel: viewModel)
+        //         .navigationBarHidden(true)
+        // }
     }
     
     private func startTimer() {

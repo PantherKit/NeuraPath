@@ -22,7 +22,11 @@ struct MainTabView: View {
             
             // Results Tab
             NavigationView {
-                GalaxyResultsView(viewModel: vocationalTestViewModel)
+                if vocationalTestViewModel.testCompleted {
+                    GalaxyResultsView(viewModel: vocationalTestViewModel)
+                } else {
+                    resultsPlaceholderView
+                }
             }
             .tabItem {
                 Label("Results", systemImage: "star.fill")
@@ -112,7 +116,7 @@ struct MainTabView: View {
                                     .font(.system(size: AppTheme.Typography.title2, weight: .bold))
                                     .foregroundColor(AppTheme.Colors.text)
                                 
-                                Text("This app is designed to help high school students discover engineering fields that match their interests and personality traits through an interactive, mission-based experience.")
+                                Text("This app is designed to help high school students discover engineering fields that match their interests and personality traits through an interactive, swipe-based experience.")
                                     .font(.system(size: AppTheme.Typography.body))
                                     .foregroundColor(AppTheme.Colors.text)
                                 
@@ -121,7 +125,7 @@ struct MainTabView: View {
                                     .foregroundColor(AppTheme.Colors.text)
                                     .padding(.top, AppTheme.Layout.spacingS)
                                 
-                                Text("• Choose your avatar\n• Complete fun engineering missions\n• Discover your engineering field match\n• Learn about different engineering careers")
+                                Text("• Choose your avatar\n• Swipe through engineering careers\n• Discover your engineering field match\n• Learn about different engineering careers")
                                     .font(.system(size: AppTheme.Typography.body))
                                     .foregroundColor(AppTheme.Colors.text)
                                 
