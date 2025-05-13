@@ -15,6 +15,7 @@ struct MainTabView: View {
     // 2️⃣ Estado de flujo
     @State private var flowStep: FlowStep = .welcome
     @StateObject private var viewModel = VocationalTestViewModel()
+    @State private var isTransitioningToAvatar = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -25,17 +26,25 @@ struct MainTabView: View {
                     WelcomeView(
                         viewModel: viewModel,
                         onContinue: {
-                            flowStep = .avatarSelection
+                            withAnimation {
+                                isTransitioningToAvatar = true
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                flowStep = .avatarSelection
+                                isTransitioningToAvatar = false
+                            }
                         }
                     )
 
                 case .avatarSelection:
-                    AvatarSelectionView(
-                        viewModel: viewModel,
-                        onContinue: {
-                            flowStep = .vocationalQuiz
-                        }
-                    )
+                    if !isTransitioningToAvatar {
+                        AvatarSelectionView(
+                            viewModel: viewModel,
+                            onContinue: {
+                                flowStep = .vocationalQuiz
+                            }
+                        )
+                    }
 
                 case .vocationalQuiz:
                     DeckViewWrapper(
@@ -64,33 +73,20 @@ struct MainTabView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            // 4️⃣ Barra de navegación inferior manual (opcional)
             if flowStep != .welcome {
-                HStack {
-                    Spacer()
-                    Button(action: { flowStep = .welcome }) {
-                        Label("Welcome", systemImage: "lightbulb.fill")
+                HStack(spacing: 12) {
+                    ForEach([FlowStep.avatarSelection, .vocationalQuiz, .quickDecision, .results], id: \.self) { step in
+                        Circle()
+                            .fill(flowStep == step ? Color.blue : AppTheme.Colors.secondaryText.opacity(0.3))
+                            .frame(width: 14, height: 14)
+                            .overlay(
+                                Circle()
+                                    .stroke(AppTheme.Colors.primary.opacity(flowStep == step ? 1 : 0.5), lineWidth: flowStep == step ? 2 : 1)
+                            )
+                            .animation(.easeInOut, value: flowStep)
                     }
-                    Spacer()
-                    Button(action: { flowStep = .avatarSelection }) {
-                        Label("Avatar", systemImage: "person.crop.circle")
-                    }
-                    Spacer()
-                    Button(action: { flowStep = .vocationalQuiz }) {
-                        Label("Quiz", systemImage: "rectangle.grid.2x2")
-                    }
-                    Spacer()
-                    Button(action: { flowStep = .quickDecision }) {
-                        Label("Decide", systemImage: "clock.fill")
-                    }
-                    Spacer()
-                    Button(action: { flowStep = .results }) {
-                        Label("Results", systemImage: "star.fill")
-                    }
-                    Spacer()
                 }
-                .padding(.vertical, 8)
-                .background(AppTheme.Colors.background)
+                .padding(.vertical, 12)
             }
         }
         .ignoresSafeArea()
