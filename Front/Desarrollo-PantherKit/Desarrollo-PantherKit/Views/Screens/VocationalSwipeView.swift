@@ -339,6 +339,8 @@ struct VocationalSwipeView: View {
     @State private var showDetails = false
     @State private var selectedField: EngineeringField?
     @State private var isAnimating = false
+    @State private var viewOffset: CGFloat = 0
+    @State private var showSuccessAnimation = false
     
     // Add environment values to detect tab view
     @Environment(\.presentationMode) var presentationMode
@@ -570,18 +572,94 @@ struct VocationalSwipeView: View {
                 }
                 .padding(.vertical)
             }
-            .navigationDestination(isPresented: $showNextScreen) {
-                QuickDecisionView(viewModel: viewModel)
-                    .navigationBarHidden(true)
-            }
+            // We'll handle the transition in the onAppear modifier
             .navigationDestination(isPresented: $showDetails) {
                 if let field = selectedField {
                     CareerDetailView(field: field, viewModel: viewModel)
                 }
             }
             .toolbar(.hidden, for: .tabBar)
+            .offset(y: viewOffset)
+            .animation(.spring(response: 0.6, dampingFraction: 0.8), value: viewOffset)
+            .overlay(
+                ZStack {
+                    // Success animation overlay
+                    if showSuccessAnimation {
+                        Color.black.opacity(0.7)
+                            .ignoresSafeArea()
+                            .transition(.opacity)
+                        
+                        VStack(spacing: 20) {
+                            ZStack {
+                                Circle()
+                                    .fill(AppTheme.Colors.success)
+                                    .frame(width: 120, height: 120)
+                                    .shadow(color: AppTheme.Colors.success.opacity(0.5), radius: 10)
+                                
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 60, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .symbolEffect(.bounce, options: .repeating)
+                            }
+                            
+                            Text("¡Test Completado!")
+                                .font(.system(size: AppTheme.Typography.title1, weight: .bold))
+                                .foregroundColor(.white)
+                        }
+                        .transition(.scale.combined(with: .opacity))
+                    }
+                }
+            )
+            .onChange(of: showNextScreen) { newValue in
+                if newValue {
+                    // Mostrar animación de éxito
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        showSuccessAnimation = true
+                    }
+                    
+                    // Después de mostrar la animación, deslizar la vista hacia abajo
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                        // Haptic feedback
+                        let generator = UIImpactFeedbackGenerator(style: .heavy)
+                        generator.impactOccurred()
+                        
+                        // Deslizar la vista hacia abajo (fuera de la pantalla)
+                        withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                            viewOffset = UIScreen.main.bounds.height
+                        }
+                        
+                        // Navegar a QuickDecisionView después de que la vista se haya deslizado
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                            // Crear una instancia de NavigationLink programáticamente
+                            let hostingController = UIHostingController(rootView: 
+                                NavigationView {
+                                    QuickDecisionView(viewModel: viewModel)
+                                        .navigationBarHidden(true)
+                                }
+                            )
+                            
+                            // Obtener la ventana actual
+                            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                               let window = windowScene.windows.first {
+                                
+                                // Configurar la transición
+                                let transition = CATransition()
+                                transition.duration = 0.3
+                                transition.type = .fade
+                                
+                                // Aplicar la transición
+                                window.layer.add(transition, forKey: nil)
+                                
+                                // Establecer el nuevo controlador de vista
+                                window.rootViewController = hostingController
+                            }
+                        }
+                    }
+                }
+            }
             .onAppear {
                 isAnimating = true
+                viewOffset = 0 // Asegurarse de que la vista comienza en su posición normal
             }
         }
     }

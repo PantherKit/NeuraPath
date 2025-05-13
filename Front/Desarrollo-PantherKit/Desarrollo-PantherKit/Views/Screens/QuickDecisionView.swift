@@ -190,10 +190,18 @@ struct QuickDecisionView: View {
                 }
             }
         }
-        // .navigationDestination(isPresented: $showNextScreen) {
-        //     CareerSwipeView(viewModel: viewModel)
-        //         .navigationBarHidden(true)
+        // Temporalmente comentado hasta que se defina la siguiente vista
+        // .fullScreenCover(isPresented: $showNextScreen) {
+        //     // Aquí irá la siguiente vista
         // }
+        .onAppear {
+            // Asegurarse de que la vista se muestra correctamente después de la transición
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                // Haptic feedback para indicar que la nueva vista está lista
+                let generator = UIImpactFeedbackGenerator(style: .medium)
+                generator.impactOccurred()
+            }
+        }
     }
     
     private func startTimer() {
