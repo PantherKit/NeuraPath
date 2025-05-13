@@ -43,7 +43,7 @@ struct VocationalCardView: View {
             // Shadow card (background effect)
             RoundedRectangle(cornerRadius: 24)
                 .fill(secondaryColor.opacity(0.3))
-                .frame(width: 320, height: 480)
+                .frame(width: UIScreen.main.bounds.width - 60, height: min(UIScreen.main.bounds.height * 0.65, 520))
                 .offset(y: isGone || isDragging ? 0 : 40)
                 .blur(radius: 8)
                 .opacity(isDragging ? 0.3 : 0.7)
@@ -108,7 +108,7 @@ struct VocationalCardView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 30)
             }
-            .frame(width: 340, height: 520)
+            .frame(width: UIScreen.main.bounds.width - 40, height: min(UIScreen.main.bounds.height * 0.7, 550))
             .background(
                 ZStack {
                     // Card background with gradient
@@ -197,7 +197,7 @@ struct VocationalCardView: View {
                 .cornerRadius(16)
                 .opacity(dragOffset.width > 0 ? Double(min(dragOffset.width / horizontalLimit, 1)) : 0)
                 .rotationEffect(.degrees(10))
-                .position(x: 240, y: 120)
+                .position(x: UIScreen.main.bounds.width / 2 + 70, y: 120)
                 
                 // Left swipe indicator (dislike)
                 VStack(spacing: 8) {
@@ -221,7 +221,7 @@ struct VocationalCardView: View {
                 .cornerRadius(16)
                 .opacity(dragOffset.width < 0 ? Double(min(-dragOffset.width / horizontalLimit, 1)) : 0)
                 .rotationEffect(.degrees(-10))
-                .position(x: 100, y: 120)
+                .position(x: UIScreen.main.bounds.width / 2 - 70, y: 120)
             }
         }
         .onAppear {
@@ -297,8 +297,8 @@ struct ScaleButtonStyle: ButtonStyle {
     }
 }
 
-// MARK: - VocationalSwipeView
-struct VocationalSwipeView: View {
+// MARK: - VocationalCardSwipeView
+struct VocationalCardSwipeView: View {
     @ObservedObject var viewModel: VocationalTestViewModel
     @State private var showResults = false
     
@@ -354,9 +354,7 @@ struct VocationalSwipeView: View {
                 }
                 .padding(.top, 5)
                 
-                Spacer()
-                
-                // Card view
+                // Card view - centered with more space
                 if let mission = viewModel.currentMission {
                     VocationalCardView(
                         mission: mission,
@@ -374,13 +372,12 @@ struct VocationalSwipeView: View {
                             }
                         }
                     )
+                    .padding(.vertical, 10)
                 } else {
                     Text("No hay más preguntas")
                         .font(.title)
                         .foregroundColor(.black)
                 }
-                
-                Spacer()
                 
                 // Swipe instructions
                 HStack(spacing: 30) {
@@ -404,9 +401,13 @@ struct VocationalSwipeView: View {
             }
             .padding(.horizontal)
         }
+        .navigationBarHidden(true)
         .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .tabBar)
+        .ignoresSafeArea(.all, edges: .bottom)
         .navigationDestination(isPresented: $showResults) {
             QuickDecisionView(viewModel: viewModel)
+                .navigationBarHidden(true)
         }
     }
 }
@@ -427,7 +428,7 @@ struct VocationalCardView_Previews: PreviewProvider {
                 .background(Color.gray.opacity(0.1))
             }
             
-            VocationalSwipeView(viewModel: viewModel)
+            VocationalCardSwipeView(viewModel: viewModel)
         }
     }
 }
