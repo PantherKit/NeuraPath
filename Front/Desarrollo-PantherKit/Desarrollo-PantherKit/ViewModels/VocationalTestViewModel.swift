@@ -201,6 +201,106 @@ class VocationalTestViewModel: ObservableObject {
         loadMissions()
     }
     
+    // MARK: - Career Swipe View
+    
+    func updateFieldScore(_ field: EngineeringField, by value: Double) {
+        // Initialize test result if it doesn't exist
+        if testResult == nil {
+            // Create a default avatar if none selected
+            let defaultAvatar = selectedAvatar ?? Avatar.allAvatars.first!
+            
+            // Initialize empty field scores
+            var fieldScores: [EngineeringField: Double] = [:]
+            for field in EngineeringField.allCases {
+                fieldScores[field] = 0.0
+            }
+            
+            // Initialize empty trait scores
+            var traitScores: [PersonalityTrait: Double] = [:]
+            for trait in PersonalityTrait.allCases {
+                traitScores[trait] = 0.0
+            }
+            
+            testResult = TestResult(
+                avatar: defaultAvatar,
+                fieldScores: fieldScores,
+                traitScores: traitScores
+            )
+        }
+        
+        // Update the score for the specified field
+        if var fieldScores = testResult?.fieldScores {
+            fieldScores[field, default: 0.0] += value
+            testResult?.fieldScores = fieldScores
+        }
+    }
+    
+    // Add updateTraitScore method
+    func updateTraitScore(_ trait: PersonalityTrait, by value: Double) {
+        // Initialize test result if it doesn't exist
+        if testResult == nil {
+            // Create a default avatar if none selected
+            let defaultAvatar = selectedAvatar ?? Avatar.allAvatars.first!
+            
+            // Initialize empty field scores
+            var fieldScores: [EngineeringField: Double] = [:]
+            for field in EngineeringField.allCases {
+                fieldScores[field] = 0.0
+            }
+            
+            // Initialize empty trait scores
+            var traitScores: [PersonalityTrait: Double] = [:]
+            for trait in PersonalityTrait.allCases {
+                traitScores[trait] = 0.0
+            }
+            
+            testResult = TestResult(
+                avatar: defaultAvatar,
+                fieldScores: fieldScores,
+                traitScores: traitScores
+            )
+        }
+        
+        // Update the score for the specified trait
+        if var traitScores = testResult?.traitScores {
+            traitScores[trait, default: 0.0] += value
+            testResult?.traitScores = traitScores
+        }
+    }
+    
+    // MARK: - Galaxy Results View Helpers
+    
+    var fieldScores: [EngineeringField: Double] {
+        return testResult?.fieldScores ?? [:]
+    }
+    
+    var primaryField: EngineeringField {
+        return testResult?.primaryField ?? .mechatronics
+    }
+    
+    var secondaryField: EngineeringField {
+        return testResult?.secondaryField ?? .robotics
+    }
+    
+    var primaryTrait: PersonalityTrait {
+        return testResult?.primaryTrait ?? .problemSolver
+    }
+    
+    var secondaryTrait: PersonalityTrait {
+        return testResult?.secondaryTrait ?? .creative
+    }
+    
+    var topFields: [EngineeringField] {
+        return fieldScores.sorted { $0.value > $1.value }.map { $0.key }
+    }
+    
+    func normalizedScore(for field: EngineeringField) -> Double {
+        guard let maxScore = fieldScores.values.max(), maxScore > 0 else {
+            return 0.0
+        }
+        return (fieldScores[field] ?? 0.0) / maxScore
+    }
+    
     // MARK: - Feedback Generation
     
     func generateFeedback() -> String {

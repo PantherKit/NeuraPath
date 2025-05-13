@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MainTabView: View {
-    @State private var selectedTab = 0
+    @State private var selectedTab = 0 
     @StateObject private var vocationalTestViewModel = VocationalTestViewModel()
     
     var body: some View {
@@ -20,12 +20,14 @@ struct MainTabView: View {
                 }
                 .tag(0)
             
-            // Results Tab (Placeholder)
-            resultsPlaceholderView
-                .tabItem {
-                    Label("Results", systemImage: "chart.bar")
-                }
-                .tag(1)
+            // Results Tab
+            NavigationView {
+                GalaxyResultsView(viewModel: vocationalTestViewModel)
+            }
+            .tabItem {
+                Label("Results", systemImage: "star.fill")
+            }
+            .tag(1)
             
             // About Tab (Placeholder)
             aboutView

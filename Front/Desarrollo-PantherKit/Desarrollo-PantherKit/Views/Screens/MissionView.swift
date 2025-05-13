@@ -32,7 +32,7 @@ struct MissionView: View {
         }
         .navigationBarBackButtonHidden(true)
         .fullScreenCover(isPresented: $showingResults) {
-            ResultsView(viewModel: viewModel)
+            QuickDecisionView(viewModel: viewModel)
         }
     }
     
