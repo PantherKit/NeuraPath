@@ -65,34 +65,35 @@ struct MainTabView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             // 4️⃣ Barra de navegación inferior manual (opcional)
-            HStack {
-                Spacer()
-                Button(action: { flowStep = .welcome }) {
-                    Label("Welcome", systemImage: "lightbulb.fill")
+            if flowStep != .welcome {
+                HStack {
+                    Spacer()
+                    Button(action: { flowStep = .welcome }) {
+                        Label("Welcome", systemImage: "lightbulb.fill")
+                    }
+                    Spacer()
+                    Button(action: { flowStep = .avatarSelection }) {
+                        Label("Avatar", systemImage: "person.crop.circle")
+                    }
+                    Spacer()
+                    Button(action: { flowStep = .vocationalQuiz }) {
+                        Label("Quiz", systemImage: "rectangle.grid.2x2")
+                    }
+                    Spacer()
+                    Button(action: { flowStep = .quickDecision }) {
+                        Label("Decide", systemImage: "clock.fill")
+                    }
+                    Spacer()
+                    Button(action: { flowStep = .results }) {
+                        Label("Results", systemImage: "star.fill")
+                    }
+                    Spacer()
                 }
-                Spacer()
-                Button(action: { flowStep = .avatarSelection }) {
-                    Label("Avatar", systemImage: "person.crop.circle")
-                }
-                Spacer()
-                Button(action: { flowStep = .vocationalQuiz }) {
-                    Label("Quiz", systemImage: "rectangle.grid.2x2")
-                }
-                Spacer()
-                Button(action: { flowStep = .quickDecision }) {
-                    Label("Decide", systemImage: "clock.fill")
-                }
-                Spacer()
-                Button(action: { flowStep = .results }) {
-                    Label("Results", systemImage: "star.fill")
-                }
-                Spacer()
+                .padding(.vertical, 8)
+                .background(AppTheme.Colors.background)
             }
-            .padding(.vertical, 8)
-            .background(AppTheme.Colors.background)
         }
-        .accentColor(AppTheme.Colors.primary)
-        .edgesIgnoringSafeArea(.bottom)
+        .ignoresSafeArea()
     }
 }
 
