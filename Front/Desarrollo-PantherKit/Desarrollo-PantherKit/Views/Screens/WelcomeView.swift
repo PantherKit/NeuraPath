@@ -90,7 +90,7 @@ struct WelcomeView: View {
             startAnimations()
         }
         .fullScreenCover(isPresented: $showingTest) {
-            MissionView(viewModel: viewModel)
+            VocationalSwipeView(viewModel: viewModel)
         }
     }
     
