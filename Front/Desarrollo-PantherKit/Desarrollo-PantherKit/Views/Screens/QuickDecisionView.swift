@@ -190,10 +190,9 @@ struct QuickDecisionView: View {
                 }
             }
         }
-        // Temporalmente comentado hasta que se defina la siguiente vista
-        // .fullScreenCover(isPresented: $showNextScreen) {
-        //     // Aquí irá la siguiente vista
-        // }
+        .fullScreenCover(isPresented: $showNextScreen) {
+            MissionView(vocationalViewModel: viewModel)
+        }
         .onAppear {
             // Asegurarse de que la vista se muestra correctamente después de la transición
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
