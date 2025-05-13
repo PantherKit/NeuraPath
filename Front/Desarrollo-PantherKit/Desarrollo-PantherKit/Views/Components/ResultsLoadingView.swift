@@ -1,12 +1,4 @@
-//
-//  FinalLoadingView.swift
-//  Desarrollo-PantherKit
-//
-//  Created by Emiliano Montes on 13/05/25.
-//
-
 import SwiftUI
-
 
 struct ResultsLoadingView: View {
     @State private var isRotating = false
@@ -30,7 +22,7 @@ struct ResultsLoadingView: View {
     
     var body: some View {
         ZStack {
-            // Fondo con gradiente espacial
+            // Fondo con gradiente
             LinearGradient(
                 gradient: Gradient(colors: [
                     Color(red: 0.91, green: 0.95, blue: 0.98).opacity(0.9),
@@ -39,11 +31,6 @@ struct ResultsLoadingView: View {
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
-            .ignoresSafeArea()
-            
-            // Estrellas de fondo
-            StarField()
-                .opacity(0.5)
             
             // Contenido principal
             VStack(spacing: 40) {
@@ -86,20 +73,24 @@ struct ResultsLoadingView: View {
                         .shadow(color: Color.white.opacity(0.5), radius: 2, x: 0, y: 1)
                         .transition(.opacity.combined(with: .scale))
                     
-                    // Mensaje secundario (rocket message)
+                    // Mensaje secundario
                     Text(rocketMessages[currentMessageIndex])
                         .font(.system(size: 14, weight: .bold, design: .rounded))
                         .foregroundColor(Color(red: 0.2, green: 0.2, blue: 0.4))
                         .shadow(color: Color.white.opacity(0.5), radius: 2, x: 0, y: 1)
                         .transition(.opacity)
                     
-                    // Barra de progreso personalizada
+                    // Barra de progreso
                     progressBar
                 }
                 .padding(.horizontal, 40)
             }
-            .offset(y: -40)
+            .padding(.top, 40)
+            .padding(.bottom, 60)
         }
+        .cornerRadius(30, corners: [.topLeft, .topRight])
+        .edgesIgnoringSafeArea(.bottom)
+        .frame(height: UIScreen.main.bounds.height * 0.7)
         .onAppear {
             startAnimations()
             startMessageCycle()
@@ -107,16 +98,12 @@ struct ResultsLoadingView: View {
         }
     }
     
-    // MARK: - Componentes
-    
     private var progressBar: some View {
         ZStack(alignment: .leading) {
-            // Fondo de la barra
             RoundedRectangle(cornerRadius: 10)
                 .fill(Color.white.opacity(0.2))
                 .frame(height: 12)
             
-            // Barra de progreso con gradiente
             RoundedRectangle(cornerRadius: 10)
                 .fill(
                     LinearGradient(
@@ -131,7 +118,6 @@ struct ResultsLoadingView: View {
                 .frame(width: progress * UIScreen.main.bounds.width * 0.7, height: 12)
                 .shadow(color: Color(red: 0.2, green: 0.6, blue: 1.0).opacity(0.5), radius: 5, x: 0, y: 0)
             
-            // Indicador de porcentaje
             Text("\(Int(progress * 100))%")
                 .font(.system(size: 12, weight: .bold, design: .rounded))
                 .foregroundColor(.white)
@@ -144,8 +130,6 @@ struct ResultsLoadingView: View {
         }
         .frame(width: UIScreen.main.bounds.width * 0.7)
     }
-    
-    // MARK: - Animaciones y lógica
     
     private func startAnimations() {
         withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
@@ -170,7 +154,6 @@ struct ResultsLoadingView: View {
             withAnimation(.linear(duration: 0.1)) {
                 if progress < 1.0 {
                     progress += 0.01
-                    // Acelerar progreso al final
                     if progress > 0.8 {
                         progress += 0.02
                     }
@@ -182,6 +165,6 @@ struct ResultsLoadingView: View {
     }
 }
 
-#Preview{
+#Preview {
     ResultsLoadingView()
 }

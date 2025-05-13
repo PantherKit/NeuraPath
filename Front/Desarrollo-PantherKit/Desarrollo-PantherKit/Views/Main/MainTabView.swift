@@ -5,7 +5,7 @@ enum FlowStep {
     case avatarSelection
     case vocationalQuiz
     case quickDecision
-    case loadingResults // Nuevo paso para la pantalla de carga
+    case loadingResults
     case results
 }
 
@@ -15,6 +15,7 @@ struct MainTabView: View {
     @State private var showLoading = false
     @State private var loadingOffset: CGFloat = 0
     @State private var showResultsLoading = false
+    @State private var resultsLoadingOffset: CGFloat = UIScreen.main.bounds.height
     
     var body: some View {
         ZStack {
@@ -73,21 +74,29 @@ struct MainTabView: View {
                         viewModel: viewModel,
                         onContinue: {
                             // Mostrar pantalla de carga de resultados
-                            withAnimation(.easeInOut(duration: 0.5)) {
-                                showResultsLoading = true
+                            // 1) Mostrar la vista de carga sin animar el offset aún
+                            showResultsLoading = true
+                            
+                            // 2) En la siguiente pasada de runloop, animar el offset para que suba
+                            DispatchQueue.main.async {
+                                withAnimation(.spring(response: 0.7, dampingFraction: 0.6)) {
+                                    resultsLoadingOffset = 0
+                                }
                             }
                             
                             // Simular tiempo de procesamiento (3 segundos)
                             DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                                flowStep = .results
-                                showResultsLoading = false
+                                withAnimation(.easeInOut(duration: 0.5)) {
+                                    flowStep = .results
+                                    showResultsLoading = false
+                                    resultsLoadingOffset = UIScreen.main.bounds.height
+                                }
                             }
                         }
                     )
                     .transition(.move(edge: .trailing))
                     
                 case .loadingResults:
-                    // Esta opción no se usa directamente, manejamos la pantalla de carga con el estado showResultsLoading
                     EmptyView()
                     
                 case .results:
@@ -115,8 +124,10 @@ struct MainTabView: View {
             // Loading View para resultados (sobrepuesta a QuickDecision)
             if showResultsLoading {
                 ResultsLoadingView()
-                    .transition(.opacity)
-                    .zIndex(2) // Mayor zIndex para que aparezca sobre QuickDecision
+                    .offset(y: resultsLoadingOffset)
+                    .animation(.spring(response: 0.7, dampingFraction: 0.6), value: resultsLoadingOffset)
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+                    .zIndex(2)
             }
         }
         .ignoresSafeArea()
