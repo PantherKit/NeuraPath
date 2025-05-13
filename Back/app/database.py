@@ -2,26 +2,26 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Cargar la URL de conexión de la base de datos desde las variables de entorno
+DB_USER = 'root'
+DB_PASSWORD = os.getenv("DB_PASSWORD", "tu_contraseña")  # Usa la contraseña desde las variables de entorno
+DB_NAME = 'test_vocacional'
+DB_CONNECTION_NAME = 'pantherkit:us-central1:pantherkit-sql-instance'  # Nombre de la instancia de Cloud SQL
 
-# Database URL - default to SQLite if not provided
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./app.db")
+# Crear la URL de conexión
+DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@/cloudsql/{DB_CONNECTION_NAME}/{DB_NAME}"
 
-# Create SQLAlchemy engine
-engine = create_engine(
-    DATABASE_URL, connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
-)
+# Crear motor de conexión
+engine = create_engine(DATABASE_URL, pool_recycle=3600)
 
-# Create SessionLocal class
+# Crear la sesión local
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Create Base class
+# Crear la base
 Base = declarative_base()
 
-# Dependency to get DB session
+# Dependencia para obtener la sesión de base de datos
 def get_db():
     db = SessionLocal()
     try:

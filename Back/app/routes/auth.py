@@ -1,47 +1,28 @@
-from datetime import timedelta
-from typing import Any
-
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-
-from app.core.security import create_access_token, verify_password, ACCESS_TOKEN_EXPIRE_MINUTES
 from app.database import get_db
-from app.models.user import User
+from app.models.user import Session as SessionModel
 from app.schemas.token import Token
 
 router = APIRouter()
 
-@router.post("/login", response_model=Token)
-def login_access_token(
-    db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()
-) -> Any:
+@router.post("/session", response_model=Token)
+def create_session(
+    db: Session = Depends(get_db)
+) -> Token:
     """
-    OAuth2 compatible token login, get an access token for future requests
+    Create a new session and return a session ID
     """
-    # Try to authenticate the user
-    user = db.query(User).filter(User.email == form_data.username).first()
-    if not user:
-        user = db.query(User).filter(User.username == form_data.username).first()
+    # Generate a new session ID
+    session_id = SessionModel.generate_session_id()
     
-    if not user or not verify_password(form_data.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    # Create new session in database
+    new_session = SessionModel(id=session_id)
+    db.add(new_session)
+    db.commit()
+    db.refresh(new_session)
     
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Inactive user"
-        )
-    
-    # Create access token
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
-        "access_token": create_access_token(
-            subject=user.id, expires_delta=access_token_expires
-        ),
-        "token_type": "bearer",
+        "access_token": session_id,
+        "token_type": "bearer"
     }

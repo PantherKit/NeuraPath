@@ -1,11 +1,11 @@
-# main.py
 from flask import Flask, request, jsonify
 from google.cloud import storage
 import os, tempfile
+import time  # Asegúrate de importar el módulo time
 
 app = Flask(__name__)
 
-# Asegúrate de tener GOOGLE_APPLCATION_CREDENTIALS apuntando a tu JSON de servicio
+# Asegúrate de tener GOOGLE_APPLICATION_CREDENTIALS apuntando a tu JSON de servicio
 BUCKET_NAME = "pantherkit"
 
 @app.route('/upload_csv', methods=['POST'])
@@ -38,5 +38,6 @@ def upload_csv():
 
     return jsonify({"message":"CSV uploaded", "url": url}), 200
 
-if __name__ == '_main_':
-    app.run(debug=True)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)  # Permite conexiones externas
+
