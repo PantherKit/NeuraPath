@@ -18,6 +18,70 @@ struct WelcomeView: View {
             StarField()
                 .ignoresSafeArea()
             
+            ForEach(0..<8) { i in
+                let colors: [Color] = [
+                    Color(red: 0.5, green: 0.2, blue: 0.8),  // Púrpura intenso
+                    Color(red: 0.1, green: 0.4, blue: 0.9),   // Azul profundo
+                    Color(red: 0.3, green: 0.8, blue: 0.9),   // Cian brillante
+                    Color(red: 0.8, green: 0.3, blue: 0.6),   // Rosa neón
+                    Color(red: 0.9, green: 0.5, blue: 0.1)    // Naranja cósmico
+                ]
+                
+                let size = CGFloat.random(in: 200...400)
+                let opacity = Double.random(in: 0.15...0.3)
+                let blurRadius = CGFloat.random(in: 50...100)
+                
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            gradient: Gradient(colors: [
+                                colors[i % colors.count].opacity(opacity),
+                                colors[i % colors.count].opacity(0)
+                            ]),
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: size/2
+                        )
+                    )
+                    .frame(width: size, height: size)
+                    .position(
+                        x: CGFloat.random(in: 0..<UIScreen.main.bounds.width),
+                        y: CGFloat.random(in: 0..<UIScreen.main.bounds.height)
+                    )
+                    .blur(radius: blurRadius)
+                    .opacity(0.8)
+            }
+            
+            // 4. Nebulosas secundarias más sutiles
+            ForEach(0..<5) { i in
+                let pastelColors: [Color] = [
+                    Color.purple.opacity(0.2),
+                    Color.blue.opacity(0.2),
+                    Color.cyan.opacity(0.2),
+                    Color.pink.opacity(0.2),
+                    Color.indigo.opacity(0.2)
+                ]
+                
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            gradient: Gradient(colors: [
+                                pastelColors[i % pastelColors.count],
+                                pastelColors[i % pastelColors.count].opacity(0)
+                            ]),
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: 150
+                        )
+                    )
+                    .frame(width: 300, height: 300)
+                    .position(
+                        x: CGFloat.random(in: 0..<UIScreen.main.bounds.width),
+                        y: CGFloat.random(in: 0..<UIScreen.main.bounds.height)
+                    )
+                    .blur(radius: 80)
+            }
+            
             // 2. Planeta y cohete con movimiento
             VStack {
                 Spacer()
