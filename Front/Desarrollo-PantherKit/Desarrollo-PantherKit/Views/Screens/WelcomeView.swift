@@ -8,20 +8,19 @@ struct WelcomeView: View {
     
     var body: some View {
         ZStack {
+            // Fondo estelar
             StarField()
             
-            // Card blanca para el contenido
+            // Contenido principal
             VStack(spacing: 0) {
-                // Espacio para la animación
+                // Animación del planeta y cohete
                 ZStack {
                     if showPlanet {
                         Text("🌍")
                             .font(.system(size: 140))
-                            .scaleEffect(showPlanet ? 1 : 0.5)
-                            .animation(.interactiveSpring(response: 0.8, dampingFraction: 0.6, blendDuration: 0.5).delay(0.2), value: showPlanet)
-                    }
-                    
-                    if showPlanet {
+                            .scaleEffect(showPlanet ? 1 : 0.8)
+                            .animation(.easeOut(duration: 0.5), value: showPlanet)
+                        
                         Text("🚀")
                             .font(.system(size: 60))
                             .offset(y: -100)
@@ -31,14 +30,12 @@ struct WelcomeView: View {
                                     .repeatForever(autoreverses: false),
                                 value: orbit
                             )
-                            .scaleEffect(showPlanet ? 1 : 0)
-                            .animation(.interpolatingSpring(stiffness: 100, damping: 10).delay(0.4), value: showPlanet)
                     }
                 }
                 .frame(height: 240)
                 .frame(maxWidth: .infinity)
                 
-                // Contenido dentro de la card blanca
+                // Card blanca (aparece después)
                 if showCard {
                     VStack(spacing: 32) {
                         Text("¡Bienvenido al STEM Quiz!")
@@ -64,26 +61,25 @@ struct WelcomeView: View {
                     .background(Color.white)
                     .frame(height: 600)
                     .cornerRadius(70, corners: [.topLeft, .topRight])
-                    .offset(y: showCard ? 0 : 600) // Posición inicial fuera de pantalla
+                    .transition(.move(edge: .bottom))
                     .animation(.easeOut(duration: 0.8), value: showCard)
                 }
             }
         }
         .background(Color.black)
         .onAppear {
-            // Secuencia de animaciones
-            withAnimation(.spring()) {
+            // Animación del planeta
+            withAnimation(.easeOut(duration: 0.5)) {
                 showPlanet = true
             }
             
+            // Comienza la órbita después de un pequeño delay
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                withAnimation {
-                    orbit = true
-                }
+                orbit = true
             }
             
-            // Espera 1 segundo después de que el cohete empiece a orbitar
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.3) {
+            // Muestra la card después de 1 segundo
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 withAnimation(.easeOut(duration: 0.8)) {
                     showCard = true
                 }
