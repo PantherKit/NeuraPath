@@ -12,40 +12,54 @@ enum FlowStep {
 }
 
 struct MainTabView: View {
-    // 2️⃣ Estado de flujo
     @State private var flowStep: FlowStep = .welcome
     @StateObject private var viewModel = VocationalTestViewModel()
-    @State private var isTransitioningToAvatar = false
-
+    @State private var showLoading = false
+    @State private var loadingOffset: CGFloat = 0
+    
     var body: some View {
-        VStack(spacing: 0) {
-            // 3️⃣ Aquí mostramos la vista según el paso actual
+        ZStack {
+            // Fondo común para todas las vistas
+            Color.black.ignoresSafeArea()
+            
+            // Contenido principal con transiciones
             Group {
                 switch flowStep {
                 case .welcome:
                     WelcomeView(
                         viewModel: viewModel,
                         onContinue: {
-                            withAnimation {
-                                isTransitioningToAvatar = true
+                            withAnimation(.easeInOut(duration: 0.5)) {
+                                showLoading = true
                             }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                flowStep = .avatarSelection
-                                isTransitioningToAvatar = false
+                            
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                withAnimation(.easeInOut(duration: 0.8)) {
+                                    loadingOffset = UIScreen.main.bounds.height
+                                }
+                                
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                                    flowStep = .avatarSelection
+                                    showLoading = false
+                                    loadingOffset = 0
+                                }
                             }
                         }
                     )
-
+                    .transition(.opacity)
+                    
                 case .avatarSelection:
-                    if !isTransitioningToAvatar {
-                        AvatarSelectionView(
-                            viewModel: viewModel,
-                            onContinue: {
-                                flowStep = .vocationalQuiz
-                            }
-                        )
-                    }
-
+                    AvatarSelectionView(
+                        viewModel: viewModel,
+                        onContinue: {
+                            flowStep = .vocationalQuiz
+                        }
+                    )
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .bottom),
+                        removal: .move(edge: .top)
+                    )) // Aquí faltaba este paréntesis de cierre
+                    
                 case .vocationalQuiz:
                     DeckViewWrapper(
                         onComplete: {
@@ -53,7 +67,8 @@ struct MainTabView: View {
                         },
                         viewModel: viewModel
                     )
-
+                    .transition(.move(edge: .trailing))
+                    
                 case .quickDecision:
                     QuickDecisionView(
                         viewModel: viewModel,
@@ -61,7 +76,8 @@ struct MainTabView: View {
                             flowStep = .results
                         }
                     )
-
+                    .transition(.move(edge: .trailing))
+                    
                 case .results:
                     ResultsView(
                         viewModel: viewModel,
@@ -69,30 +85,24 @@ struct MainTabView: View {
                             flowStep = .welcome
                         }
                     )
+                    .transition(.move(edge: .leading))
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            if flowStep != .welcome {
-                HStack(spacing: 12) {
-                    ForEach([FlowStep.avatarSelection, .vocationalQuiz, .quickDecision, .results], id: \.self) { step in
-                        Circle()
-                            .fill(flowStep == step ? Color.blue : AppTheme.Colors.secondaryText.opacity(0.3))
-                            .frame(width: 14, height: 14)
-                            .overlay(
-                                Circle()
-                                    .stroke(AppTheme.Colors.primary.opacity(flowStep == step ? 1 : 0.5), lineWidth: flowStep == step ? 2 : 1)
-                            )
-                            .animation(.easeInOut, value: flowStep)
-                    }
-                }
-                .padding(.vertical, 12)
+            
+            // Loading View con transición
+            if showLoading {
+                LoadingView()
+                    .offset(y: loadingOffset)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .top),
+                        removal: .move(edge: .bottom)
+                    ))
+                    .zIndex(1) // Asegura que esté por encima de otras vistas
             }
         }
         .ignoresSafeArea()
     }
 }
-
 #if DEBUG
 struct MainTabView_Previews: PreviewProvider {
     static var previews: some View {
