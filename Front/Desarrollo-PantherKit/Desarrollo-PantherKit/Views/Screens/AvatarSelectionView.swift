@@ -19,28 +19,35 @@ struct AvatarSelectionView: View {
     var body: some View {
         ZStack {
             // Background
-            AppTheme.Colors.background
+            Color(.systemBackground)
                 .ignoresSafeArea()
             
             VStack(spacing: AppTheme.Layout.spacingL) {
                 // Header
-                VStack(spacing: AppTheme.Layout.spacingM) {
-                    Text("Choose Your Avatar")
-                        .font(.system(size: AppTheme.Typography.title1, weight: .bold))
-                        .foregroundColor(AppTheme.Colors.primary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                        .opacity(animateTitle ? 1 : 0)
-                        .offset(y: animateTitle ? 0 : -20)
-                    
-                    Text("Your avatar will accompany you through your engineering discovery journey!")
-                        .font(.system(size: AppTheme.Typography.body))
-                        .foregroundColor(AppTheme.Colors.text)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                        .opacity(animateSubtitle ? 1 : 0)
+                Group {
+                    VStack(spacing: AppTheme.Layout.spacingM) {
+                        Text("Choose Your Avatar")
+                            .font(.system(size: AppTheme.Typography.title1, weight: .bold))
+                            .foregroundColor(AppTheme.Colors.primary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                            .opacity(animateTitle ? 1 : 0)
+                            .offset(y: animateTitle ? 0 : -20)
+                        
+                        Text("Your avatar will accompany you through your engineering discovery journey!")
+                            .font(.system(size: AppTheme.Typography.body))
+                            .foregroundColor(AppTheme.Colors.text)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                            .opacity(animateSubtitle ? 1 : 0)
+                    }
                 }
-                .padding(.top, AppTheme.Layout.spacingXL)
+                .padding()
+                .background(.ultraThinMaterial)
+                .cornerRadius(20)
+                .shadow(color: Color.white.opacity(0.7), radius: 8, x: -8, y: -8)
+                .shadow(color: Color.black.opacity(0.2), radius: 8, x: 8, y: 8)
+                .padding(.top, 24)
                 
                 // Avatar selection
                 VStack(spacing: AppTheme.Layout.spacingL) {
@@ -63,6 +70,11 @@ struct AvatarSelectionView: View {
                     }
                     .padding(.horizontal)
                 }
+                .padding()
+                .background(.ultraThinMaterial)
+                .cornerRadius(20)
+                .shadow(color: Color.white.opacity(0.7), radius: 8, x: -8, y: -8)
+                .shadow(color: Color.black.opacity(0.2), radius: 8, x: 8, y: 8)
                 .opacity(animateAvatars ? 1 : 0)
                 .offset(y: animateAvatars ? 0 : 30)
                 
@@ -78,6 +90,10 @@ struct AvatarSelectionView: View {
                     }
                 )
                 .padding(.horizontal)
+                .background(.ultraThinMaterial)
+                .cornerRadius(30)
+                .shadow(color: Color.white.opacity(0.7), radius: 8, x: -8, y: -8)
+                .shadow(color: Color.black.opacity(0.2), radius: 8, x: 8, y: 8)
                 .opacity(animateButton ? 1 : 0)
                 .offset(y: animateButton ? 0 : 20)
                 .padding(.bottom, AppTheme.Layout.spacingXL)
