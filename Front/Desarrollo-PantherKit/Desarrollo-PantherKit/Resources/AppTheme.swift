@@ -7,6 +7,13 @@
 
 import SwiftUI
 
+enum ZonaProWeight: String {
+    case bold = "ZonaPro-Bold"
+    case light = "ZonaPro-Light"
+    case thin = "ZonaPro-Thin"
+    case blackItalic = "ZonaPro-BlackItalic"
+}
+
 /// Main theme for the application - easily modifiable for the hackathon theme
 struct AppTheme {
     // MARK: - Colors
@@ -64,6 +71,11 @@ struct AppTheme {
         static let semibold = Font.Weight.semibold
         static let bold = Font.Weight.bold
         static let heavy = Font.Weight.heavy
+        
+        static func zonaPro(_ weight: ZonaProWeight, size: CGFloat) -> Font {
+            .custom(weight.rawValue, size: size)
+        }
+    
     }
     
     // MARK: - Layout
