@@ -33,8 +33,8 @@ struct ResultsLoadingView: View {
             // Fondo con gradiente espacial
             LinearGradient(
                 gradient: Gradient(colors: [
-                    Color(red: 0.05, green: 0.1, blue: 0.2),
-                    Color(red: 0.1, green: 0.2, blue: 0.4)
+                    Color(red: 0.91, green: 0.95, blue: 0.98).opacity(0.9),
+                    Color(red: 0.98, green: 0.94, blue: 0.93).opacity(0.9)
                 ]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -81,17 +81,16 @@ struct ResultsLoadingView: View {
                 VStack(spacing: 20) {
                     // Mensaje principal
                     Text(loadingMessages[currentMessageIndex])
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.center)
-                        .frame(height: 60)
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .foregroundColor(Color(red: 0.2, green: 0.2, blue: 0.4))
+                        .shadow(color: Color.white.opacity(0.5), radius: 2, x: 0, y: 1)
                         .transition(.opacity.combined(with: .scale))
                     
                     // Mensaje secundario (rocket message)
                     Text(rocketMessages[currentMessageIndex])
-                        .font(.system(size: 18, weight: .medium, design: .rounded))
-                        .foregroundColor(Color(red: 0.7, green: 0.8, blue: 1.0))
-                        .multilineTextAlignment(.center)
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundColor(Color(red: 0.2, green: 0.2, blue: 0.4))
+                        .shadow(color: Color.white.opacity(0.5), radius: 2, x: 0, y: 1)
                         .transition(.opacity)
                     
                     // Barra de progreso personalizada
@@ -183,3 +182,6 @@ struct ResultsLoadingView: View {
     }
 }
 
+#Preview{
+    ResultsLoadingView()
+}
