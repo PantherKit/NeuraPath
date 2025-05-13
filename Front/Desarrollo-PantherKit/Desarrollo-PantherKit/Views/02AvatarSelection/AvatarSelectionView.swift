@@ -28,7 +28,6 @@ struct AvatarSelectionView: View {
                     VStack(spacing: AppTheme.Layout.spacingM) {
                         Text("Choose Your Avatar")
                             .font(.system(size: AppTheme.Typography.title1, weight: .bold))
-                            .foregroundColor(AppTheme.Colors.primary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
                             .opacity(animateTitle ? 1 : 0)
@@ -45,8 +44,6 @@ struct AvatarSelectionView: View {
                 .padding()
                 .background(.ultraThinMaterial)
                 .cornerRadius(20)
-                .shadow(color: Color.white.opacity(0.7), radius: 8, x: -8, y: -8)
-                .shadow(color: Color.black.opacity(0.2), radius: 8, x: 8, y: 8)
                 .padding(.top, 24)
                 
                 // Avatar selection
@@ -73,8 +70,6 @@ struct AvatarSelectionView: View {
                 .padding()
                 .background(.ultraThinMaterial)
                 .cornerRadius(20)
-                .shadow(color: Color.white.opacity(0.7), radius: 8, x: -8, y: -8)
-                .shadow(color: Color.black.opacity(0.2), radius: 8, x: 8, y: 8)
                 .opacity(animateAvatars ? 1 : 0)
                 .offset(y: animateAvatars ? 0 : 30)
                 
@@ -92,8 +87,6 @@ struct AvatarSelectionView: View {
                 .padding(.horizontal)
                 .background(.ultraThinMaterial)
                 .cornerRadius(30)
-                .shadow(color: Color.white.opacity(0.7), radius: 8, x: -8, y: -8)
-                .shadow(color: Color.black.opacity(0.2), radius: 8, x: 8, y: 8)
                 .opacity(animateButton ? 1 : 0)
                 .offset(y: animateButton ? 0 : 20)
                 .padding(.bottom, AppTheme.Layout.spacingXL)
@@ -137,7 +130,6 @@ struct AvatarSelectionItemView: View {
                     Circle()
                         .fill(isSelected ? avatar.color : Color.gray.opacity(0.1))
                         .frame(width: 80, height: 80)
-                        .shadow(color: isSelected ? avatar.color.opacity(0.5) : Color.clear, radius: 8, x: 0, y: 4)
                     
                     Image(systemName: avatar.imageName)
                         .font(.system(size: 36))
