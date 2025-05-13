@@ -571,7 +571,7 @@ struct VocationalSwipeView: View {
                 .padding(.vertical)
             }
             .navigationDestination(isPresented: $showNextScreen) {
-                GalaxyResultsView(viewModel: viewModel)
+                QuickDecisionView(viewModel: viewModel)
                     .navigationBarHidden(true)
             }
             .navigationDestination(isPresented: $showDetails) {
