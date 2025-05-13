@@ -124,29 +124,6 @@ struct ExhaustFlame: View {
 }
 
 // ---------- STAR‑FIELD ----------
-struct StarField: View {
-    // Very light weight star‑field using Canvas
-    @State private var time = 0.0
-    let timer = Timer.publish(every: 0.02, on: .main, in: .common).autoconnect()
-    
-    var body: some View {
-        GeometryReader { geo in
-            Canvas { ctx, size in
-                ctx.opacity = 0.8
-                let starCount = 150
-                for i in 0..<starCount {
-                    let x = Double(i) / Double(starCount) * size.width
-                    let speed = 50 + Double(i % 20)     // varied speed
-                    let y = (time * speed + Double(i)*4).truncatingRemainder(dividingBy: size.height)
-                    ctx.fill(Path(CGRect(x: x, y: y, width: 2, height: 8)),
-                             with: .color(.white))
-                }
-            }
-            .onReceive(timer) { _ in time += 1 }
-        }
-        .blendMode(.plusLighter)
-    }
-}
 
 // ---------- PREVIEW ----------
 #Preview {

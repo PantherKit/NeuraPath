@@ -31,22 +31,8 @@ struct EmojiLandingView: View {
     }
 }
 
-// Reutilizamos el mismo estilo de botón
-struct StyledButton: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .padding()
-            .frame(maxWidth: .infinity)
-            .background(Color.black.opacity(0.1))
-            .cornerRadius(12)
-            .foregroundColor(.black)
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
-    }
-}
-
 #if DEBUG
 #Preview("Emoji Landing") {
     EmojiLandingView()
-        .previewDevice("iPhone 15 Pro")
 }
 #endif
