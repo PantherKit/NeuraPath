@@ -8,45 +8,40 @@
 import SwiftUI
 
 struct MainTabView: View {
-    @State private var selectedTab = 0
-    @StateObject private var projectViewModel = ProjectViewModel()
+    @State private var selectedTab = 0 
+    @StateObject private var vocationalTestViewModel = VocationalTestViewModel()
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            // Projects Tab
-            ProjectListView(viewModel: projectViewModel)
+            // Vocational Test Tab
+            WelcomeView(viewModel: vocationalTestViewModel)
                 .tabItem {
-                    Label("Projects", systemImage: "folder")
+                    Label("Discover", systemImage: "lightbulb.fill")
                 }
                 .tag(0)
             
-            // Dashboard Tab (Placeholder)
-            dashboardView
-                .tabItem {
-                    Label("Dashboard", systemImage: "chart.bar")
-                }
-                .tag(1)
+            // Results Tab
+            NavigationView {
+                GalaxyResultsView(viewModel: vocationalTestViewModel)
+            }
+            .tabItem {
+                Label("Results", systemImage: "star.fill")
+            }
+            .tag(1)
             
-            // Team Tab (Placeholder)
-            teamView
+            // About Tab (Placeholder)
+            aboutView
                 .tabItem {
-                    Label("Team", systemImage: "person.3")
+                    Label("About", systemImage: "info.circle")
                 }
                 .tag(2)
-            
-            // Settings Tab (Placeholder)
-            settingsView
-                .tabItem {
-                    Label("Settings", systemImage: "gear")
-                }
-                .tag(3)
         }
         .accentColor(AppTheme.Colors.primary)
     }
     
     // MARK: - Placeholder Views
     
-    private var dashboardView: some View {
+    private var resultsPlaceholderView: some View {
         NavigationView {
             ZStack {
                 AppTheme.Colors.background
@@ -54,321 +49,144 @@ struct MainTabView: View {
                 
                 VStack(spacing: AppTheme.Layout.spacingL) {
                     // Header
-                    Text("Dashboard")
+                    Text("Your Results")
                         .font(.system(size: AppTheme.Typography.largeTitle, weight: .bold))
                         .foregroundColor(AppTheme.Colors.text)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal)
                     
-                    // Stats Cards
-                    HStack(spacing: AppTheme.Layout.spacingM) {
-                        statCard(title: "Active", value: "3", icon: "arrow.triangle.2.circlepath", color: .blue)
-                        statCard(title: "Completed", value: "12", icon: "checkmark.circle", color: .green)
-                    }
-                    .padding(.horizontal)
-                    
-                    // Chart Placeholder
+                    // Take the test prompt
                     CardView {
-                        VStack(alignment: .leading, spacing: AppTheme.Layout.spacingM) {
-                            Text("Project Progress")
-                                .font(.system(size: AppTheme.Typography.headline, weight: .semibold))
-                                .foregroundColor(AppTheme.Colors.text)
+                        VStack(alignment: .center, spacing: AppTheme.Layout.spacingM) {
+                            Image(systemName: "lightbulb.fill")
+                                .font(.system(size: 40))
+                                .foregroundColor(AppTheme.Colors.primary)
+                                .padding(.bottom, AppTheme.Layout.spacingS)
                             
-                            // Placeholder for chart
-                            ZStack {
-                                RoundedRectangle(cornerRadius: AppTheme.Layout.cornerRadiusS)
-                                    .fill(Color.gray.opacity(0.1))
-                                    .frame(height: 200)
-                                
-                                Text("Chart Placeholder")
-                                    .foregroundColor(AppTheme.Colors.secondaryText)
-                            }
+                            Text("Discover Your Engineering Path")
+                                .font(.system(size: AppTheme.Typography.headline, weight: .bold))
+                                .foregroundColor(AppTheme.Colors.text)
+                                .multilineTextAlignment(.center)
+                            
+                            Text("Take the interactive test to find out which engineering field matches your interests and personality!")
+                                .font(.system(size: AppTheme.Typography.body))
+                                .foregroundColor(AppTheme.Colors.secondaryText)
+                                .multilineTextAlignment(.center)
+                                .padding(.bottom, AppTheme.Layout.spacingS)
+                            
+                            PantherButton(title: "Start Test", action: {
+                                selectedTab = 0
+                            })
                         }
+                        .padding(AppTheme.Layout.spacingL)
                     }
                     .padding(.horizontal)
                     
-                    // Recent Activity
-                    VStack(alignment: .leading, spacing: AppTheme.Layout.spacingM) {
-                        Text("Recent Activity")
-                            .font(.system(size: AppTheme.Typography.headline, weight: .semibold))
+                    Spacer()
+                }
+                .padding(.top)
+            }
+            .navigationBarHidden(true)
+        }
+    }
+    
+    private var aboutView: some View {
+        NavigationView {
+            ZStack {
+                AppTheme.Colors.background
+                    .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: AppTheme.Layout.spacingL) {
+                        // Header
+                        Text("About")
+                            .font(.system(size: AppTheme.Typography.largeTitle, weight: .bold))
                             .foregroundColor(AppTheme.Colors.text)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal)
                         
-                        // Activity list
+                        // About the app
                         CardView {
-                            VStack(spacing: AppTheme.Layout.spacingM) {
-                                activityItem(
-                                    title: "Project Updated",
-                                    description: "Smart City Solution was updated",
-                                    time: "2h ago",
-                                    icon: "pencil",
-                                    color: .blue
-                                )
+                            VStack(alignment: .leading, spacing: AppTheme.Layout.spacingM) {
+                                Text("Engineering Discovery")
+                                    .font(.system(size: AppTheme.Typography.title2, weight: .bold))
+                                    .foregroundColor(AppTheme.Colors.text)
                                 
-                                Divider()
+                                Text("This app is designed to help high school students discover engineering fields that match their interests and personality traits through an interactive, mission-based experience.")
+                                    .font(.system(size: AppTheme.Typography.body))
+                                    .foregroundColor(AppTheme.Colors.text)
                                 
-                                activityItem(
-                                    title: "New Team Member",
-                                    description: "Jamie Smith joined Health Monitoring App",
-                                    time: "5h ago",
-                                    icon: "person.badge.plus",
-                                    color: .green
-                                )
+                                Text("How it works")
+                                    .font(.system(size: AppTheme.Typography.headline, weight: .semibold))
+                                    .foregroundColor(AppTheme.Colors.text)
+                                    .padding(.top, AppTheme.Layout.spacingS)
                                 
-                                Divider()
+                                Text("• Choose your avatar\n• Complete fun engineering missions\n• Discover your engineering field match\n• Learn about different engineering careers")
+                                    .font(.system(size: AppTheme.Typography.body))
+                                    .foregroundColor(AppTheme.Colors.text)
                                 
-                                activityItem(
-                                    title: "Project Completed",
-                                    description: "Educational Platform marked as completed",
-                                    time: "1d ago",
-                                    icon: "checkmark.circle",
-                                    color: .purple
-                                )
+                                Text("Privacy")
+                                    .font(.system(size: AppTheme.Typography.headline, weight: .semibold))
+                                    .foregroundColor(AppTheme.Colors.text)
+                                    .padding(.top, AppTheme.Layout.spacingS)
+                                
+                                Text("We respect your privacy. This app collects anonymous data only for improving the test experience. No personal information is stored or shared.")
+                                    .font(.system(size: AppTheme.Typography.body))
+                                    .foregroundColor(AppTheme.Colors.text)
                             }
-                            .padding(0)
+                            .padding(AppTheme.Layout.spacingL)
                         }
                         .padding(.horizontal)
-                    }
-                    
-                    Spacer()
-                }
-                .padding(.top)
-            }
-            .navigationBarHidden(true)
-        }
-    }
-    
-    private var teamView: some View {
-        NavigationView {
-            ZStack {
-                AppTheme.Colors.background
-                    .ignoresSafeArea()
-                
-                VStack(spacing: AppTheme.Layout.spacingL) {
-                    // Header
-                    Text("Team")
-                        .font(.system(size: AppTheme.Typography.largeTitle, weight: .bold))
-                        .foregroundColor(AppTheme.Colors.text)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal)
-                    
-                    // Team members list
-                    ScrollView {
-                        VStack(spacing: AppTheme.Layout.spacingM) {
-                            teamMemberCard(
-                                name: "Alex Johnson",
-                                role: "Project Lead",
-                                projects: 3,
-                                color: .blue
-                            )
+                        
+                        // Engineering fields
+                        VStack(alignment: .leading, spacing: AppTheme.Layout.spacingM) {
+                            Text("Engineering Fields")
+                                .font(.system(size: AppTheme.Typography.title2, weight: .bold))
+                                .foregroundColor(AppTheme.Colors.text)
+                                .padding(.horizontal)
                             
-                            teamMemberCard(
-                                name: "Maria Garcia",
-                                role: "IoT Developer",
-                                projects: 2,
-                                color: .purple
-                            )
-                            
-                            teamMemberCard(
-                                name: "Sam Lee",
-                                role: "UI/UX Designer",
-                                projects: 4,
-                                color: .orange
-                            )
-                            
-                            teamMemberCard(
-                                name: "Chris Wong",
-                                role: "Health Specialist",
-                                projects: 1,
-                                color: .green
-                            )
-                            
-                            teamMemberCard(
-                                name: "Jamie Smith",
-                                role: "Mobile Developer",
-                                projects: 2,
-                                color: .red
-                            )
+                            ForEach(EngineeringField.allCases) { field in
+                                CardView {
+                                    HStack(spacing: AppTheme.Layout.spacingM) {
+                                        // Icon
+                                        ZStack {
+                                            Circle()
+                                                .fill(field.color.opacity(0.2))
+                                                .frame(width: 50, height: 50)
+                                            
+                                            Image(systemName: field.icon)
+                                                .font(.system(size: 24))
+                                                .foregroundColor(field.color)
+                                        }
+                                        
+                                        // Content
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(field.rawValue)
+                                                .font(.system(size: AppTheme.Typography.headline, weight: .semibold))
+                                                .foregroundColor(AppTheme.Colors.text)
+                                            
+                                            Text(field.description)
+                                                .font(.system(size: AppTheme.Typography.subheadline))
+                                                .foregroundColor(AppTheme.Colors.secondaryText)
+                                                .lineLimit(2)
+                                        }
+                                    }
+                                    .padding(AppTheme.Layout.spacingM)
+                                }
+                                .padding(.horizontal)
+                            }
                         }
-                        .padding(.horizontal)
+                        
+                        // Version info
+                        Text("Version 1.0.0")
+                            .font(.system(size: AppTheme.Typography.caption1))
+                            .foregroundColor(AppTheme.Colors.secondaryText)
+                            .padding(.bottom)
                     }
+                    .padding(.top)
                 }
-                .padding(.top)
             }
             .navigationBarHidden(true)
-        }
-    }
-    
-    private var settingsView: some View {
-        NavigationView {
-            ZStack {
-                AppTheme.Colors.background
-                    .ignoresSafeArea()
-                
-                VStack(spacing: AppTheme.Layout.spacingL) {
-                    // Header
-                    Text("Settings")
-                        .font(.system(size: AppTheme.Typography.largeTitle, weight: .bold))
-                        .foregroundColor(AppTheme.Colors.text)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal)
-                    
-                    // Settings list
-                    VStack(spacing: 1) {
-                        settingItem(title: "Account", icon: "person.circle")
-                        settingItem(title: "Notifications", icon: "bell")
-                        settingItem(title: "Appearance", icon: "paintbrush")
-                        settingItem(title: "Privacy", icon: "lock.shield")
-                        settingItem(title: "Help & Support", icon: "questionmark.circle")
-                        settingItem(title: "About", icon: "info.circle")
-                    }
-                    .background(AppTheme.Colors.secondaryBackground)
-                    .cornerRadius(AppTheme.Layout.cornerRadiusM)
-                    .padding(.horizontal)
-                    
-                    Spacer()
-                    
-                    // Version info
-                    Text("Version 1.0.0")
-                        .font(.system(size: AppTheme.Typography.caption1))
-                        .foregroundColor(AppTheme.Colors.secondaryText)
-                        .padding(.bottom)
-                }
-                .padding(.top)
-            }
-            .navigationBarHidden(true)
-        }
-    }
-    
-    // MARK: - Helper Views
-    
-    private func statCard(title: String, value: String, icon: String, color: Color) -> some View {
-        CardView {
-            VStack(alignment: .leading, spacing: AppTheme.Layout.spacingS) {
-                // Icon
-                Image(systemName: icon)
-                    .font(.system(size: 24))
-                    .foregroundColor(color)
-                
-                Spacer()
-                
-                // Value
-                Text(value)
-                    .font(.system(size: AppTheme.Typography.title1, weight: .bold))
-                    .foregroundColor(AppTheme.Colors.text)
-                
-                // Title
-                Text(title)
-                    .font(.system(size: AppTheme.Typography.subheadline))
-                    .foregroundColor(AppTheme.Colors.secondaryText)
-            }
-            .frame(height: 120)
-        }
-        .frame(maxWidth: .infinity)
-    }
-    
-    private func activityItem(title: String, description: String, time: String, icon: String, color: Color) -> some View {
-        HStack(spacing: AppTheme.Layout.spacingM) {
-            // Icon
-            ZStack {
-                Circle()
-                    .fill(color.opacity(0.2))
-                    .frame(width: 40, height: 40)
-                
-                Image(systemName: icon)
-                    .font(.system(size: 16))
-                    .foregroundColor(color)
-            }
-            
-            // Content
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.system(size: AppTheme.Typography.subheadline, weight: .semibold))
-                    .foregroundColor(AppTheme.Colors.text)
-                
-                Text(description)
-                    .font(.system(size: AppTheme.Typography.caption1))
-                    .foregroundColor(AppTheme.Colors.secondaryText)
-            }
-            
-            Spacer()
-            
-            // Time
-            Text(time)
-                .font(.system(size: AppTheme.Typography.caption2))
-                .foregroundColor(AppTheme.Colors.secondaryText)
-        }
-        .padding(0)
-    }
-    
-    private func teamMemberCard(name: String, role: String, projects: Int, color: Color) -> some View {
-        CardView {
-            HStack(spacing: AppTheme.Layout.spacingM) {
-                // Avatar
-                ZStack {
-                    Circle()
-                        .fill(color.opacity(0.2))
-                        .frame(width: 60, height: 60)
-                    
-                    Text(name.prefix(1).uppercased())
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(color)
-                }
-                
-                // Info
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(name)
-                        .font(.system(size: AppTheme.Typography.headline, weight: .semibold))
-                        .foregroundColor(AppTheme.Colors.text)
-                    
-                    Text(role)
-                        .font(.system(size: AppTheme.Typography.subheadline))
-                        .foregroundColor(AppTheme.Colors.secondaryText)
-                    
-                    Text("\(projects) \(projects == 1 ? "project" : "projects")")
-                        .font(.system(size: AppTheme.Typography.caption1))
-                        .foregroundColor(AppTheme.Colors.secondaryText)
-                        .padding(.top, 2)
-                }
-                
-                Spacer()
-                
-                // Contact button
-                Button(action: {}) {
-                    Image(systemName: "envelope")
-                        .font(.system(size: 16))
-                        .foregroundColor(AppTheme.Colors.primary)
-                        .padding(12)
-                        .background(AppTheme.Colors.primary.opacity(0.1))
-                        .clipShape(Circle())
-                }
-            }
-        }
-    }
-    
-    private func settingItem(title: String, icon: String) -> some View {
-        Button(action: {}) {
-            HStack(spacing: AppTheme.Layout.spacingM) {
-                // Icon
-                Image(systemName: icon)
-                    .font(.system(size: 18))
-                    .foregroundColor(AppTheme.Colors.primary)
-                    .frame(width: 24)
-                
-                // Title
-                Text(title)
-                    .font(.system(size: AppTheme.Typography.body))
-                    .foregroundColor(AppTheme.Colors.text)
-                
-                Spacer()
-                
-                // Chevron
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14))
-                    .foregroundColor(AppTheme.Colors.secondaryText)
-            }
-            .padding(AppTheme.Layout.spacingM)
-            .background(AppTheme.Colors.background)
         }
     }
 }
