@@ -1,7 +1,7 @@
 # main.py
 from flask import Flask, request, jsonify
 from google.cloud import storage
-import os, tempfile
+import os, tempfile, time
 
 app = Flask(__name__)
 
@@ -38,5 +38,5 @@ def upload_csv():
 
     return jsonify({"message":"CSV uploaded", "url": url}), 200
 
-if __name__ == '_main_':
+if __name__ == '__main__':
     app.run(debug=True)

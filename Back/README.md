@@ -86,6 +86,79 @@ RELOAD=true
 - `PUT /api/items/{item_id}` - Update item
 - `DELETE /api/items/{item_id}` - Delete item
 
+## Flask Application
+
+In addition to the FastAPI backend, this project includes a Flask application (`app/main.py`) that provides the following functionality:
+
+### Endpoints
+
+- `POST /upload_csv` - Upload a CSV file to Google Cloud Storage
+- `POST /predict_stem_personality` - Predict STEM personality based on user responses
+
+### STEM Personality Prediction
+
+The `/predict_stem_personality` endpoint accepts a JSON payload with user responses and returns a prediction of the user's STEM personality type (Science, Technology, Engineering, or Mathematics).
+
+#### Request Format
+
+```json
+{
+  "respuestas": {
+    "ciencia": [3, 4, 5],     // Science question scores (1-5)
+    "tecnologia": [4, 5, 3],  // Technology question scores (1-5)
+    "ingenieria": [2, 3, 4],  // Engineering question scores (1-5)
+    "matematicas": [5, 4, 3]  // Mathematics question scores (1-5)
+  }
+}
+```
+
+#### Response Format
+
+```json
+{
+  "personalidad_stem": "T",
+  "descripcion": "Technology (Tecnología)",
+  "puntuaciones": {
+    "ciencia": 4.0,
+    "tecnologia": 4.33,
+    "ingenieria": 3.0,
+    "matematicas": 4.0
+  },
+  "detalles": {
+    "S": {
+      "nombre": "Science (Ciencia)",
+      "puntuacion": 4.0,
+      "porcentaje": 80.0
+    },
+    "T": {
+      "nombre": "Technology (Tecnología)",
+      "puntuacion": 4.33,
+      "porcentaje": 86.6
+    },
+    "E": {
+      "nombre": "Engineering (Ingeniería)",
+      "puntuacion": 3.0,
+      "porcentaje": 60.0
+    },
+    "M": {
+      "nombre": "Mathematics (Matemáticas)",
+      "puntuacion": 4.0,
+      "porcentaje": 80.0
+    }
+  }
+}
+```
+
+### Running the Flask Application
+
+To run the Flask application:
+
+```
+python app/main.py
+```
+
+The Flask server will start on port 5000 and accept connections from any host.
+
 ## How to Use This Template
 
 ### Adding New Models
