@@ -7,7 +7,7 @@ docker-compose build
 docker save -o backend.tar web
 
 # Upload to Google Cloud Storage
-gsutil cp backend.tar gs://your-bucket-name/backend.tar
+gsutil cp backend.tar gs://pantherkit/backend.tar
 
 # Clean up
 rm backend.tar

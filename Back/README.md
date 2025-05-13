@@ -149,15 +149,40 @@ The `/predict_stem_personality` endpoint accepts a JSON payload with user respon
 }
 ```
 
+### Google Cloud Storage Setup
+
+The Flask application uses Google Cloud Storage to store uploaded CSV files. To set up Google Cloud Storage:
+
+1. Create a Google Cloud project if you don't have one already
+2. Create a storage bucket named "pantherkit" in your Google Cloud project
+3. Create a service account with Storage Object Admin permissions
+4. Download the service account key as a JSON file
+5. Save the JSON file as `credentials.json` in the project root directory
+
+When running with Docker, the credentials file will be mounted into the container automatically.
+
 ### Running the Flask Application
 
 To run the Flask application:
 
 ```
+# Set the environment variable to point to your credentials file
+export GOOGLE_APPLICATION_CREDENTIALS=./credentials.json
+
+# Run the application
 python app/main.py
 ```
 
 The Flask server will start on port 5000 and accept connections from any host.
+
+### Running with Docker Compose
+
+To run the application with Docker Compose:
+
+```
+# Make sure credentials.json is in the project root
+docker-compose up
+```
 
 ## How to Use This Template
 

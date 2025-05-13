@@ -1,8 +1,13 @@
-# main.py (o donde tengas tu app Flask)
+# test_stem_prediction.py
 
 from flask import Flask, request, jsonify
+from google.cloud import storage
+import os, tempfile, time, json
 
 app = Flask(__name__)
+
+# Asegúrate de tener GOOGLE_APPLICATION_CREDENTIALS apuntando a tu JSON de servicio
+BUCKET_NAME = "pantherkit"
 
 @app.route('/analizar_compatibilidad', methods=['POST'])
 def analizar_compatibilidad():
@@ -66,8 +71,36 @@ def analizar_compatibilidad():
         porcentaje = (score / 5.0) * 100
         compatibilidad[carrera] = round(porcentaje, 1)
 
-    return jsonify(compatibilidad=compatibilidad), 200
+    # Preparar el resultado para subir a GCS
+    result_data = {"compatibilidad": compatibilidad, "timestamp": time.time()}
+
+    # Guardar resultados en un archivo temporal
+    tf = tempfile.NamedTemporaryFile(delete=False, suffix=".json")
+    with open(tf.name, 'w') as f:
+        json.dump(result_data, f)
+
+    # Subir a Google Cloud Storage
+    gcs_url = None
+    try:
+        client = storage.Client()
+        bucket = client.bucket(BUCKET_NAME)
+        # path en el bucket: stem-results/<timestamp>.json
+        dest_path = f"stem-results/{int(time.time())}.json"
+        blob = bucket.blob(dest_path)
+        blob.upload_from_filename(tf.name, content_type="application/json")
+        gcs_url = blob.public_url
+    except Exception as e:
+        print(f"Error al subir a GCS: {str(e)}")
+    finally:
+        os.unlink(tf.name)
+
+    # Añadir URL al resultado si está disponible
+    response = {"compatibilidad": compatibilidad}
+    if gcs_url:
+        response["gcs_url"] = gcs_url
+
+    return jsonify(response), 200
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8000, debug=True)  # Permite conexiones externas

@@ -5,7 +5,7 @@ import os, tempfile, time
 
 app = Flask(__name__)
 
-# Asegúrate de tener GOOGLE_APPLCATION_CREDENTIALS apuntando a tu JSON de servicio
+# Asegúrate de tener GOOGLE_APPLICATION_CREDENTIALS apuntando a tu JSON de servicio
 BUCKET_NAME = "pantherkit"
 
 @app.route('/upload_csv', methods=['POST'])
