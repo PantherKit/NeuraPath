@@ -1,203 +1,102 @@
-//
 //  MainTabView.swift
-//  Desarrollo-PantherKit
-//
-//  Created on 5/11/25.
-//
 
 import SwiftUI
 
+// 1️⃣ Define tus pasos de flujo
+enum FlowStep {
+    case welcome
+    case avatarSelection
+    case vocationalQuiz
+    case quickDecision
+    case results
+}
+
 struct MainTabView: View {
-    @State private var selectedTab = 0 
-    @StateObject private var vocationalTestViewModel = VocationalTestViewModel()
-    
+    // 2️⃣ Estado de flujo
+    @State private var flowStep: FlowStep = .welcome
+    @StateObject private var viewModel = VocationalTestViewModel()
+    @State private var isTransitioningToAvatar = false
+
     var body: some View {
-        TabView(selection: $selectedTab) {
-            // Vocational Test Tab
-            WelcomeView(viewModel: vocationalTestViewModel)
-                .tabItem {
-                    Label("Discover", systemImage: "lightbulb.fill")
-                }
-                .tag(0)
-            
-            // Results Tab
-            NavigationView {
-                if vocationalTestViewModel.testCompleted {
-                    GalaxyResultsView(viewModel: vocationalTestViewModel)
-                } else {
-                    resultsPlaceholderView
-                }
-            }
-            .tabItem {
-                Label("Results", systemImage: "star.fill")
-            }
-            .tag(1)
-            
-            // About Tab (Placeholder)
-            aboutView
-                .tabItem {
-                    Label("About", systemImage: "info.circle")
-                }
-                .tag(2)
-        }
-        .accentColor(AppTheme.Colors.primary)
-    }
-    
-    // MARK: - Placeholder Views
-    
-    private var resultsPlaceholderView: some View {
-        NavigationView {
-            ZStack {
-                AppTheme.Colors.background
-                    .ignoresSafeArea()
-                
-                VStack(spacing: AppTheme.Layout.spacingL) {
-                    // Header
-                    Text("Your Results")
-                        .font(.system(size: AppTheme.Typography.largeTitle, weight: .bold))
-                        .foregroundColor(AppTheme.Colors.text)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal)
-                    
-                    // Take the test prompt
-                    CardView {
-                        VStack(alignment: .center, spacing: AppTheme.Layout.spacingM) {
-                            Image(systemName: "lightbulb.fill")
-                                .font(.system(size: 40))
-                                .foregroundColor(AppTheme.Colors.primary)
-                                .padding(.bottom, AppTheme.Layout.spacingS)
-                            
-                            Text("Discover Your Engineering Path")
-                                .font(.system(size: AppTheme.Typography.headline, weight: .bold))
-                                .foregroundColor(AppTheme.Colors.text)
-                                .multilineTextAlignment(.center)
-                            
-                            Text("Take the interactive test to find out which engineering field matches your interests and personality!")
-                                .font(.system(size: AppTheme.Typography.body))
-                                .foregroundColor(AppTheme.Colors.secondaryText)
-                                .multilineTextAlignment(.center)
-                                .padding(.bottom, AppTheme.Layout.spacingS)
-                            
-                            PantherButton(title: "Start Test", action: {
-                                selectedTab = 0
-                            })
-                        }
-                        .padding(AppTheme.Layout.spacingL)
-                    }
-                    .padding(.horizontal)
-                    
-                    Spacer()
-                }
-                .padding(.top)
-            }
-            .navigationBarHidden(true)
-        }
-    }
-    
-    private var aboutView: some View {
-        NavigationView {
-            ZStack {
-                AppTheme.Colors.background
-                    .ignoresSafeArea()
-                
-                ScrollView {
-                    VStack(spacing: AppTheme.Layout.spacingL) {
-                        // Header
-                        Text("About")
-                            .font(.system(size: AppTheme.Typography.largeTitle, weight: .bold))
-                            .foregroundColor(AppTheme.Colors.text)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal)
-                        
-                        // About the app
-                        CardView {
-                            VStack(alignment: .leading, spacing: AppTheme.Layout.spacingM) {
-                                Text("Engineering Discovery")
-                                    .font(.system(size: AppTheme.Typography.title2, weight: .bold))
-                                    .foregroundColor(AppTheme.Colors.text)
-                                
-                                Text("This app is designed to help high school students discover engineering fields that match their interests and personality traits through an interactive, swipe-based experience.")
-                                    .font(.system(size: AppTheme.Typography.body))
-                                    .foregroundColor(AppTheme.Colors.text)
-                                
-                                Text("How it works")
-                                    .font(.system(size: AppTheme.Typography.headline, weight: .semibold))
-                                    .foregroundColor(AppTheme.Colors.text)
-                                    .padding(.top, AppTheme.Layout.spacingS)
-                                
-                                Text("• Choose your avatar\n• Swipe through engineering careers\n• Discover your engineering field match\n• Learn about different engineering careers")
-                                    .font(.system(size: AppTheme.Typography.body))
-                                    .foregroundColor(AppTheme.Colors.text)
-                                
-                                Text("Privacy")
-                                    .font(.system(size: AppTheme.Typography.headline, weight: .semibold))
-                                    .foregroundColor(AppTheme.Colors.text)
-                                    .padding(.top, AppTheme.Layout.spacingS)
-                                
-                                Text("We respect your privacy. This app collects anonymous data only for improving the test experience. No personal information is stored or shared.")
-                                    .font(.system(size: AppTheme.Typography.body))
-                                    .foregroundColor(AppTheme.Colors.text)
+        VStack(spacing: 0) {
+            // 3️⃣ Aquí mostramos la vista según el paso actual
+            Group {
+                switch flowStep {
+                case .welcome:
+                    WelcomeView(
+                        viewModel: viewModel,
+                        onContinue: {
+                            withAnimation {
+                                isTransitioningToAvatar = true
                             }
-                            .padding(AppTheme.Layout.spacingL)
-                        }
-                        .padding(.horizontal)
-                        
-                        // Engineering fields
-                        VStack(alignment: .leading, spacing: AppTheme.Layout.spacingM) {
-                            Text("Engineering Fields")
-                                .font(.system(size: AppTheme.Typography.title2, weight: .bold))
-                                .foregroundColor(AppTheme.Colors.text)
-                                .padding(.horizontal)
-                            
-                            ForEach(EngineeringField.allCases) { field in
-                                CardView {
-                                    HStack(spacing: AppTheme.Layout.spacingM) {
-                                        // Icon
-                                        ZStack {
-                                            Circle()
-                                                .fill(field.color.opacity(0.2))
-                                                .frame(width: 50, height: 50)
-                                            
-                                            Image(systemName: field.icon)
-                                                .font(.system(size: 24))
-                                                .foregroundColor(field.color)
-                                        }
-                                        
-                                        // Content
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text(field.rawValue)
-                                                .font(.system(size: AppTheme.Typography.headline, weight: .semibold))
-                                                .foregroundColor(AppTheme.Colors.text)
-                                            
-                                            Text(field.description)
-                                                .font(.system(size: AppTheme.Typography.subheadline))
-                                                .foregroundColor(AppTheme.Colors.secondaryText)
-                                                .lineLimit(2)
-                                        }
-                                    }
-                                    .padding(AppTheme.Layout.spacingM)
-                                }
-                                .padding(.horizontal)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                flowStep = .avatarSelection
+                                isTransitioningToAvatar = false
                             }
                         }
-                        
-                        // Version info
-                        Text("Version 1.0.0")
-                            .font(.system(size: AppTheme.Typography.caption1))
-                            .foregroundColor(AppTheme.Colors.secondaryText)
-                            .padding(.bottom)
+                    )
+
+                case .avatarSelection:
+                    if !isTransitioningToAvatar {
+                        AvatarSelectionView(
+                            viewModel: viewModel,
+                            onContinue: {
+                                flowStep = .vocationalQuiz
+                            }
+                        )
                     }
-                    .padding(.top)
+
+                case .vocationalQuiz:
+                    DeckViewWrapper(
+                        onComplete: {
+                            flowStep = .quickDecision
+                        },
+                        viewModel: viewModel
+                    )
+
+                case .quickDecision:
+                    QuickDecisionView(
+                        viewModel: viewModel,
+                        onContinue: {
+                            flowStep = .results
+                        }
+                    )
+
+                case .results:
+                    ResultsView(
+                        viewModel: viewModel,
+                        onContinue: {
+                            flowStep = .welcome
+                        }
+                    )
                 }
             }
-            .navigationBarHidden(true)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            if flowStep != .welcome {
+                HStack(spacing: 12) {
+                    ForEach([FlowStep.avatarSelection, .vocationalQuiz, .quickDecision, .results], id: \.self) { step in
+                        Circle()
+                            .fill(flowStep == step ? Color.blue : AppTheme.Colors.secondaryText.opacity(0.3))
+                            .frame(width: 14, height: 14)
+                            .overlay(
+                                Circle()
+                                    .stroke(AppTheme.Colors.primary.opacity(flowStep == step ? 1 : 0.5), lineWidth: flowStep == step ? 2 : 1)
+                            )
+                            .animation(.easeInOut, value: flowStep)
+                    }
+                }
+                .padding(.vertical, 12)
+            }
         }
+        .ignoresSafeArea()
     }
 }
 
-// MARK: - Preview
+#if DEBUG
 struct MainTabView_Previews: PreviewProvider {
     static var previews: some View {
         MainTabView()
     }
 }
+#endif
