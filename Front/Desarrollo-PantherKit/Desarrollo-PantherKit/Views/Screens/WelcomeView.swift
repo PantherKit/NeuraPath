@@ -3,85 +3,99 @@ import SwiftUI
 struct WelcomeView: View {
     // Control de animaciones
     @State private var orbit = false
-    @State private var showPlanet = false
-    @State private var showCard = false
+    @State private var planetPosition: CGFloat = 0
+    @State private var cardOffset: CGFloat = UIScreen.main.bounds.height
+    
+    // Posiciones ajustadas
+    private let planetCenterPosition: CGFloat = 0
+    private let planetTopPosition: CGFloat = -UIScreen.main.bounds.height/3 // Sube 1/3 de la pantalla
     
     var body: some View {
         ZStack {
-            // Fondo estelar
+            // 1. Fondo estelar
             StarField()
+                .ignoresSafeArea()
             
-            // Contenido principal
-            VStack(spacing: 0) {
-                // Animación del planeta y cohete
-                ZStack {
-                    if showPlanet {
-                        Text("🌍")
-                            .font(.system(size: 140))
-                            .scaleEffect(showPlanet ? 1 : 0.8)
-                            .animation(.easeOut(duration: 0.5), value: showPlanet)
-                        
-                        Text("🚀")
-                            .font(.system(size: 60))
-                            .offset(y: -100)
-                            .rotationEffect(.degrees(orbit ? 360 : 0))
-                            .animation(
-                                .linear(duration: 8)
-                                    .repeatForever(autoreverses: false),
-                                value: orbit
-                            )
-                    }
-                }
-                .frame(height: 240)
-                .frame(maxWidth: .infinity)
+            // 2. Planeta y cohete con movimiento
+            VStack {
+                Spacer()
                 
-                // Card blanca (aparece después)
-                if showCard {
-                    VStack(spacing: 32) {
-                        Text("¡Bienvenido al STEM Quiz!")
-                            .font(.largeTitle.bold())
-                            .multilineTextAlignment(.center)
-                            .foregroundColor(.black)
-                            .padding(.top, 40)
-                        
-                        Text("Fast & easy test.\nIt takes less than 5 minutes.\nFind your STEM Path")
-                            .font(.headline)
-                            .multilineTextAlignment(.center)
-                            .foregroundColor(.black)
-                            .padding(.horizontal)
-                        
-                        Button("Continuar") {
-                            // Acción: navegar al quiz
-                        }
-                        .buttonStyle(StyledButton())
-                        .padding(.horizontal, 40)
-                        
-                        Spacer()
-                    }
-                    .background(Color.white)
-                    .frame(height: 600)
-                    .cornerRadius(70, corners: [.topLeft, .topRight])
-                    .transition(.move(edge: .bottom))
-                    .animation(.easeOut(duration: 0.8), value: showCard)
+                ZStack {
+                    Text("🌍")
+                        .font(.system(size: 140))
+                        .scaleEffect(1.0)
+                    
+                    Text("🚀")
+                        .font(.system(size: 60))
+                        .offset(y: -100)
+                        .rotationEffect(.degrees(orbit ? 360 : 0))
+                        .animation(
+                            .linear(duration: 8)
+                                .repeatForever(autoreverses: false),
+                            value: orbit
+                        )
                 }
+                .offset(y: planetPosition)
+                .animation(.easeInOut(duration: 0.8), value: planetPosition)
+                
+                Spacer()
             }
+            
+            // 3. Card blanca con animación independiente
+            VStack(spacing: 32) {
+                Text("¡Bienvenido al STEM Quiz!")
+                    .font(.largeTitle.bold())
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.black)
+                    .padding(.top, 40)
+                
+                Text("Fast & easy test.\nIt takes less than 5 minutes.\nFind your STEM Path")
+                    .font(.headline)
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.black)
+                    .padding(.horizontal)
+                
+                Button("Continuar") {
+                    // Acción: navegar al quiz
+                }
+                .buttonStyle(StyledButton())
+                .padding(.horizontal, 40)
+                
+                Spacer()
+            }
+            .background(Color.white)
+            .frame(height: 500)
+            .frame(maxWidth: .infinity)
+            .ignoresSafeArea()
+            .cornerRadius(70, corners: [.topLeft, .topRight])
+            .offset(y: cardOffset)
+            .animation(.spring(response: 0.7, dampingFraction: 0.6), value: cardOffset)
+            .frame(maxHeight: .infinity, alignment: .bottom)
         }
+        .ignoresSafeArea()
         .background(Color.black)
         .onAppear {
-            // Animación del planeta
-            withAnimation(.easeOut(duration: 0.5)) {
-                showPlanet = true
-            }
+            // Secuencia completa:
+            // 1. Planeta comienza centrado (posición inicial)
             
-            // Comienza la órbita después de un pequeño delay
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                orbit = true
-            }
-            
-            // Muestra la card después de 1 segundo
+            // 2. Espera 1 segundo
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                withAnimation(.easeOut(duration: 0.8)) {
-                    showCard = true
+                // 3. Sube el planeta más (nueva posición ajustada)
+                withAnimation(.easeInOut(duration: 0.8)) {
+                    planetPosition = planetTopPosition
+                }
+                
+                // 4. Inicia órbita
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    orbit = true
+                }
+                
+                // 5. Espera 1 segundo adicional
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    // 6. Sube la card con bonito rebote
+                    withAnimation(.spring(response: 0.7, dampingFraction: 0.6)) {
+                        cardOffset = 0
+                    }
                 }
             }
         }
