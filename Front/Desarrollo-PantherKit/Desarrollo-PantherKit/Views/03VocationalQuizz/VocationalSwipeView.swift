@@ -162,13 +162,13 @@ struct DeckView: View {
     }
     
     private func createCardView(for sock: Sock, at index: Int) -> some View {
-        
-        
         CardView(
             isActive: index == activeIndex,
             onSwipedAway: {
                 if activeIndex < socks.count - 1 {
                     activeIndex += 1
+                } else {
+                    onComplete()
                 }
             },
             sock: sock,
@@ -226,14 +226,13 @@ struct CardView: View {
             .foregroundStyle(.thickMaterial)
             .frame(width: 300, height: 400)
             
-            Image(sock.imageName)
-                .resizable()
-                .scaledToFill()
+            Rectangle()
+                .fill(Color.blue)
                 .frame(width: 300, height: 400)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke(.white.opacity(0.2), lineWidth: 1) // optional: adds a subtle border
+                        .stroke(.white.opacity(0.2), lineWidth: 1)
                 )
             
             
