@@ -13,6 +13,8 @@ struct Avatar: Identifiable, Codable {
     var id: UUID = UUID()
     var name: String
     var imageName: String
+    
+    // This property is not included in Codable conformance
     var color: Color {
         switch id.uuidString.first?.lowercased() ?? "a" {
         case "a"..."e": return .blue
@@ -21,6 +23,11 @@ struct Avatar: Identifiable, Codable {
         case "p"..."t": return .green
         default: return .red
         }
+    }
+    
+    // CodingKeys ensures color is not included in encoding/decoding
+    enum CodingKeys: String, CodingKey {
+        case id, name, imageName
     }
     
     static let allAvatars: [Avatar] = [
@@ -42,6 +49,11 @@ struct Mission: Identifiable, Codable {
     var options: [MissionOption]
     var type: MissionType
     
+    // Explicit coding keys to ensure proper encoding/decoding
+    enum CodingKeys: String, CodingKey {
+        case id, title, description, imageName, options, type
+    }
+    
     enum MissionType: String, Codable {
         case logic
         case creativity
@@ -50,6 +62,7 @@ struct Mission: Identifiable, Codable {
         case technical
         case design
         
+        // This property is not included in Codable conformance
         var icon: String {
             switch self {
             case .logic: return "brain"
@@ -71,7 +84,26 @@ struct MissionOption: Identifiable, Codable {
     var traits: [PersonalityTrait]
     
     // The weight of this option for each field (0.0 to 1.0)
-    var fieldWeights: [String: Double]
+    private var _fieldWeights: [String: Double]
+    
+    var fieldWeights: [String: Double] {
+        get { return _fieldWeights }
+        set { _fieldWeights = newValue }
+    }
+    
+    // Custom initializer
+    init(id: UUID = UUID(), text: String, engineeringFields: [EngineeringField], traits: [PersonalityTrait], fieldWeights: [String: Double]) {
+        self.id = id
+        self.text = text
+        self.engineeringFields = engineeringFields
+        self.traits = traits
+        self._fieldWeights = fieldWeights
+    }
+    
+    // Explicit coding keys to ensure proper encoding/decoding
+    enum CodingKeys: String, CodingKey {
+        case id, text, engineeringFields, traits, _fieldWeights
+    }
 }
 
 // MARK: - Engineering Fields
@@ -128,6 +160,8 @@ enum EngineeringField: String, Codable, CaseIterable, Identifiable {
         }
     }
     
+    // This property is not included in Codable conformance
+    @available(*, deprecated, message: "Use colorName instead for Codable conformance")
     var color: Color {
         switch self {
         case .mechatronics: return .purple
@@ -141,6 +175,27 @@ enum EngineeringField: String, Codable, CaseIterable, Identifiable {
         case .chemical: return .teal
         case .civil: return .brown
         }
+    }
+    
+    // Use this property for Codable conformance
+    var colorName: String {
+        switch self {
+        case .mechatronics: return "purple"
+        case .robotics: return "blue"
+        case .computerScience: return "gray"
+        case .electrical: return "yellow"
+        case .mechanical: return "orange"
+        case .industrial: return "green"
+        case .biomedical: return "red"
+        case .environmental: return "mint"
+        case .chemical: return "teal"
+        case .civil: return "brown"
+        }
+    }
+    
+    // Explicit coding keys to ensure only rawValue is included in encoding/decoding
+    private enum CodingKeys: String, CodingKey {
+        case rawValue
     }
     
     var realWorldExample: String {
@@ -196,6 +251,11 @@ enum PersonalityTrait: String, Codable, CaseIterable, Identifiable {
         case .communicator: return "bubble.left.fill"
         }
     }
+    
+    // Explicit coding keys to ensure only rawValue is included in encoding/decoding
+    private enum CodingKeys: String, CodingKey {
+        case rawValue
+    }
 }
 
 // MARK: - Dictionary Extension
@@ -214,18 +274,63 @@ struct TestResult: Identifiable, Codable {
     var id: UUID = UUID()
     var date: Date = Date()
     var avatar: Avatar
-    var fieldScores: [EngineeringField: Double]
-    var traitScores: [PersonalityTrait: Double]
+    
+    // These dictionaries need custom coding keys since Dictionary with enum keys doesn't automatically conform to Codable
+    private var _fieldScores: [String: Double]
+    private var _traitScores: [String: Double]
+    
+    // Public interface that uses the enum types
+    var fieldScores: [EngineeringField: Double] {
+        get {
+            var result: [EngineeringField: Double] = [:]
+            for (key, value) in _fieldScores {
+                if let field = EngineeringField(rawValue: key) {
+                    result[field] = value
+                }
+            }
+            return result
+        }
+        set {
+            _fieldScores = newValue.mapKeys { $0.rawValue }
+        }
+    }
+    
+    var traitScores: [PersonalityTrait: Double] {
+        get {
+            var result: [PersonalityTrait: Double] = [:]
+            for (key, value) in _traitScores {
+                if let trait = PersonalityTrait(rawValue: key) {
+                    result[trait] = value
+                }
+            }
+            return result
+        }
+        set {
+            _traitScores = newValue.mapKeys { $0.rawValue }
+        }
+    }
+    
+    init(id: UUID = UUID(), date: Date = Date(), avatar: Avatar, fieldScores: [EngineeringField: Double], traitScores: [PersonalityTrait: Double]) {
+        self.id = id
+        self.date = date
+        self.avatar = avatar
+        self._fieldScores = fieldScores.mapKeys { $0.rawValue }
+        self._traitScores = traitScores.mapKeys { $0.rawValue }
+    }
+    
     var primaryField: EngineeringField {
         fieldScores.max(by: { $0.value < $1.value })?.key ?? .mechatronics
     }
+    
     var secondaryField: EngineeringField {
         let sortedFields = fieldScores.sorted(by: { $0.value > $1.value })
         return sortedFields.count > 1 ? sortedFields[1].key : .robotics
     }
+    
     var primaryTrait: PersonalityTrait {
         traitScores.max(by: { $0.value < $1.value })?.key ?? .problemSolver
     }
+    
     var secondaryTrait: PersonalityTrait {
         let sortedTraits = traitScores.sorted(by: { $0.value > $1.value })
         return sortedTraits.count > 1 ? sortedTraits[1].key : .creative
@@ -239,8 +344,8 @@ struct TestResult: Identifiable, Codable {
             "secondaryField": secondaryField.rawValue,
             "primaryTrait": primaryTrait.rawValue,
             "secondaryTrait": secondaryTrait.rawValue,
-            "allFieldScores": fieldScores.mapKeys { $0.rawValue },
-            "allTraitScores": traitScores.mapKeys { $0.rawValue }
+            "allFieldScores": _fieldScores,
+            "allTraitScores": _traitScores
         ]
     }
 }

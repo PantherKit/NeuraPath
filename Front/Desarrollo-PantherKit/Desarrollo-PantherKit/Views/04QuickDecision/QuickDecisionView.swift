@@ -18,6 +18,14 @@ struct QuickDecisionView: View {
     @State private var feedbackColor = Color.yellow
     @State private var isAnimating = false
     @State private var progress: CGFloat = 0.0
+    @State private var rocketPosition: CGFloat = 0.0
+    @State private var rocketScale: CGFloat = 1.0
+    @State private var showRocketBoost = false
+    @State private var rocketRotation: Double = 0.0
+    @State private var showProjectile = false
+    @State private var projectilePosition: CGPoint = .zero
+    @State private var projectileTarget: CGPoint = .zero
+    @State private var gameCompleted = false
     let onContinue: () -> Void
     
     private let questions = [
@@ -62,15 +70,15 @@ struct QuickDecisionView: View {
     
     var body: some View {
         ZStack {
-            AppTheme.Colors.background
-                .ignoresSafeArea()
+            // Fondo espacial
+            starfieldBackground
             
             VStack(spacing: AppTheme.Layout.spacingL) {
                 // Header with progress
                 HStack {
-                    Text("Decisión Rápida")
+                    Text("Misión Espacial")
                         .font(.system(size: AppTheme.Typography.title1, weight: .bold))
-                        .foregroundColor(AppTheme.Colors.text)
+                        .foregroundColor(.white)
                     
                     Spacer()
                     
@@ -96,32 +104,54 @@ struct QuickDecisionView: View {
                 }
                 .padding(.horizontal)
                 
-                // Progress bar
-                ZStack(alignment: .leading) {
-                    Rectangle()
-                        .frame(height: 8)
-                        .opacity(0.3)
-                        .foregroundColor(AppTheme.Colors.primary)
+                // Rocket game area
+                ZStack(alignment: .bottom) {
+                    // Trayectoria del cohete (línea punteada)
+                    rocketPathView
                     
-                    Rectangle()
-                        .frame(width: progress, height: 8)
-                        .foregroundColor(AppTheme.Colors.primary)
-                        .animation(.linear, value: progress)
+                    // Cohete Lottie
+                    LottieView(filename: "rocket_landing", loopMode: .loop)
+                        .frame(width: 100, height: 100)
+                        .scaleEffect(rocketScale)
+                        .rotationEffect(.degrees(rocketRotation))
+                        .offset(y: -rocketPosition)
+                        .overlay(
+                            showRocketBoost ? 
+                                rocketBoostEffect
+                                .offset(y: 50)
+                                : nil
+                        )
+                        .zIndex(2)
+                    
+                    // Proyectil (cuando se dispara)
+                    if showProjectile {
+                        Circle()
+                            .fill(AppTheme.Colors.primary)
+                            .frame(width: 15, height: 15)
+                            .position(projectilePosition)
+                            .zIndex(1)
+                    }
+                    
+                    // Planetas/estaciones espaciales como objetivos
+                    ForEach(0..<5) { index in
+                        if index <= currentQuestion {
+                            planetView(index: index)
+                                .offset(x: index % 2 == 0 ? -100 : 100, y: -CGFloat(index + 1) * 80)
+                        }
+                    }
                 }
-                .clipShape(RoundedRectangle(cornerRadius: AppTheme.Layout.cornerRadiusS))
-                .padding(.horizontal)
+                .frame(height: 300)
+                .padding(.vertical)
                 
                 // Mission progress
                 Text("Misión \(currentQuestion + 1) de 5")
                     .font(.system(size: AppTheme.Typography.subheadline))
-                    .foregroundColor(AppTheme.Colors.secondaryText)
-                
-                Spacer()
+                    .foregroundColor(.white)
                 
                 // Question
                 Text(questions[currentQuestion])
                     .font(.system(size: AppTheme.Typography.title2, weight: .bold))
-                    .foregroundColor(AppTheme.Colors.text)
+                    .foregroundColor(.white)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                     .scaleEffect(isAnimating ? 1.05 : 1.0)
@@ -130,19 +160,21 @@ struct QuickDecisionView: View {
                         isAnimating = true
                     }
                 
-                Spacer()
-                
                 // Options
-                VStack(spacing: AppTheme.Layout.spacingL) {
+                VStack(spacing: AppTheme.Layout.spacingM) {
                     ForEach(0..<2) { index in
                         Button(action: {
                             selectOption(index)
                         }) {
                             ZStack {
                                 RoundedRectangle(cornerRadius: AppTheme.Layout.cornerRadiusL)
-                                    .fill(selectedOption == index ? AppTheme.Colors.primary : AppTheme.Colors.secondaryBackground)
-                                    .frame(height: 80)
+                                    .fill(selectedOption == index ? AppTheme.Colors.primary : Color.black.opacity(0.6))
+                                    .frame(height: 70)
                                     .shadow(radius: 5)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: AppTheme.Layout.cornerRadiusL)
+                                            .stroke(AppTheme.Colors.primary, lineWidth: 2)
+                                    )
                                 
                                 HStack {
                                     Image(systemName: optionIcons[currentQuestion][index])
@@ -151,18 +183,16 @@ struct QuickDecisionView: View {
                                     
                                     Text(options[currentQuestion][index])
                                         .font(.system(size: AppTheme.Typography.headline, weight: .semibold))
-                                        .foregroundColor(selectedOption == index ? .white : AppTheme.Colors.text)
+                                        .foregroundColor(.white)
                                 }
                             }
                         }
-                        .disabled(showFeedback)
+                        .disabled(showFeedback || gameCompleted)
                         .scaleEffect(selectedOption == index && showFeedback ? 1.05 : 1.0)
                         .animation(.spring(), value: selectedOption)
                     }
                 }
                 .padding(.horizontal)
-                
-                Spacer()
             }
             .padding(.vertical, AppTheme.Layout.spacingL)
             .onAppear {
@@ -189,6 +219,33 @@ struct QuickDecisionView: View {
                         .animation(.spring(response: 0.5, dampingFraction: 0.6), value: isAnimating)
                 }
             }
+            
+            // Animación de finalización
+            if gameCompleted {
+                Color.black.opacity(0.7)
+                    .ignoresSafeArea()
+                
+                VStack(spacing: 20) {
+                    Text("¡Misión Completada!")
+                        .font(.system(size: AppTheme.Typography.largeTitle, weight: .bold))
+                        .foregroundColor(.white)
+                    
+                    LottieView(filename: "rocket_landing", loopMode: .playOnce)
+                        .frame(width: 200, height: 200)
+                    
+                    Button(action: {
+                        onContinue()
+                    }) {
+                        Text("Continuar")
+                            .font(.system(size: AppTheme.Typography.headline, weight: .bold))
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(width: 200)
+                            .background(AppTheme.Colors.primary)
+                            .cornerRadius(AppTheme.Layout.cornerRadiusL)
+                    }
+                }
+            }
         }
         .onAppear {
             // Asegurarse de que la vista se muestra correctamente después de la transición
@@ -199,6 +256,94 @@ struct QuickDecisionView: View {
             }
         }
     }
+    
+    // MARK: - Componentes de la UI
+    
+    private var starfieldBackground: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            
+            // Estrellas pequeñas
+            ForEach(0..<100, id: \.self) { _ in
+                Circle()
+                    .fill(Color.white.opacity(Double.random(in: 0.1...0.9)))
+                    .frame(width: CGFloat.random(in: 1...3), height: CGFloat.random(in: 1...3))
+                    .position(
+                        x: CGFloat.random(in: 0...UIScreen.main.bounds.width),
+                        y: CGFloat.random(in: 0...UIScreen.main.bounds.height)
+                    )
+            }
+            
+            // Estrellas medianas
+            ForEach(0..<20, id: \.self) { _ in
+                Circle()
+                    .fill(Color.white.opacity(Double.random(in: 0.5...1.0)))
+                    .frame(width: CGFloat.random(in: 2...4), height: CGFloat.random(in: 2...4))
+                    .position(
+                        x: CGFloat.random(in: 0...UIScreen.main.bounds.width),
+                        y: CGFloat.random(in: 0...UIScreen.main.bounds.height)
+                    )
+            }
+        }
+    }
+    
+    private var rocketPathView: some View {
+        Path { path in
+            let width = UIScreen.main.bounds.width
+            path.move(to: CGPoint(x: width/2, y: 300))
+            
+            // Crear una línea zigzag hacia arriba
+            for i in 1...5 {
+                let xOffset: CGFloat = i % 2 == 0 ? 50 : -50
+                path.addLine(to: CGPoint(x: width/2 + xOffset, y: 300 - CGFloat(i) * 60))
+            }
+        }
+        .stroke(style: StrokeStyle(lineWidth: 2, dash: [5, 5]))
+        .foregroundColor(.white.opacity(0.5))
+    }
+    
+    private func planetView(index: Int) -> some View {
+        ZStack {
+            Circle()
+                .fill(index == currentQuestion ? 
+                      AppTheme.Colors.primary : 
+                      Color.gray.opacity(0.7))
+                .frame(width: 40, height: 40)
+                .overlay(
+                    Circle()
+                        .stroke(Color.white, lineWidth: 2)
+                )
+            
+            Text("\(index + 1)")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(.white)
+        }
+    }
+    
+    private var rocketBoostEffect: some View {
+        ZStack {
+            // Llamas del cohete
+            ForEach(0..<5) { i in
+                Circle()
+                    .fill(LinearGradient(
+                        gradient: Gradient(colors: [.yellow, .orange, .red]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ))
+                    .frame(width: CGFloat.random(in: 10...20), height: CGFloat.random(in: 15...30))
+                    .offset(x: CGFloat.random(in: -10...10), y: CGFloat.random(in: 0...15))
+                    .opacity(Double.random(in: 0.5...1.0))
+                    .animation(
+                        Animation.easeInOut(duration: 0.2)
+                            .repeatForever(autoreverses: true),
+                        value: isAnimating
+                    )
+            }
+        }
+        .frame(width: 30, height: 30)
+    }
+    
+    // MARK: - Funciones
     
     private func startTimer() {
         timeRemaining = 5.0
@@ -213,7 +358,7 @@ struct QuickDecisionView: View {
             }
         }
     }
-    
+     
     private func updateProgressBar() {
         withAnimation {
             progress = UIScreen.main.bounds.width - 32 * CGFloat(currentQuestion + 1) / 5.0
@@ -238,13 +383,15 @@ struct QuickDecisionView: View {
         if index == 0 {
             feedbackImage = "star.fill"
             feedbackColor = .yellow
+            animateRocketAdvance()
         } else {
             feedbackImage = "bolt.fill"
             feedbackColor = .blue
+            animateRocketShoot()
         }
         
         // Move to next question or finish
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             showFeedback = false
             
             if currentQuestion < questions.count - 1 {
@@ -253,10 +400,73 @@ struct QuickDecisionView: View {
                 updateProgressBar()
                 startTimer()
             } else {
-                // All questions answered, move to next screen
-                onContinue()
+                // All questions answered, show completion animation
+                withAnimation(.easeInOut(duration: 1.0)) {
+                    gameCompleted = true
+                }
             }
         }
+    }
+    
+    private func animateRocketAdvance() {
+        // Calcular la nueva posición del cohete
+        let newPosition = rocketPosition + 60
+        
+        // Activar el efecto de propulsión
+        withAnimation(.easeIn(duration: 0.2)) {
+            showRocketBoost = true
+            rocketScale = 1.1
+        }
+        
+        // Animar el movimiento del cohete
+        withAnimation(.easeInOut(duration: 0.8)) {
+            rocketPosition = newPosition
+            rocketRotation = currentQuestion % 2 == 0 ? 15 : -15
+        }
+        
+        // Desactivar el efecto de propulsión después de un tiempo
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            withAnimation(.easeOut(duration: 0.2)) {
+                showRocketBoost = false
+                rocketScale = 1.0
+                rocketRotation = 0
+            }
+        }
+        
+        // Feedback háptico
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+    }
+    
+    private func animateRocketShoot() {
+        // Posición inicial del proyectil (desde el cohete)
+        let screenWidth = UIScreen.main.bounds.width
+        let rocketX = screenWidth / 2
+        let rocketY = 300 - rocketPosition
+        
+        projectilePosition = CGPoint(x: rocketX, y: rocketY)
+        
+        // Posición objetivo (planeta actual)
+        let targetX = rocketX + (currentQuestion % 2 == 0 ? -100 : 100)
+        let targetY = 300 - CGFloat(currentQuestion + 1) * 80
+        projectileTarget = CGPoint(x: targetX, y: targetY)
+        
+        // Mostrar el proyectil
+        showProjectile = true
+        
+        // Animar el disparo
+        withAnimation(.easeOut(duration: 0.5)) {
+            projectilePosition = projectileTarget
+        }
+        
+        // Ocultar el proyectil después de llegar al objetivo
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            showProjectile = false
+        }
+        
+        // Feedback háptico
+        let generator = UIImpactFeedbackGenerator(style: .rigid)
+        generator.impactOccurred()
     }
 }
 
