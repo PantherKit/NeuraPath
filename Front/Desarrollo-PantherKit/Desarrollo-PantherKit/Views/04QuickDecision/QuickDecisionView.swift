@@ -84,6 +84,11 @@ struct QuickDecisionView: View {
         .onAppear {
             startAnimations()
             startTimer()
+            
+            // Asegurarse de que el avatar esté seleccionado
+            if viewModel.selectedAvatar == nil {
+                viewModel.selectedAvatar = Avatar.allAvatars.first
+            }
         }
         .onDisappear {
             timer?.invalidate()
@@ -391,6 +396,56 @@ struct QuickDecisionView: View {
     
     private var continueButton: some View {
         Button(action: {
+            // Asegurarse de que el resultado del test esté disponible antes de continuar
+            if viewModel.testResult == nil {
+                // Crear un avatar por defecto si no hay uno seleccionado
+                let defaultAvatar = viewModel.selectedAvatar ?? Avatar.allAvatars.first!
+                
+                // Inicializar puntuaciones vacías para campos
+                var fieldScores: [EngineeringField: Double] = [:]
+                for field in EngineeringField.allCases {
+                    fieldScores[field] = 0.0
+                }
+                
+                // Asignar puntuaciones basadas en las respuestas
+                for i in 0..<questions.count {
+                    if let option = selectedOption {
+                        // Asignar puntuaciones según la opción seleccionada
+                        if option == 0 {
+                            fieldScores[.mechanical, default: 0.0] += 0.2
+                            fieldScores[.industrial, default: 0.0] += 0.1
+                        } else {
+                            fieldScores[.computerScience, default: 0.0] += 0.2
+                            fieldScores[.electrical, default: 0.0] += 0.1
+                        }
+                    }
+                }
+                
+                // Inicializar puntuaciones vacías para rasgos
+                var traitScores: [PersonalityTrait: Double] = [:]
+                for trait in PersonalityTrait.allCases {
+                    traitScores[trait] = 0.0
+                }
+                
+                // Asignar puntuaciones de rasgos según la opción seleccionada
+                if let option = selectedOption {
+                    if option == 0 {
+                        traitScores[.practical, default: 0.0] += 0.2
+                        traitScores[.detailOriented, default: 0.0] += 0.1
+                    } else {
+                        traitScores[.analytical, default: 0.0] += 0.2
+                        traitScores[.creative, default: 0.0] += 0.1
+                    }
+                }
+                
+                // Crear el resultado del test
+                viewModel.testResult = TestResult(
+                    avatar: defaultAvatar,
+                    fieldScores: fieldScores,
+                    traitScores: traitScores
+                )
+            }
+            
             onContinue()
         }) {
             HStack(spacing: 12) {
@@ -449,6 +504,19 @@ struct QuickDecisionView: View {
         // Configurar feedback visual
         feedbackImage = index == 0 ? "star.fill" : "bolt.fill"
         feedbackColor = index == 0 ? Color(red: 1.0, green: 0.84, blue: 0.25) : accentColor
+        
+        // Actualizar el viewModel con la opción seleccionada
+        let fieldToUpdate: EngineeringField = index == 0 ? .mechanical : .computerScience
+        viewModel.updateFieldScore(fieldToUpdate, by: 0.2)
+        
+        let secondaryField: EngineeringField = index == 0 ? .industrial : .electrical
+        viewModel.updateFieldScore(secondaryField, by: 0.1)
+        
+        let traitToUpdate: PersonalityTrait = index == 0 ? .practical : .analytical
+        viewModel.updateTraitScore(traitToUpdate, by: 0.2)
+        
+        let secondaryTrait: PersonalityTrait = index == 0 ? .detailOriented : .creative
+        viewModel.updateTraitScore(secondaryTrait, by: 0.1)
         
         // Animación del cohete
         animateRocketMovement()
