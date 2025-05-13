@@ -7,8 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AF0370A52DD2764B00179B29 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = AF0370A42DD2764B00179B29 /* Lottie */; };
-		AF0370A72DD2764B00179B29 /* Lottie-Dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = AF0370A62DD2764B00179B29 /* Lottie-Dynamic */; };
+		AFD9C25F2DD2C31F0050F097 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = AFD9C25E2DD2C31F0050F097 /* Lottie */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,8 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AF0370A52DD2764B00179B29 /* Lottie in Frameworks */,
-				AF0370A72DD2764B00179B29 /* Lottie-Dynamic in Frameworks */,
+				AFD9C25F2DD2C31F0050F097 /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,8 +70,7 @@
 			);
 			name = "Desarrollo-PantherKit";
 			packageProductDependencies = (
-				AF0370A42DD2764B00179B29 /* Lottie */,
-				AF0370A62DD2764B00179B29 /* Lottie-Dynamic */,
+				AFD9C25E2DD2C31F0050F097 /* Lottie */,
 			);
 			productName = "Desarrollo-PantherKit";
 			productReference = 8695FD5C2DD16CFB0075491D /* Desarrollo-PantherKit.app */;
@@ -104,7 +101,7 @@
 			mainGroup = 8695FD532DD16CFA0075491D;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				AF0370A32DD2764B00179B29 /* XCRemoteSwiftPackageReference "lottie-ios" */,
+				AFD9C25D2DD2C31F0050F097 /* XCRemoteSwiftPackageReference "lottie-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8695FD5D2DD16CFB0075491D /* Products */;
@@ -260,7 +257,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Desarrollo-PantherKit/Preview Content\"";
-				DEVELOPMENT_TEAM = DM6LT3HA8M;
+				DEVELOPMENT_TEAM = WNFG39GXL2;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -299,7 +296,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Desarrollo-PantherKit/Preview Content\"";
-				DEVELOPMENT_TEAM = DM6LT3HA8M;
+				DEVELOPMENT_TEAM = WNFG39GXL2;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -353,7 +350,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		AF0370A32DD2764B00179B29 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+		AFD9C25D2DD2C31F0050F097 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/airbnb/lottie-ios.git";
 			requirement = {
@@ -364,15 +361,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		AF0370A42DD2764B00179B29 /* Lottie */ = {
+		AFD9C25E2DD2C31F0050F097 /* Lottie */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AF0370A32DD2764B00179B29 /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			package = AFD9C25D2DD2C31F0050F097 /* XCRemoteSwiftPackageReference "lottie-ios" */;
 			productName = Lottie;
-		};
-		AF0370A62DD2764B00179B29 /* Lottie-Dynamic */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AF0370A32DD2764B00179B29 /* XCRemoteSwiftPackageReference "lottie-ios" */;
-			productName = "Lottie-Dynamic";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
