@@ -26,6 +26,10 @@ struct QuickDecisionView: View {
     @State private var projectilePosition: CGPoint = .zero
     @State private var projectileTarget: CGPoint = .zero
     @State private var gameCompleted = false
+    @State private var rocketHoverOffset: CGFloat = 0.0
+    @State private var rocketTrailOpacity: Double = 0.0
+    @State private var rocketGlowOpacity: Double = 0.0
+    @State private var rocketShake: CGFloat = 0.0
     let onContinue: () -> Void
     
     private let questions = [
@@ -109,17 +113,30 @@ struct QuickDecisionView: View {
                     // Trayectoria del cohete (línea punteada)
                     rocketPathView
                     
+                    // Estela del cohete
+                    rocketTrailView
+                        .offset(y: -rocketPosition + 50)
+                        .opacity(rocketTrailOpacity)
+                        .zIndex(1)
+                    
                     // Cohete Lottie
                     LottieView(filename: "rocket_landing", loopMode: .loop)
                         .frame(width: 100, height: 100)
                         .scaleEffect(rocketScale)
                         .rotationEffect(.degrees(rocketRotation))
-                        .offset(y: -rocketPosition)
+                        .offset(x: rocketShake, y: -rocketPosition + rocketHoverOffset)
                         .overlay(
                             showRocketBoost ? 
                                 rocketBoostEffect
                                 .offset(y: 50)
                                 : nil
+                        )
+                        .overlay(
+                            Circle()
+                                .fill(AppTheme.Colors.primary.opacity(0.3))
+                                .blur(radius: 15)
+                                .frame(width: 80, height: 80)
+                                .opacity(rocketGlowOpacity)
                         )
                         .zIndex(2)
                     
@@ -198,6 +215,12 @@ struct QuickDecisionView: View {
             .onAppear {
                 startTimer()
                 updateProgressBar()
+                startHoverAnimation()
+                
+                // Iniciar con un brillo sutil
+                withAnimation(.easeInOut(duration: 1.0)) {
+                    rocketGlowOpacity = 0.3
+                }
             }
             .onDisappear {
                 timer?.invalidate()
@@ -320,27 +343,95 @@ struct QuickDecisionView: View {
         }
     }
     
-    private var rocketBoostEffect: some View {
-        ZStack {
-            // Llamas del cohete
-            ForEach(0..<5) { i in
+    private var rocketTrailView: some View {
+        VStack(spacing: 0) {
+            ForEach(0..<10) { i in
                 Circle()
                     .fill(LinearGradient(
-                        gradient: Gradient(colors: [.yellow, .orange, .red]),
+                        gradient: Gradient(colors: [.white.opacity(0.7), .blue.opacity(0.5), .clear]),
                         startPoint: .top,
                         endPoint: .bottom
                     ))
-                    .frame(width: CGFloat.random(in: 10...20), height: CGFloat.random(in: 15...30))
-                    .offset(x: CGFloat.random(in: -10...10), y: CGFloat.random(in: 0...15))
-                    .opacity(Double.random(in: 0.5...1.0))
+                    .frame(width: 20 - CGFloat(i), height: 20 - CGFloat(i))
+                    .offset(y: CGFloat(i) * 5)
+                    .opacity(1.0 - Double(i) * 0.1)
+                    .blur(radius: CGFloat(i) * 0.5)
+            }
+        }
+    }
+    
+    private var rocketBoostEffect: some View {
+        ZStack {
+            // Llamas del cohete - más dinámicas
+            ForEach(0..<8) { i in
+                let randomWidth = CGFloat.random(in: 10...25)
+                let randomHeight = CGFloat.random(in: 20...40)
+                let randomOffset = CGFloat.random(in: -12...12)
+                
+                let colors: [Color] = [.yellow, .orange, .red]
+                let randomColors = [
+                    colors[Int.random(in: 0..<colors.count)],
+                    colors[Int.random(in: 0..<colors.count)]
+                ]
+                
+                let shape = i % 3 == 0 ? AnyView(
+                    Circle()
+                        .fill(LinearGradient(
+                            gradient: Gradient(colors: randomColors),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ))
+                ) : AnyView(
+                    Triangle()
+                        .fill(LinearGradient(
+                            gradient: Gradient(colors: randomColors),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ))
+                        .rotationEffect(.degrees(180))
+                )
+                
+                shape
+                    .frame(width: randomWidth, height: randomHeight)
+                    .offset(x: randomOffset, y: CGFloat.random(in: 0...20))
+                    .opacity(Double.random(in: 0.6...1.0))
                     .animation(
-                        Animation.easeInOut(duration: 0.2)
+                        Animation.easeInOut(duration: Double.random(in: 0.1...0.3))
                             .repeatForever(autoreverses: true),
                         value: isAnimating
                     )
             }
+            
+            // Partículas de chispas
+            ForEach(0..<12) { i in
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: CGFloat.random(in: 2...4), height: CGFloat.random(in: 2...4))
+                    .offset(
+                        x: CGFloat.random(in: -20...20),
+                        y: CGFloat.random(in: 10...30)
+                    )
+                    .opacity(Double.random(in: 0.3...0.8))
+                    .animation(
+                        Animation.easeOut(duration: Double.random(in: 0.3...0.6))
+                            .repeatForever(autoreverses: false),
+                        value: isAnimating
+                    )
+            }
         }
-        .frame(width: 30, height: 30)
+        .frame(width: 40, height: 40)
+    }
+    
+    // Forma de triángulo para las llamas
+    struct Triangle: Shape {
+        func path(in rect: CGRect) -> Path {
+            var path = Path()
+            path.move(to: CGPoint(x: rect.midX, y: rect.minY))
+            path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+            path.closeSubpath()
+            return path
+        }
     }
     
     // MARK: - Funciones
@@ -412,30 +503,61 @@ struct QuickDecisionView: View {
         // Calcular la nueva posición del cohete
         let newPosition = rocketPosition + 60
         
-        // Activar el efecto de propulsión
+        // Preparar el cohete para el movimiento
         withAnimation(.easeIn(duration: 0.2)) {
-            showRocketBoost = true
-            rocketScale = 1.1
+            // Pequeña sacudida inicial
+            rocketShake = currentQuestion % 2 == 0 ? -3 : 3
         }
         
-        // Animar el movimiento del cohete
-        withAnimation(.easeInOut(duration: 0.8)) {
-            rocketPosition = newPosition
-            rocketRotation = currentQuestion % 2 == 0 ? 15 : -15
-        }
-        
-        // Desactivar el efecto de propulsión después de un tiempo
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            withAnimation(.easeOut(duration: 0.2)) {
-                showRocketBoost = false
-                rocketScale = 1.0
-                rocketRotation = 0
+        // Activar el efecto de propulsión con un breve retraso
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            withAnimation(.easeIn(duration: 0.2)) {
+                showRocketBoost = true
+                rocketScale = 1.1
+                rocketTrailOpacity = 0.8
+                rocketGlowOpacity = 0.7
+                // Restablecer la sacudida
+                rocketShake = 0
+            }
+            
+            // Animar el movimiento del cohete con efecto de spring para más fluidez
+            withAnimation(.spring(response: 0.8, dampingFraction: 0.7, blendDuration: 0.5)) {
+                rocketPosition = newPosition
+                rocketRotation = currentQuestion % 2 == 0 ? 15 : -15
+            }
+            
+            // Desactivar el efecto de propulsión después de un tiempo
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                withAnimation(.easeOut(duration: 0.3)) {
+                    showRocketBoost = false
+                    rocketScale = 1.0
+                    rocketTrailOpacity = 0.0
+                }
+                
+                // Estabilizar el cohete con un efecto de rebote suave
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+                    rocketRotation = 0
+                    rocketGlowOpacity = 0.3
+                }
+                
+                // Iniciar animación de hover
+                startHoverAnimation()
             }
         }
         
         // Feedback háptico
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
+    }
+    
+    private func startHoverAnimation() {
+        // Animación sutil de flotación para el cohete cuando está estacionario
+        withAnimation(
+            .easeInOut(duration: 1.5)
+            .repeatForever(autoreverses: true)
+        ) {
+            rocketHoverOffset = 5
+        }
     }
     
     private func animateRocketShoot() {
@@ -451,17 +573,38 @@ struct QuickDecisionView: View {
         let targetY = 300 - CGFloat(currentQuestion + 1) * 80
         projectileTarget = CGPoint(x: targetX, y: targetY)
         
-        // Mostrar el proyectil
-        showProjectile = true
-        
-        // Animar el disparo
-        withAnimation(.easeOut(duration: 0.5)) {
-            projectilePosition = projectileTarget
+        // Efecto de sacudida del cohete al disparar
+        withAnimation(.spring(response: 0.2, dampingFraction: 0.5)) {
+            rocketShake = currentQuestion % 2 == 0 ? 5 : -5
+            rocketGlowOpacity = 0.8
         }
         
-        // Ocultar el proyectil después de llegar al objetivo
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            showProjectile = false
+        // Mostrar el proyectil con un breve retraso
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            showProjectile = true
+            
+            // Animar el disparo con una trayectoria curva
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                projectilePosition = projectileTarget
+            }
+            
+            // Ocultar el proyectil después de llegar al objetivo
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                showProjectile = false
+                
+                // Efecto visual en el objetivo
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    // Aquí podríamos añadir un efecto de impacto en el planeta
+                }
+            }
+        }
+        
+        // Restablecer la posición del cohete
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                rocketShake = 0
+                rocketGlowOpacity = 0.3
+            }
         }
         
         // Feedback háptico
