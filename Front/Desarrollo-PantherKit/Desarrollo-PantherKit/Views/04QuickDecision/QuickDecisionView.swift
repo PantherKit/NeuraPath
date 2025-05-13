@@ -18,7 +18,7 @@ struct QuickDecisionView: View {
     @State private var feedbackColor = Color.yellow
     @State private var isAnimating = false
     @State private var progress: CGFloat = 0.0
-    @State private var showNextScreen = false
+    let onContinue: () -> Void
     
     private let questions = [
         "¿Prefieres construir o programar?",
@@ -190,10 +190,6 @@ struct QuickDecisionView: View {
                 }
             }
         }
-        // Temporalmente comentado hasta que se defina la siguiente vista
-        // .fullScreenCover(isPresented: $showNextScreen) {
-        //     // Aquí irá la siguiente vista
-        // }
         .onAppear {
             // Asegurarse de que la vista se muestra correctamente después de la transición
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -258,7 +254,7 @@ struct QuickDecisionView: View {
                 startTimer()
             } else {
                 // All questions answered, move to next screen
-                showNextScreen = true
+                onContinue()
             }
         }
     }
@@ -266,6 +262,6 @@ struct QuickDecisionView: View {
 
 struct QuickDecisionView_Previews: PreviewProvider {
     static var previews: some View {
-        QuickDecisionView(viewModel: VocationalTestViewModel())
+        QuickDecisionView(viewModel: VocationalTestViewModel(), onContinue: {})
     }
 }

@@ -405,10 +405,6 @@ struct VocationalCardSwipeView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .tabBar)
         .ignoresSafeArea(.all, edges: .bottom)
-        .navigationDestination(isPresented: $showResults) {
-            QuickDecisionView(viewModel: viewModel)
-                .navigationBarHidden(true)
-        }
     }
 }
 

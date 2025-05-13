@@ -9,12 +9,12 @@ import SwiftUI
 
 struct AvatarSelectionView: View {
     @ObservedObject var viewModel: VocationalTestViewModel
-    @State private var showingTest = false
     @State private var animateTitle = false
     @State private var animateSubtitle = false
     @State private var animateAvatars = false
     @State private var animateButton = false
     @Environment(\.presentationMode) var presentationMode
+    let onContinue: () -> Void
     
     var body: some View {
         ZStack {
@@ -86,7 +86,7 @@ struct AvatarSelectionView: View {
                     icon: "rocket",
                     isDisabled: viewModel.selectedAvatar == nil,
                     action: {
-                        showingTest = true
+                        onContinue()
                     }
                 )
                 .padding(.horizontal)
@@ -101,9 +101,6 @@ struct AvatarSelectionView: View {
         }
         .onAppear {
             startAnimations()
-        }
-        .navigationDestination(isPresented: $showingTest) {
-            VocationalSwipeView(viewModel: viewModel)
         }
         .toolbar(.hidden, for: .tabBar)
         .ignoresSafeArea(.all, edges: .bottom)
@@ -158,5 +155,5 @@ struct AvatarSelectionItemView: View {
 }
 
 #Preview {
-    AvatarSelectionView(viewModel: VocationalTestViewModel())
+    AvatarSelectionView(viewModel: VocationalTestViewModel(), onContinue: { })
 }

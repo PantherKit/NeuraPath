@@ -12,6 +12,7 @@ struct ResultsView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var animateContent = false
     @State private var showingFieldDetail: EngineeringField?
+    let onContinue: () -> Void
     
     var body: some View {
         ZStack {
@@ -442,5 +443,5 @@ struct FieldDetailView: View {
             .communicator: 0.2
         ]
     )
-    return ResultsView(viewModel: viewModel)
+    return ResultsView(viewModel: viewModel, onContinue: {})
 }
