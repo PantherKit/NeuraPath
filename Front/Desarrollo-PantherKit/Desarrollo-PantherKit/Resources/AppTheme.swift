@@ -19,9 +19,10 @@ struct AppTheme {
     // MARK: - Colors
     struct Colors {
         // Primary colors
-        static let primary = Color("PrimaryColor", bundle: nil)
-        static let secondary = Color("SecondaryColor", bundle: nil)
-        static let accent = Color("AccentColor", bundle: nil)
+        static let primary = Color("PrimaryPink", bundle: nil)
+        static let secondary = Color("SkyBlue", bundle: nil)
+        static let accent = Color("SoftIndigo", bundle: nil)
+        static let highlight = Color("MangoOrange")
         
         // Background colors
         static let background = Color("BackgroundColor", bundle: nil)
