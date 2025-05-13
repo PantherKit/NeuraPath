@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>ZonaPro-BlackItalic.otf</string>
+		<string>ZonaPro-Bold.otf</string>
+		<string>ZonaPro-ExtraBoldItalic.otf</string>
+		<string>ZonaPro-Hairline.otf</string>
+		<string>ZonaPro-HairlineItalic.otf</string>
+		<string>ZonaPro-Light.otf</string>
+		<string>ZonaPro-SemiBold.otf</string>
+		<string>ZonaPro-Thin.otf</string>
+		<string>ZonaPro-ThinItalic.otf</string>
+	</array>
+</dict>
+</plist>
