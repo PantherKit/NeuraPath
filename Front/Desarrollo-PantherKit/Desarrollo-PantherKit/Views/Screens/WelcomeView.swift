@@ -8,7 +8,7 @@ struct WelcomeView: View {
     
     // Posiciones ajustadas
     private let planetCenterPosition: CGFloat = 0
-    private let planetTopPosition: CGFloat = -UIScreen.main.bounds.height/3 // Sube 1/3 de la pantalla
+    private let planetTopPosition: CGFloat = -UIScreen.main.bounds.height/3.5 // Sube 1/3 de la pantalla
     
     var body: some View {
         ZStack {
