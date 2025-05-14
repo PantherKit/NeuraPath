@@ -14,10 +14,15 @@ struct ResultsView: View {
     @State private var rocketRotation: Double = 0
     @State private var selectedCareerForSubjects: UniversityCareer?
     @State private var showingCarousel: Bool = false  // Para controlar la sheet modal
+    @State private var showingUniversityInfo: Bool = false // Para mostrar info de universidades
+    @State private var shouldShowAdditionalInfo: Bool = false // Para mostrar información adicional
     
     // Colors
     private let accentColor = Color(red: 0.25, green: 0.72, blue: 0.85)
     private let secondaryColor = Color(red: 0.35, green: 0.42, blue: 0.95)
+    
+    // Toast manager
+    private let toastManager = ToastManager.shared
     
     var body: some View {
         ZStack {
@@ -41,8 +46,17 @@ struct ResultsView: View {
         .sheet(isPresented: $showingCarousel) {
             careerCarouselSheet
         }
+        .sheet(isPresented: $showingUniversityInfo) {
+            universityInfoSheet
+        }
         .onAppear {
             startAnimations()
+            prepareCareerData()
+            
+            // Mostrar un toast relevante después de unos segundos
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                toastManager.showRandomToast()
+            }
         }
     }
     
@@ -142,11 +156,38 @@ struct ResultsView: View {
                 .padding(.horizontal)
                 .padding(.top, 20)
                 
+                // Subtítulo explicando la relación con las respuestas
+                Text("Basado en tus respuestas en el test vocacional")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.white.opacity(0.7))
+                    .padding(.horizontal)
+                    .padding(.top, 4)
+                
                 // Carrusel
                 if !viewModel.recommendedCareers.isEmpty {
                     CareerCarouselView(careers: viewModel.recommendedCareers)
                         .environmentObject(viewModel)
                         .padding(.top, 20)
+                    
+                    // Botón para ver detalles de universidades
+                    Button(action: {
+                        showingCarousel = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            showingUniversityInfo = true
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: "building.columns")
+                            Text("Ver información de universidades")
+                        }
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
+                        .background(accentColor.opacity(0.3))
+                        .cornerRadius(12)
+                    }
+                    .padding(.top, 20)
                 } else {
                     Text("No se encontraron carreras para este campo")
                         .foregroundColor(.white.opacity(0.7))
@@ -156,6 +197,87 @@ struct ResultsView: View {
                 Spacer()
             }
             .padding(.vertical)
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+    
+    private var universityInfoSheet: some View {
+        ZStack {
+            Color.black.opacity(0.95).edgesIgnoringSafeArea(.all)
+            
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    // Header
+                    HStack {
+                        Text("Universidades con programas STEM")
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            showingUniversityInfo = false
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.white.opacity(0.8))
+                                .font(.system(size: 28))
+                        }
+                    }
+                    
+                    // Universidad sections
+                    UniversityInfoCard(
+                        name: "Universidad Panamericana",
+                        programs: ["Ingeniería Mecatrónica", "Ingeniería Industrial", "Ingeniería en Sistemas"],
+                        icon: "building.columns.fill",
+                        color: .blue
+                    )
+                    
+                    UniversityInfoCard(
+                        name: "ITESM",
+                        programs: ["Ingeniería en Robótica", "Ingeniería en IA", "Ciencias Computacionales"],
+                        icon: "building.2.fill",
+                        color: .blue
+                    )
+                    
+                    UniversityInfoCard(
+                        name: "UNAM",
+                        programs: ["Ciencias de la Computación", "Ingeniería Aeroespacial", "Ingeniería Eléctrica"],
+                        icon: "building.columns",
+                        color: .blue
+                    )
+                    
+                    UniversityInfoCard(
+                        name: "IPN",
+                        programs: ["Ingeniería Eléctrica", "Mecánica", "Sistemas Computacionales"],
+                        icon: "building",
+                        color: .blue
+                    )
+                    
+                    // Enlaces a información externa
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Enlaces de interés")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.white)
+                        
+                        HStack {
+                            Image(systemName: "globe")
+                            Text("Directorio de universidades")
+                        }
+                        .foregroundColor(accentColor)
+                        
+                        HStack {
+                            Image(systemName: "book.fill")
+                            Text("Guía para elegir carrera")
+                        }
+                        .foregroundColor(accentColor)
+                    }
+                    .padding()
+                    .background(Color.white.opacity(0.05))
+                    .cornerRadius(12)
+                }
+                .padding()
+            }
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
@@ -205,12 +327,49 @@ struct ResultsView: View {
                     .offset(y: animateContent ? 0 : 50)
                     .animation(.easeOut.delay(0.4), value: animateContent)
                 
-                // Feedback
-                feedbackSection
-                    .padding(.horizontal)
-                    .opacity(animateContent ? 1 : 0)
-                    .offset(y: animateContent ? 0 : 50)
-                    .animation(.easeOut.delay(0.6), value: animateContent)
+                // Botón para mostrar/ocultar información adicional
+                Button(action: {
+                    withAnimation(.spring()) {
+                        shouldShowAdditionalInfo.toggle()
+                    }
+                }) {
+                    HStack {
+                        Text(shouldShowAdditionalInfo ? "Ocultar detalles" : "Ver más detalles")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(accentColor)
+                        
+                        Image(systemName: shouldShowAdditionalInfo ? "chevron.up" : "chevron.down")
+                            .foregroundColor(accentColor)
+                    }
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 16)
+                    .background(Color.white.opacity(0.1))
+                    .cornerRadius(20)
+                }
+                .padding(.horizontal)
+                .opacity(animateContent ? 1 : 0)
+                .offset(y: animateContent ? 0 : 50)
+                .animation(.easeOut.delay(0.5), value: animateContent)
+                
+                // Feedback y contenido adicional
+                if shouldShowAdditionalInfo {
+                    feedbackSection
+                        .padding(.horizontal)
+                        .opacity(animateContent ? 1 : 0)
+                        .animation(.easeOut.delay(0.1), value: shouldShowAdditionalInfo)
+                    
+                    careerDistributionChart(result)
+                        .padding(.horizontal)
+                        .padding(.top, 10)
+                        .opacity(animateContent ? 1 : 0)
+                        .animation(.easeOut.delay(0.2), value: shouldShowAdditionalInfo)
+                    
+                    traitDistributionChart(result)
+                        .padding(.horizontal)
+                        .padding(.top, 20)
+                        .opacity(animateContent ? 1 : 0)
+                        .animation(.easeOut.delay(0.3), value: shouldShowAdditionalInfo)
+                }
                 
                 // Action buttons
                 actionButtons
@@ -241,13 +400,18 @@ struct ResultsView: View {
                         .fill(result.primaryField.color.opacity(0.2))
                         .frame(width: 100, height: 100)
                         .shadow(color: result.primaryField.color.opacity(0.5), radius: 15, x: 0, y: 5)
+                    
+                    // Mostrar icono relacionado con el campo primario
+                    Image(systemName: result.primaryField.icon)
+                        .font(.system(size: 40))
+                        .foregroundColor(result.primaryField.color)
                 }
                 .scaleEffect(animateContent ? 1 : 0.5)
                 .opacity(animateContent ? 1 : 0)
                 
                 // Titles
                 VStack(spacing: 8) {
-                    Text("Misión Completada!")
+                    Text("¡Misión Completada!")
                         .font(.system(size: 28, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
                         .shadow(color: accentColor, radius: 10, x: 0, y: 0)
@@ -306,11 +470,121 @@ struct ResultsView: View {
         }
     }
     
+    private func careerDistributionChart(_ result: TestResult) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Distribución de Campos STEM")
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+            
+            // Tomar los 5 campos con mayor puntuación
+            let topFields = result.fieldScores.sorted { $0.value > $1.value }.prefix(5)
+            
+            VStack(spacing: 12) {
+                ForEach(Array(topFields), id: \.key) { field, score in
+                    HStack {
+                        Text(field.rawValue)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white)
+                            .frame(width: 120, alignment: .leading)
+                        
+                        // Barra de progreso
+                        GeometryReader { geometry in
+                            ZStack(alignment: .leading) {
+                                // Fondo
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(Color.white.opacity(0.1))
+                                    .frame(height: 8)
+                                
+                                // Progreso
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(field.color)
+                                    .frame(width: geometry.size.width * score, height: 8)
+                            }
+                        }
+                        .frame(height: 8)
+                        
+                        // Porcentaje
+                        Text("\(Int(score * 100))%")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(field.color)
+                            .frame(width: 40, alignment: .trailing)
+                    }
+                }
+            }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 15)
+                    .fill(Color.white.opacity(0.05))
+            )
+        }
+    }
+    
+    private func traitDistributionChart(_ result: TestResult) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Perfil de Personalidad")
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+            
+            // Tomar los 4 rasgos con mayor puntuación
+            let topTraits = result.traitScores.sorted { $0.value > $1.value }.prefix(4)
+            
+            VStack(spacing: 12) {
+                ForEach(Array(topTraits), id: \.key) { trait, score in
+                    HStack {
+                        HStack(spacing: 6) {
+                            Image(systemName: trait.icon)
+                                .foregroundColor(accentColor)
+                            
+                            Text(trait.rawValue)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.white)
+                        }
+                        .frame(width: 140, alignment: .leading)
+                        
+                        // Barra de progreso
+                        GeometryReader { geometry in
+                            ZStack(alignment: .leading) {
+                                // Fondo
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(Color.white.opacity(0.1))
+                                    .frame(height: 8)
+                                
+                                // Progreso
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [accentColor, secondaryColor]),
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                                    .frame(width: geometry.size.width * score, height: 8)
+                            }
+                        }
+                        .frame(height: 8)
+                        
+                        // Porcentaje
+                        Text("\(Int(score * 100))%")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(accentColor)
+                            .frame(width: 40, alignment: .trailing)
+                    }
+                }
+            }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 15)
+                    .fill(Color.white.opacity(0.05))
+            )
+        }
+    }
+    
     private var actionButtons: some View {
         VStack(spacing: 15) {
             // Botón principal
             Button(action: {
-                // Acción para explorar más campos
+                viewModel.showCarouselFor(field: viewModel.testResult?.primaryField ?? .computerScience)
+                showingCarousel = true
             }) {
                 HStack {
                     Image(systemName: "magnifyingglass")
@@ -344,7 +618,7 @@ struct ResultsView: View {
         }
     }
     
-    // MARK: - Vista de Detalle de Campo (solución al primer error)
+    // MARK: - Vista de Detalle de Campo
     private func fieldDetailView(field: EngineeringField) -> some View {
         VStack(spacing: 20) {
             Text(field.rawValue)
@@ -369,7 +643,7 @@ struct ResultsView: View {
         .background(Color.black.ignoresSafeArea())
     }
     
-    // MARK: - Animaciones
+    // MARK: - Animaciones y Datos
     
     private func startAnimations() {
         withAnimation(.easeInOut(duration: 1.0)) {
@@ -384,6 +658,67 @@ struct ResultsView: View {
             rocketRotation = 15
         }
     }
+    
+    private func prepareCareerData() {
+        // Asegurarse de que las carreras recomendadas estén cargadas
+        if let result = viewModel.testResult, viewModel.recommendedCareers.isEmpty {
+            viewModel.recommendedCareers = UniversityCareer.getRecommendedCareers(from: result)
+        }
+    }
+}
+
+// MARK: - Componentes Adicionales
+
+struct UniversityInfoCard: View {
+    let name: String
+    let programs: [String]
+    let icon: String
+    let color: Color
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: icon)
+                    .font(.system(size: 18))
+                    .foregroundColor(color)
+                
+                Text(name)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(.white)
+                
+                Spacer()
+                
+                Image(systemName: "link.circle")
+                    .font(.system(size: 18))
+                    .foregroundColor(color.opacity(0.7))
+            }
+            
+            Divider()
+                .background(Color.white.opacity(0.2))
+            
+            Text("Programas STEM:")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.white.opacity(0.7))
+            
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(programs, id: \.self) { program in
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 12))
+                            .foregroundColor(color)
+                        
+                        Text(program)
+                            .font(.system(size: 14))
+                            .foregroundColor(.white)
+                    }
+                }
+            }
+            .padding(.leading, 4)
+        }
+        .padding()
+        .background(Color.white.opacity(0.05))
+        .cornerRadius(12)
+    }
 }
 
 // MARK: - Componentes Reutilizables
@@ -395,14 +730,26 @@ struct FieldResultCard: View {
     let action: () -> Void
     
     @State private var isPressed: Bool = false
+    @State private var showDetails: Bool = false
+    
+    // Toast manager
+    private let toastManager = ToastManager.shared
     
     var body: some View {
         Button(action: {
             hapticFeedback()
             action()
+            
+            // Posibilidad de mostrar toast motivacional al seleccionar un campo
+            if Double.random(in: 0...1) < 0.5 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    toastManager.showRandomToast()
+                }
+            }
         }) {
             VStack(alignment: .leading, spacing: 12) {
-                HStack {
+                // Encabezado del campo con icono y título
+                HStack(alignment: .center) {
                     // Icono
                     ZStack {
                         Circle()
@@ -415,22 +762,37 @@ struct FieldResultCard: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(field.rawValue)
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundColor(.white)
+                        HStack(alignment: .center, spacing: 6) {
+                            Text(field.rawValue)
+                                .font(.system(size: 20, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                            
+                            if isPrimary {
+                                ZStack {
+                                    Capsule()
+                                        .fill(field.color.opacity(0.3))
+                                        .frame(height: 22)
+                                    
+                                    Text("Mejor coincidencia")
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .foregroundColor(field.color)
+                                        .padding(.horizontal, 8)
+                                }
+                            }
+                        }
                         
-                        Text(isPrimary ? "Mejor coincidencia" : "Segunda opción")
+                        Text(isPrimary ? "Coincide perfectamente con tus respuestas" : "Buena alternativa según tu perfil")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(isPrimary ? field.color : .white.opacity(0.7))
                     }
                     
                     Spacer()
                     
-                    // Gráfico circular de puntuación
+                    // Gráfico circular de puntuación mejorado
                     ZStack {
                         Circle()
                             .stroke(field.color.opacity(0.3), lineWidth: 6)
-                            .frame(width: 50, height: 50)
+                            .frame(width: 55, height: 55)
                         
                         Circle()
                             .trim(from: 0, to: CGFloat(score))
@@ -443,25 +805,80 @@ struct FieldResultCard: View {
                                 ),
                                 style: StrokeStyle(lineWidth: 6, lineCap: .round)
                             )
-                            .frame(width: 50, height: 50)
+                            .frame(width: 55, height: 55)
                             .rotationEffect(.degrees(-90))
                         
-                        Text("\(Int(score * 100))%")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(.white)
+                        VStack(spacing: 0) {
+                            Text("\(Int(score * 100))")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.white)
+                            
+                            Text("%")
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundColor(.white.opacity(0.7))
+                        }
                     }
                 }
                 
-                Text(field.description)
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.white.opacity(0.8))
-                    .fixedSize(horizontal: false, vertical: true)
+                // Botón para mostrar/ocultar detalles
+                Button(action: {
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                        showDetails.toggle()
+                    }
+                }) {
+                    HStack {
+                        Text(showDetails ? "Ocultar descripción" : "Ver descripción")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(field.color.opacity(0.8))
+                        
+                        Spacer()
+                        
+                        Image(systemName: showDetails ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(field.color.opacity(0.8))
+                    }
+                    .padding(.vertical, 6)
+                }
+                
+                // Descripción del campo - visible solo si showDetails es true
+                if showDetails {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(field.description)
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(.white.opacity(0.8))
+                            .lineLimit(nil)
+                            .fixedSize(horizontal: false, vertical: true)
+                        
+                        Divider()
+                            .background(Color.white.opacity(0.2))
+                        
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Áreas de aplicación:")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.white.opacity(0.9))
+                            
+                            ForEach(field.realWorldExample.components(separatedBy: ", "), id: \.self) { example in
+                                HStack(spacing: 6) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(field.color)
+                                    
+                                    Text(example)
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.white.opacity(0.8))
+                                }
+                            }
+                        }
+                    }
+                    .padding(.top, 8)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                }
                 
                 HStack {
-                    Image(systemName: "sparkles")
+                    Image(systemName: "building.columns")
                         .foregroundColor(field.color)
                     
-                    Text("Ejemplos: \(field.realWorldExample)")
+                    Text("Universidades: UP, ITESM, UNAM, IPN")
                         .font(.system(size: 14))
                         .foregroundColor(.white.opacity(0.7))
                     

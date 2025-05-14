@@ -20,6 +20,7 @@ struct CardView: View {
     private let swipeThreshold: CGFloat = 100
     private let maxRotation: Double = 15
     private let accentColor = Color(red: 0.25, green: 0.72, blue: 0.85)
+    private let toastManager = ToastManager.shared
     
     var rotationAngle: Double {
         Double(dragOffset.width / swipeThreshold) * maxRotation
@@ -152,6 +153,13 @@ struct CardView: View {
                             let direction: CGFloat = value.translation.width > 0 ? 1 : -1
                             dragOffset = CGSize(width: direction * 500, height: 0)
                             isGone = true
+                            
+                            // Chance to show a motivational toast when swiping a card
+                            let showToastChance = Bool.random()
+                            if showToastChance {
+                                toastManager.showRandomToast()
+                            }
+                            
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                 onSwipedAway()
                             }
@@ -164,6 +172,16 @@ struct CardView: View {
                     }
                 }
         )
+        .onAppear {
+            // Pequeña probabilidad de mostrar un toast al aparecer la tarjeta
+            if Bool.random() && isActive {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    if Double.random(in: 0...1) < 0.3 {
+                        toastManager.showRandomToast()
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -277,3 +295,4 @@ struct CardDetailView: View {
         }
     }
 }
+

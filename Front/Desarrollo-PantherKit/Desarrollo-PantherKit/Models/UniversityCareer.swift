@@ -24,41 +24,113 @@ struct UniversityCareer: Identifiable {
     
     // Static method to get recommended careers based on test results
     static func getRecommendedCareers(from result: TestResult) -> [UniversityCareer] {
-        // Break down the complex expression into distinct sub-expressions
+        // Obtener todos los resultados de campos, ordenados por puntuación
+        let fieldScoresSorted = result.fieldScores.sorted { $0.value > $1.value }
         
-        // Step 1: Sort the field scores by value in descending order
-        let sortedFieldScores = result.fieldScores.sorted { $0.value > $1.value }
+        // Mejorar la selección de carreras basada en puntuaciones ponderadas
+        // Paso 1: Asignar una puntuación a cada carrera basada en su campo y los resultados del test
+        var careerScores: [(career: UniversityCareer, score: Double)] = []
         
-        // Step 2: Take the top 3 scores
-        let topThreeScores = sortedFieldScores.prefix(3)
-        
-        // Step 3: Extract just the fields (keys) from the top scores
-        let topFields = topThreeScores.map { $0.key }
-        
-        // Step 4: Filter careers that match the top fields
-        var recommendedCareers = sampleCareers.filter { career in
-            topFields.contains(career.field)
+        for career in sampleCareers {
+            // Encontrar la puntuación de este campo en los resultados
+            var score = result.fieldScores[career.field] ?? 0.0
+            
+            // Aumentar la puntuación basada en similitudes con otros campos altos
+            // (Por ejemplo, si una carrera es de computerScience pero el usuario
+            // también puntúa alto en electrical, se aumenta la puntuación)
+            for (field, fieldScore) in fieldScoresSorted.prefix(3) {
+                if field != career.field {
+                    // Verificar si hay afinidad entre los campos
+                    let affinityBoost = fieldAffinity(between: career.field, and: field) * fieldScore * 0.3
+                    score += affinityBoost
+                }
+            }
+            
+            // Considerar también los rasgos de personalidad
+            let traitBoost = getTraitBoost(for: career.field, traits: result.traitScores) * 0.2
+            score += traitBoost
+            
+            careerScores.append((career, score))
         }
         
-        // Step 5: Si hay menos de 6 carreras, añadir más hasta tener al menos 6
+        // Paso 2: Ordenar carreras por puntuación descendente
+        let sortedCareers = careerScores.sorted { $0.score > $1.score }
+        
+        // Paso 3: Tomar las mejores carreras
+        var recommendedCareers = sortedCareers.prefix(8).map { $0.career }
+        
+        // Paso 4: Si hay menos de 6 carreras, añadir más hasta tener al menos 6
         if recommendedCareers.count < 6 {
-            // Obtener carreras adicionales que no estén ya incluidas
             let additionalCareers = sampleCareers.filter { career in
                 !recommendedCareers.contains(where: { $0.id == career.id })
             }
             
-            // Añadir carreras adicionales hasta tener 6 o más
             let neededCount = min(6 - recommendedCareers.count, additionalCareers.count)
             recommendedCareers.append(contentsOf: additionalCareers.prefix(neededCount))
         }
         
-        // Step 6: Duplicar algunas carreras para asegurar un desplazamiento continuo
+        // Paso 5: Duplicar algunas carreras para asegurar un desplazamiento continuo
         let originalCount = recommendedCareers.count
         for i in 0..<min(originalCount, 4) {
             recommendedCareers.append(recommendedCareers[i])
         }
         
         return recommendedCareers
+    }
+    
+    // Helper function to determine affinity between fields
+    private static func fieldAffinity(between field1: EngineeringField, and field2: EngineeringField) -> Double {
+        let affinityPairs: [(EngineeringField, EngineeringField, Double)] = [
+            (.computerScience, .electrical, 0.7),
+            (.computerScience, .robotics, 0.6),
+            (.mechanical, .mechatronics, 0.8),
+            (.electrical, .mechatronics, 0.7),
+            (.industrial, .mechanical, 0.5),
+            (.biomedical, .environmental, 0.4),
+            (.biomedical, .chemical, 0.6),
+            (.robotics, .mechatronics, 0.8),
+            (.environmental, .chemical, 0.6),
+            (.electrical, .mechanical, 0.5)
+        ]
+        
+        // Comprobar en ambas direcciones
+        for (f1, f2, affinity) in affinityPairs {
+            if (f1 == field1 && f2 == field2) || (f1 == field2 && f2 == field1) {
+                return affinity
+            }
+        }
+        
+        return 0.1  // Default low affinity for unrelated fields
+    }
+    
+    // Helper to boost career score based on personality traits
+    private static func getTraitBoost(for field: EngineeringField, traits: [PersonalityTrait: Double]) -> Double {
+        // Define which traits are particularly important for which fields
+        let fieldTraitAffinities: [EngineeringField: [PersonalityTrait]] = [
+            .computerScience: [.analytical, .problemSolver, .detailOriented],
+            .electrical: [.analytical, .detailOriented, .practical],
+            .mechanical: [.practical, .problemSolver, .analytical],
+            .mechatronics: [.analytical, .creative, .problemSolver],
+            .robotics: [.creative, .analytical, .problemSolver],
+            .industrial: [.bigPictureThinker, .teamPlayer, .problemSolver],
+            .biomedical: [.detailOriented, .analytical, .creative],
+            .environmental: [.bigPictureThinker, .teamPlayer, .communicator],
+            .chemical: [.detailOriented, .analytical, .practical],
+            .civil: [.bigPictureThinker, .practical, .teamPlayer]
+        ]
+        
+        var boost = 0.0
+        
+        // Add boost for each relevant trait
+        if let relevantTraits = fieldTraitAffinities[field] {
+            for trait in relevantTraits {
+                if let traitScore = traits[trait] {
+                    boost += traitScore * 0.2  // Scale the boost
+                }
+            }
+        }
+        
+        return boost
     }
     
     // Sample careers for testing
@@ -171,6 +243,79 @@ struct UniversityCareer: Identifiable {
             duration: "4 años",
             icon: "dna",
             color: .teal
+        ),
+        // Agregar más carreras para mayor diversidad
+        UniversityCareer(
+            name: "Ingeniería en Sistemas Computacionales",
+            university: "Universidad Panamericana",
+            description: "Diseño y gestión de infraestructura computacional, desarrollo de software y soluciones empresariales.",
+            field: .computerScience,
+            duration: "4 años",
+            icon: "server.rack",
+            color: .blue
+        ),
+        UniversityCareer(
+            name: "Robótica y Sistemas Inteligentes",
+            university: "UNAM",
+            description: "Especialización en creación de sistemas autónomos, visión artificial y robótica avanzada.",
+            field: .robotics,
+            duration: "4.5 años",
+            icon: "cpu",
+            color: .purple
+        ),
+        UniversityCareer(
+            name: "Ingeniería Electrónica",
+            university: "IPN",
+            description: "Desarrollo de circuitos, dispositivos electrónicos y sistemas de control para diversas aplicaciones.",
+            field: .electrical,
+            duration: "4 años",
+            icon: "wave.3.right",
+            color: .yellow
+        ),
+        UniversityCareer(
+            name: "Nanociencia y Nanotecnología",
+            university: "UNAM",
+            description: "Estudio y manipulación de la materia a escala nanométrica para crear nuevos materiales y dispositivos.",
+            field: .chemical,
+            duration: "5 años",
+            icon: "atom",
+            color: .purple
+        ),
+        UniversityCareer(
+            name: "Ingeniería Automotriz",
+            university: "ITESM",
+            description: "Diseño y desarrollo de vehículos, sistemas de transporte y tecnologías automotrices.",
+            field: .mechanical,
+            duration: "4.5 años",
+            icon: "car",
+            color: .red
+        ),
+        UniversityCareer(
+            name: "Ingeniería en Telemática",
+            university: "Universidad Iberoamericana",
+            description: "Integración de telecomunicaciones y sistemas informáticos para transmisión de datos e información.",
+            field: .computerScience,
+            duration: "4 años",
+            icon: "network",
+            color: .blue
+        ),
+        UniversityCareer(
+            name: "Biotecnología",
+            university: "CINVESTAV",
+            description: "Aplicación de procesos biológicos para desarrollar productos y servicios en diversos sectores.",
+            field: .biomedical,
+            duration: "4.5 años",
+            icon: "leaf.arrow.circlepath",
+            color: .green
+        ),
+        UniversityCareer(
+            name: "Ingeniería en Data Science",
+            university: "ITAM",
+            description: "Análisis de grandes volúmenes de datos para obtener información valiosa y tomar decisiones.",
+            field: .computerScience,
+            duration: "4 años",
+            icon: "chart.bar.xaxis",
+            color: .blue
         )
     ]
 }
