@@ -23,6 +23,9 @@ struct VocationalCardView: View {
     // Animation timing
     @State private var animationDelay = 0.0
     
+    // Toast manager
+    private let toastManager = ToastManager.shared
+    
     // Constants
     private let horizontalLimit: CGFloat = 120
     private let maxRotationDegrees: Double = 12
@@ -159,6 +162,13 @@ struct VocationalCardView: View {
                                 dragOffset = CGSize(width: horizontalDirection * 600, height: value.translation.height / 2)
                                 isGone = true
                                 
+                                // Mostrar un toast motivacional con 30% de probabilidad al deslizar
+                                if Double.random(in: 0...1) < 0.3 {
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                        toastManager.showRandomToast()
+                                    }
+                                }
+                                
                                 // Notify parent view of selection after animation
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                     onSwipedAway(selectedOption)
@@ -237,6 +247,13 @@ struct VocationalCardView: View {
                     showOptions = true
                 }
             }
+            
+            // Posibilidad de mostrar un toast al aparecer la tarjeta
+            DispatchQueue.main.asyncAfter(deadline: .now() + animationDelay + 1.0) {
+                if Double.random(in: 0...1) < 0.2 {
+                    toastManager.showRandomToast()
+                }
+            }
         }
     }
     
@@ -250,6 +267,13 @@ struct VocationalCardView: View {
             withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                 isGone = true
                 dragOffset = CGSize(width: 300, height: 0)
+                
+                // Mostrar un toast motivacional con 25% de probabilidad al seleccionar una opción
+                if Double.random(in: 0...1) < 0.25 {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        toastManager.showRandomToast()
+                    }
+                }
                 
                 // Notify parent view of selection after animation
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {

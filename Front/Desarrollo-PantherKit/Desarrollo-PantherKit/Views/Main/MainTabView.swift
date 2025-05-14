@@ -20,6 +20,9 @@ struct MainTabView: View {
     @State private var showResultsLoading = false
     @State private var resultsLoadingOffset: CGFloat = UIScreen.main.bounds.height
     
+    // Toast Manager reference
+    private let toastManager = ToastManager.shared
+    
     var body: some View {
         ZStack {
             // Fondo común para todas las vistas
@@ -32,6 +35,9 @@ struct MainTabView: View {
                     WelcomeView(
                         viewModel: viewModel,
                         onContinue: {
+                            // Desactivar toasts durante la transición
+                            toastManager.enableToasts(false)
+                            
                             withAnimation(.easeInOut(duration: 0.5)) {
                                 showLoading = true
                             }
@@ -50,6 +56,10 @@ struct MainTabView: View {
                         }
                     )
                     .transition(.opacity)
+                    .onAppear {
+                        // No mostrar toasts en la pantalla de bienvenida
+                        toastManager.enableToasts(false)
+                    }
 
                 case .explanationAfterWelcome:
                     ExplanationTransitionView(
@@ -59,8 +69,14 @@ struct MainTabView: View {
                         duration: 2.0,
                         onContinue: {
                             flowStep = .avatarSelection
+                            // Habilitar toasts a partir de la selección de avatar
+                            toastManager.enableToasts(true)
                         }
                     )
+                    .onAppear {
+                        // No mostrar toasts durante las explicaciones
+                        toastManager.enableToasts(false)
+                    }
                     
 
                 case .avatarSelection:
@@ -68,12 +84,18 @@ struct MainTabView: View {
                         viewModel: viewModel,
                         onContinue: {
                             flowStep = .explanationAfterAvatar
+                            // Pausar toasts durante la explicación
+                            toastManager.enableToasts(false)
                         }
                     )
                     .transition(.asymmetric(
                         insertion: .move(edge: .bottom),
                         removal: .move(edge: .top)
                     ))
+                    .onAppear {
+                        // Habilitar toasts durante la selección de avatar
+                        toastManager.enableToasts(true)
+                    }
 
                 case .explanationAfterAvatar:
                     ExplanationTransitionView(
@@ -83,17 +105,29 @@ struct MainTabView: View {
                         duration: 2.0,
                         onContinue: {
                             flowStep = .vocationalQuiz
+                            // Habilitar toasts durante el cuestionario
+                            toastManager.enableToasts(true)
                         }
                     )
+                    .onAppear {
+                        // No mostrar toasts durante las explicaciones
+                        toastManager.enableToasts(false)
+                    }
 
                 case .vocationalQuiz:
                     DeckViewWrapper(
                         onComplete: {
                             flowStep = .explanationAfterQuiz
+                            // Pausar toasts durante la explicación
+                            toastManager.enableToasts(false)
                         },
                         viewModel: viewModel
                     )
                     .transition(.move(edge: .trailing))
+                    .onAppear {
+                        // Habilitar toasts durante el cuestionario
+                        toastManager.enableToasts(true)
+                    }
 
                 case .explanationAfterQuiz:
                     ExplanationTransitionView(
@@ -103,13 +137,22 @@ struct MainTabView: View {
                         duration: 2.0,
                         onContinue: {
                             flowStep = .quickDecision
+                            // Habilitar toasts durante la decisión rápida
+                            toastManager.enableToasts(true)
                         }
                     )
+                    .onAppear {
+                        // No mostrar toasts durante las explicaciones
+                        toastManager.enableToasts(false)
+                    }
 
                 case .quickDecision:
                     QuickDecisionView(
                         viewModel: viewModel,
                         onContinue: {
+                            // Desactivar toasts durante la carga
+                            toastManager.enableToasts(false)
+                            
                             // Mostrar pantalla de carga de resultados
                             showResultsLoading = true
 
@@ -124,23 +167,45 @@ struct MainTabView: View {
                                     flowStep = .results
                                     showResultsLoading = false
                                     resultsLoadingOffset = UIScreen.main.bounds.height
+                                    
+                                    // Habilitar toasts en la pantalla de resultados
+                                    toastManager.enableToasts(true)
                                 }
                             }
                         }
                     )
                     .transition(.move(edge: .trailing))
+                    .onAppear {
+                        // Habilitar toasts durante la decisión rápida
+                        toastManager.enableToasts(true)
+                    }
 
                 case .loadingResults:
                     EmptyView()
+                    .onAppear {
+                        // No mostrar toasts durante la carga
+                        toastManager.enableToasts(false)
+                    }
 
                 case .results:
                     ResultsView(
                         onContinue: {
                             flowStep = .welcome
+                            // Desactivar toasts al volver al inicio
+                            toastManager.enableToasts(false)
                         }
                     )
                     .environmentObject(viewModel)
                     .transition(.move(edge: .leading))
+                    .onAppear {
+                        // Habilitar toasts en la pantalla de resultados
+                        toastManager.enableToasts(true)
+                        
+                        // Mostrar un toast específico sobre resultados después de un breve retraso
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            toastManager.showRandomToast()
+                        }
+                    }
                 }
             }
             
