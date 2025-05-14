@@ -115,9 +115,9 @@ struct QuickDecisionView: View {
                 }
             }
             
-            // Nébulas
+            // Nébulas - versión corregida
             if showNebulas {
-                ForEach(0..<5) { i in
+                ForEach(0..<5, id: \.self) { i in
                     let colors: [Color] = [
                         Color(red: 0.5, green: 0.2, blue: 0.8),
                         Color(red: 0.1, green: 0.4, blue: 0.9),
@@ -142,6 +142,7 @@ struct QuickDecisionView: View {
                             y: CGFloat.random(in: 0..<UIScreen.main.bounds.height)
                         )
                         .blur(radius: 60)
+                        // Eliminamos la animación de opacity y transition aquí
                 }
             }
         }
