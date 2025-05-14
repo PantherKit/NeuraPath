@@ -164,6 +164,20 @@ class VocationalTestViewModel: ObservableObject {
             traitScores[trait] = (traitScores[trait] ?? 0.0) / maxTraitScore
         }
         
+        // Sanitizar puntuaciones para evitar NaN
+        for field in fieldScores.keys {
+            if fieldScores[field]?.isNaN == true {
+                fieldScores[field] = 0.0
+            }
+        }
+        for trait in traitScores.keys {
+            if traitScores[trait]?.isNaN == true {
+                traitScores[trait] = 0.0
+            }
+        }
+        
+        
+        
         // Crear resultado de la prueba
         testResult = TestResult(
             avatar: avatar,
@@ -179,9 +193,17 @@ class VocationalTestViewModel: ObservableObject {
 
         // Guardar resultado de la prueba en archivo JSON para posterior POST
         saveTestResultToJSON()
+        
+        // Enviar resultado al backend
+        uploadTestResult()
+        
+        print("🎯 Avatar seleccionado: \(avatar.name)")
+        print("✅ Misiones completadas: \(userChoices.count) / \(missions.count)")
+        print("📊 Resultados de campo: \(fieldScores)")
+        print("🧠 Resultados de rasgos: \(traitScores)")
     }
     
-    // MARK: - Guardar JSON localmente
+    // MARK: - Guardar JSON localmente y subirlo
     private func saveTestResultToJSON() {
         guard let result = testResult else { return }
         do {
@@ -195,6 +217,58 @@ class VocationalTestViewModel: ObservableObject {
         } catch {
             print("Error al guardar el resultado de la prueba en JSON: \(error)")
         }
+        
+    }
+    
+    func uploadTestResult() {
+        guard let result = testResult else {
+            print("No hay resultado de test para enviar")
+            return
+        }
+
+        // Construir el diccionario del JSON manualmente (como backend espera)
+        let payload: [String: Any] = [
+            "usuario_id": UUID().uuidString,  // puedes usar ID anónimo o de sesión
+            "respuestas": result.anonymousData()
+        ]
+
+        guard let url = URL(string: "https://vocacional-backend-727426062196.us-central1.run.app/guardar_resultado") else {
+            print("URL inválida")
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: payload, options: [])
+        } catch {
+            print("Error al serializar JSON: \(error)")
+            return
+        }
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error de red: \(error.localizedDescription)")
+                return
+            }
+
+            if let httpResponse = response as? HTTPURLResponse {
+                print("Respuesta del servidor: \(httpResponse.statusCode)")
+                if httpResponse.statusCode == 200 {
+                    print("✅ Resultado enviado correctamente")
+                } else {
+                    print("❌ Falló el envío. Código: \(httpResponse.statusCode)")
+                }
+            }
+
+            if let data = data, let responseBody = String(data: data, encoding: .utf8) {
+                print("Respuesta del backend: \(responseBody)")
+            }
+        }
+
+        task.resume()
     }
     
     // MARK: - Análisis de datos

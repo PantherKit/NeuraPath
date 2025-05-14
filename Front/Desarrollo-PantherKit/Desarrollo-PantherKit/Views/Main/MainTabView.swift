@@ -150,6 +150,9 @@ struct MainTabView: View {
                     QuickDecisionView(
                         viewModel: viewModel,
                         onContinue: {
+                            // ✅ LLAMA A completeTest() AQUÍ
+                            viewModel.completeTest()
+                            
                             // Desactivar toasts durante la carga
                             toastManager.enableToasts(false)
                             

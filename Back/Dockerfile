@@ -10,8 +10,8 @@ COPY . /app
 # Instalar las dependencias desde el archivo requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Exponer el puerto 5000, que es el puerto por defecto de Flask
-EXPOSE 5000
+# Exponer el puerto 8080 para Cloud Run
+EXPOSE 8080
 
-# Iniciar la aplicación Flask
-CMD ["python", "main.py"]
+# Iniciar la aplicación Flask con gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "app.main:app"]
