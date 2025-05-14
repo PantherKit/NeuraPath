@@ -21,6 +21,7 @@ struct ExplanationTransitionView: View {
     @State private var showNebulas = false
     @State private var showStars = false
     @State private var particlesScale = 0.5
+    @State private var isTextAnimating = false
     
     // Colores definidos
     private let accentColor = Color(red: 0.25, green: 0.72, blue: 0.85)
@@ -32,21 +33,25 @@ struct ExplanationTransitionView: View {
             // Fondo espacial con nebulosas
             spaceBackground
             
-            // Contenido principal
-            VStack(spacing: 30) {
-                // Icono animado
-                iconSection
-                
-                // Texto explicativo
-                textSection
-                
-                Spacer()
-                
-                // Botón de continuar
-                continueButton
+            // Contenido principal con scroll si es necesario
+            ScrollView {
+                VStack(spacing: 30) {
+                    // Icono animado
+                    iconSection
+                    
+                    // Texto explicativo con frame fijo
+                    textSection
+                        .frame(maxWidth: .infinity, minHeight: 150) // Altura mínima garantizada
+                    
+                    Spacer()
+                    
+                    // Botón de continuar
+                    continueButton
+                }
+                .padding(.horizontal, 30)
+                .padding(.top, 50)
+                .padding(.bottom, 20)
             }
-            .padding(.horizontal, 30)
-            .padding(.top, 50)
         }
         .onAppear {
             startAnimations()
@@ -64,7 +69,7 @@ struct ExplanationTransitionView: View {
                 StarField()
             }
             
-            // Nebulosas (versión idéntica a QuickDecisionView)
+            // Nebulosas
             if showNebulas {
                 ForEach(0..<5, id: \.self) { i in
                     let colors: [Color] = [
@@ -94,7 +99,7 @@ struct ExplanationTransitionView: View {
                 }
             }
             
-            // Partículas flotantes adicionales
+            // Partículas flotantes
             ForEach(0..<15) { i in
                 Circle()
                     .fill(accentColor.opacity(Double.random(in: 0.2...0.6)))
@@ -148,6 +153,7 @@ struct ExplanationTransitionView: View {
                 .multilineTextAlignment(.center)
                 .opacity(textOpacity)
                 .shadow(color: accentColor.opacity(0.3), radius: 10, x: 0, y: 5)
+                .padding(.horizontal, 20)
             
             Text(explanationText)
                 .font(.system(size: 18, weight: .medium, design: .rounded))
@@ -155,10 +161,11 @@ struct ExplanationTransitionView: View {
                 .multilineTextAlignment(.center)
                 .lineSpacing(6)
                 .opacity(textOpacity)
-                .animation(.easeInOut(duration: 0.8).delay(0.4), value: textOpacity)
+                .scaleEffect(isTextAnimating ? 1.02 : 1.0)
+                .padding(.horizontal, 20)
+                .fixedSize(horizontal: false, vertical: true) // Asegura que el texto se ajuste verticalmente
         }
         .padding(.vertical, 24)
-        .padding(.horizontal, 20)
         .background(
             VisualEffectBlur(blurStyle: .systemUltraThinMaterialDark)
                 .cornerRadius(20)
@@ -208,6 +215,7 @@ struct ExplanationTransitionView: View {
             showNebulas = true
             particlesScale = 1.0
             textOpacity = 1.0
+            isTextAnimating = true
         }
         
         // Animación de rotación continua del icono
