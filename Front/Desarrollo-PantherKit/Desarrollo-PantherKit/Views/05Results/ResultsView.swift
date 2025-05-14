@@ -173,7 +173,7 @@ struct ResultsView: View {
         ZStack(alignment: .top) {
             // Cohete animado
             Text("🚀")
-                .font(.system(size: 40))
+                .font(.system(size: 70))
                 .rotationEffect(.degrees(rocketRotation))
                 .offset(y: rocketOffset)
                 .shadow(radius: 10, x: 0, y: 0)
