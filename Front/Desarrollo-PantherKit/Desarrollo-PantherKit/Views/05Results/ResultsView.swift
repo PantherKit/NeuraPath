@@ -230,28 +230,40 @@ struct ResultsView: View {
                         name: "Universidad Panamericana",
                         programs: ["Ingeniería Mecatrónica", "Ingeniería Industrial", "Ingeniería en Sistemas"],
                         icon: "building.columns.fill",
-                        color: .blue
+                        color: .blue,
+                        url: URL(string: "https://www.up.edu.mx/es/admisiones/gdl")
                     )
                     
                     UniversityInfoCard(
                         name: "ITESM",
                         programs: ["Ingeniería en Robótica", "Ingeniería en IA", "Ciencias Computacionales"],
                         icon: "building.2.fill",
-                        color: .blue
+                        color: .blue,
+                        url: URL(string: "https://tec.mx/es/admisiones")
+                    )
+                    
+                    UniversityInfoCard(
+                        name: "Universidad de Guadalajara",
+                        programs: ["Ingeniería Mecánica Eléctrica", "Ingeniería Mecatrónica", "Ingeniería en Robótica", "Ingeniería en Desarrollo de Software", "Ingeniería en Electrónica y Computación"],
+                        icon: "building.columns.fill",
+                        color: .red,
+                        url: URL(string: "https://www.escolar.udg.mx/aspirantes")
                     )
                     
                     UniversityInfoCard(
                         name: "UNAM",
                         programs: ["Ciencias de la Computación", "Ingeniería Aeroespacial", "Ingeniería Eléctrica"],
                         icon: "building.columns",
-                        color: .blue
+                        color: .blue,
+                        url: URL(string: "https://www.admision.unam.mx/")
                     )
                     
                     UniversityInfoCard(
                         name: "IPN",
                         programs: ["Ingeniería Eléctrica", "Mecánica", "Sistemas Computacionales"],
                         icon: "building",
-                        color: .blue
+                        color: .blue,
+                        url: URL(string: "https://www.ipn.mx/dae/")
                     )
                     
                     // Enlaces a información externa
@@ -260,17 +272,21 @@ struct ResultsView: View {
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(.white)
                         
-                        HStack {
-                            Image(systemName: "globe")
-                            Text("Directorio de universidades")
+                        Link(destination: URL(string: "https://www.anuies.mx/")!) {
+                            HStack {
+                                Image(systemName: "globe")
+                                Text("Directorio nacional de universidades (ANUIES)")
+                            }
+                            .foregroundColor(accentColor)
                         }
-                        .foregroundColor(accentColor)
                         
-                        HStack {
-                            Image(systemName: "book.fill")
-                            Text("Guía para elegir carrera")
+                        Link(destination: URL(string: "https://www.gob.mx/sep")!) {
+                            HStack {
+                                Image(systemName: "book.fill")
+                                Text("Secretaría de Educación Pública (SEP)")
+                            }
+                            .foregroundColor(accentColor)
                         }
-                        .foregroundColor(accentColor)
                     }
                     .padding()
                     .background(Color.white.opacity(0.05))
@@ -289,6 +305,12 @@ struct ResultsView: View {
                 // Header con avatar y cohete
                 resultHeader(result)
                 
+                // Mensaje inclusivo sobre STEM
+                inclusiveStemMessage
+                    .padding(.horizontal)
+                    .opacity(animateContent ? 1 : 0)
+                    .animation(.easeOut.delay(0.1), value: animateContent)
+                
                 // Primary field card
                 FieldResultCard(
                     field: result.primaryField,
@@ -303,6 +325,7 @@ struct ResultsView: View {
                 .padding(.horizontal)
                 .opacity(animateContent ? 1 : 0)
                 .offset(y: animateContent ? 0 : 50)
+                .animation(.easeOut.delay(0.2), value: animateContent)
                 
                 // Secondary field card
                 FieldResultCard(
@@ -318,7 +341,7 @@ struct ResultsView: View {
                 .padding(.horizontal)
                 .opacity(animateContent ? 1 : 0)
                 .offset(y: animateContent ? 0 : 50)
-                .animation(.easeOut.delay(0.2), value: animateContent)
+                .animation(.easeOut.delay(0.3), value: animateContent)
                 
                 // Personality traits
                 traitsSection(result)
@@ -326,6 +349,13 @@ struct ResultsView: View {
                     .opacity(animateContent ? 1 : 0)
                     .offset(y: animateContent ? 0 : 50)
                     .animation(.easeOut.delay(0.4), value: animateContent)
+                
+                // Inteligencias múltiples
+                multipleIntelligencesSection(result)
+                    .padding(.horizontal)
+                    .opacity(animateContent ? 1 : 0)
+                    .offset(y: animateContent ? 0 : 50)
+                    .animation(.easeOut.delay(0.5), value: animateContent)
                 
                 // Botón para mostrar/ocultar información adicional
                 Button(action: {
@@ -349,7 +379,7 @@ struct ResultsView: View {
                 .padding(.horizontal)
                 .opacity(animateContent ? 1 : 0)
                 .offset(y: animateContent ? 0 : 50)
-                .animation(.easeOut.delay(0.5), value: animateContent)
+                .animation(.easeOut.delay(0.6), value: animateContent)
                 
                 // Feedback y contenido adicional
                 if shouldShowAdditionalInfo {
@@ -369,6 +399,13 @@ struct ResultsView: View {
                         .padding(.top, 20)
                         .opacity(animateContent ? 1 : 0)
                         .animation(.easeOut.delay(0.3), value: shouldShowAdditionalInfo)
+                    
+                    // Referencias e inspiración
+                    womenInStemSection
+                        .padding(.horizontal)
+                        .padding(.top, 20)
+                        .opacity(animateContent ? 1 : 0)
+                        .animation(.easeOut.delay(0.4), value: shouldShowAdditionalInfo)
                 }
                 
                 // Action buttons
@@ -665,6 +702,404 @@ struct ResultsView: View {
             viewModel.recommendedCareers = UniversityCareer.getRecommendedCareers(from: result)
         }
     }
+    
+    // Mensaje inclusivo sobre STEM
+    private var inclusiveStemMessage: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("STEM es para todos")
+                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+            
+            Text("Las carreras científicas y tecnológicas se benefician de la diversidad de perspectivas. No se trata solo de matemáticas, sino de creatividad, resolución de problemas, comunicación y trabajo en equipo.")
+                .font(.system(size: 16))
+                .foregroundColor(.white.opacity(0.9))
+                .padding(.top, 4)
+            
+            HStack(spacing: 16) {
+                // Cerebro creativo
+                Image(systemName: "brain")
+                    .font(.system(size: 24))
+                    .foregroundColor(accentColor)
+                
+                // Diversidad 
+                Image(systemName: "person.3.fill")
+                    .font(.system(size: 24))
+                    .foregroundColor(secondaryColor)
+                
+                // Idea
+                Image(systemName: "lightbulb.fill")
+                    .font(.system(size: 24))
+                    .foregroundColor(.yellow)
+                
+                // Comunicación
+                Image(systemName: "bubble.left.and.bubble.right.fill")
+                    .font(.system(size: 24))
+                    .foregroundColor(.green)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.top, 10)
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.white.opacity(0.05))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .strokeBorder(
+                            LinearGradient(
+                                gradient: Gradient(colors: [.white.opacity(0.2), .clear]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
+        )
+    }
+    
+    // Sección de inteligencias múltiples
+    private func multipleIntelligencesSection(_ result: TestResult) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Tus Inteligencias Múltiples")
+                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            Text("La teoría de Howard Gardner muestra que la inteligencia no es única. Tus respuestas revelan tus fortalezas en diferentes tipos de inteligencia.")
+                .font(.system(size: 16))
+                .foregroundColor(.white.opacity(0.8))
+                .padding(.bottom, 10)
+            
+            // Grid de inteligencias
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 15) {
+                intelligenceCard(
+                    title: "Lógico-Matemática",
+                    description: "Habilidad para resolver problemas y razonar lógicamente",
+                    icon: "function",
+                    color: .cyan,
+                    primary: isPrimaryIntelligenceFor(result, .computerScience, .electrical)
+                )
+                
+                intelligenceCard(
+                    title: "Visual-Espacial",
+                    description: "Capacidad para visualizar y manipular objetos mentalmente",
+                    icon: "cube",
+                    color: .purple,
+                    primary: isPrimaryIntelligenceFor(result, .mechanical, .robotics)
+                )
+                
+                intelligenceCard(
+                    title: "Interpersonal",
+                    description: "Capacidad para entender y trabajar con otras personas",
+                    icon: "person.2.fill",
+                    color: .green,
+                    primary: isPrimaryIntelligenceFor(result, .industrial)
+                )
+                
+                intelligenceCard(
+                    title: "Naturalista",
+                    description: "Sensibilidad hacia el entorno natural y sus elementos",
+                    icon: "leaf.fill",
+                    color: .mint,
+                    primary: isPrimaryIntelligenceFor(result, .environmental, .biomedical)
+                )
+            }
+        }
+    }
+    
+    // Helpers for multiple intelligences
+    private func isPrimaryIntelligenceFor(_ result: TestResult, _ fields: EngineeringField...) -> Bool {
+        // Verifica si alguno de los campos especificados está entre los 2 principales
+        return fields.contains(result.primaryField) || fields.contains(result.secondaryField)
+    }
+    
+    // Card de inteligencia
+    private func intelligenceCard(title: String, description: String, icon: String, color: Color, primary: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: icon)
+                    .font(.system(size: 18))
+                    .foregroundColor(primary ? color : .white.opacity(0.7))
+                
+                Text(title)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.white)
+            }
+            
+            Text(description)
+                .font(.system(size: 14))
+                .foregroundColor(.white.opacity(0.7))
+                .multilineTextAlignment(.leading)
+                .lineLimit(2)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(primary ? color.opacity(0.15) : Color.white.opacity(0.05))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(primary ? color.opacity(0.3) : Color.clear, lineWidth: 1)
+        )
+    }
+    
+    // Sección de referentes en STEM personalizada
+    private var womenInStemSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Referentes con tu perfil")
+                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+            
+            Text("Personas destacadas con quienes podrías identificarte:")
+                .font(.system(size: 16))
+                .foregroundColor(.white.opacity(0.8))
+                .padding(.bottom, 4)
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 16) {
+                    ForEach(getPersonalizedReferents(), id: \.name) { referent in
+                        referentCardNew(
+                            name: referent.name,
+                            contribution: referent.contribution,
+                            field: referent.field,
+                            image: referent.image,
+                            icon: referent.icon
+                        )
+                    }
+                }
+                .padding(.bottom, 8)
+            }
+            
+            // Mensaje inspirador
+            Text("Estos pioneros y pioneras en STEM compartían rasgos de personalidad similares a los tuyos. Su diversidad de pensamiento y fortalezas únicas fueron clave para sus innovaciones.")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(.white.opacity(0.9))
+                .padding(.top, 8)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+    }
+    
+    // Tarjeta de referente en STEM mejorada con imagen
+    private func referentCardNew(name: String, contribution: String, field: String, image: String, icon: String) -> some View {
+        VStack(alignment: .center, spacing: 12) {
+            // Imagen o avatar
+            ZStack {
+                Circle()
+                    .fill(LinearGradient(
+                        gradient: Gradient(colors: [accentColor.opacity(0.3), secondaryColor.opacity(0.3)]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ))
+                    .frame(width: 90, height: 90)
+                
+                // Si es un emoji, mostrarlo directamente
+                if image.containsOnlyEmoji {
+                    Text(image)
+                        .font(.system(size: 40))
+                } else {
+                    // Si es un systemName, usar Image
+                    Image(systemName: image)
+                        .font(.system(size: 36))
+                        .foregroundColor(accentColor)
+                }
+            }
+            
+            VStack(alignment: .center, spacing: 6) {
+                Text(name)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                
+                // Ícono representativo de su contribución
+                HStack {
+                    Image(systemName: icon)
+                        .foregroundColor(accentColor)
+                    
+                    Text(field)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(accentColor)
+                }
+                .padding(.vertical, 4)
+                .padding(.horizontal, 8)
+                .background(accentColor.opacity(0.1))
+                .cornerRadius(10)
+                
+                Text(contribution)
+                    .font(.system(size: 14))
+                    .foregroundColor(.white.opacity(0.8))
+                    .multilineTextAlignment(.center)
+                    .lineLimit(4)
+                    .padding(.horizontal, 4)
+            }
+        }
+        .frame(width: 180, height: 280)
+        .padding(12)
+        .background(Color.white.opacity(0.05))
+        .cornerRadius(16)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(LinearGradient(
+                    gradient: Gradient(colors: [accentColor.opacity(0.3), .clear]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ), lineWidth: 1)
+        )
+    }
+    
+    // Estructura para referentes personalizados
+    private struct STEMReferent {
+        let name: String
+        let contribution: String
+        let field: String
+        let image: String // systemName o emoji
+        let icon: String  // systemName
+    }
+    
+    // Obtener referentes personalizados basados en el perfil
+    private func getPersonalizedReferents() -> [STEMReferent] {
+        guard let result = viewModel.testResult else { return [] }
+        
+        let primaryField = result.primaryField
+        let primaryTrait = result.primaryTrait
+        
+        // Base de referentes organizados por campo y rasgo
+        let allReferents: [EngineeringField: [PersonalityTrait: [STEMReferent]]] = [
+            .computerScience: [
+                .analytical: [
+                    STEMReferent(name: "Alan Turing", contribution: "Padre de la computación teórica. Descifró códigos nazis con pensamiento analítico sistemático.", field: "Ciencias Computacionales", image: "desktopcomputer", icon: "lock.open"),
+                    STEMReferent(name: "Grace Hopper", contribution: "Pionera en lenguajes de programación. Creó el primer compilador con enfoque metódico para solucionar problemas complejos.", field: "Programación", image: "server.rack", icon: "chevron.left.forwardslash.chevron.right")
+                ],
+                .creative: [
+                    STEMReferent(name: "Steve Wozniak", contribution: "Cofundador de Apple. Combinó creatividad e ingeniería para crear el Apple I y Apple II.", field: "Innovación Tecnológica", image: "laptopcomputer", icon: "lightbulb"),
+                    STEMReferent(name: "Ada Lovelace", contribution: "Primera programadora. Visualizó creativamente posibilidades de cómputo cuando no existían computadoras.", field: "Programación", image: "function", icon: "wand.and.stars")
+                ],
+                .problemSolver: [
+                    STEMReferent(name: "Katherine Johnson", contribution: "Matemática de la NASA cuyo trabajo fue crucial para las misiones Apolo y Mercury.", field: "Matemáticas Aplicadas", image: "function", icon: "moon.stars"),
+                    STEMReferent(name: "Linus Torvalds", contribution: "Creador de Linux y Git. Resolvió problemas de sistemas operativos con soluciones elegantes y abiertas.", field: "Software Libre", image: "terminal", icon: "network")
+                ]
+            ],
+            .robotics: [
+                .practical: [
+                    STEMReferent(name: "Rodney Brooks", contribution: "Pionero en robots prácticos como Roomba. Enfatizó la interacción con el mundo real sobre teoría abstracta.", field: "Robótica", image: "circles.hexagongrid", icon: "gearshape.2"),
+                    STEMReferent(name: "Ayanna Howard", contribution: "Especialista en robótica inteligente y humanoide. Diseña robots para aplicaciones médicas y educativas.", field: "Robótica Social", image: "person.fill.viewfinder", icon: "brain.head.profile")
+                ],
+                .creative: [
+                    STEMReferent(name: "Cynthia Breazeal", contribution: "Creadora de robots sociales como Kismet. Pionera en interacción humano-robot con enfoque creativo.", field: "Interacción Robot-Humano", image: "face.smiling", icon: "person.wave.2"),
+                    STEMReferent(name: "Boston Dynamics", contribution: "Empresa innovadora que desarrolla robots que imitan movimientos de animales, como el perro robot Spot.", field: "Robótica Avanzada", image: "figure.walk", icon: "move.3d")
+                ]
+            ],
+            .mechanical: [
+                .detailOriented: [
+                    STEMReferent(name: "Nikola Tesla", contribution: "Inventor meticuloso con más de 300 patentes. Su atención al detalle permitió crear sistemas eléctricos revolucionarios.", field: "Ingeniería Eléctrica", image: "bolt.fill", icon: "antenna.radiowaves.left.and.right"),
+                    STEMReferent(name: "Leonardo da Vinci", contribution: "Considerado el primer ingeniero moderno. Sus diseños detallados de máquinas estaban siglos adelantados.", field: "Diseño Mecánico", image: "gearshape.2", icon: "pencil.and.ruler")
+                ],
+                .problemSolver: [
+                    STEMReferent(name: "Elon Musk", contribution: "Fundador de SpaceX y Tesla. Resuelve problemas complejos de ingeniería como reutilización de cohetes.", field: "Ingeniería Aeroespacial", image: "🚀", icon: "arrow.up.forward"),
+                    STEMReferent(name: "Mae Jemison", contribution: "Primera mujer afroamericana astronauta. Ingeniera y médica que resolvió problemas de ingeniería en el espacio.", field: "Astronáutica", image: "globe.americas.fill", icon: "person.fill.turn.right")
+                ]
+            ],
+            .mechatronics: [
+                .bigPictureThinker: [
+                    STEMReferent(name: "James Dyson", contribution: "Inventor que revolucionó electrodomésticos con visión integrada de mecánica, electrónica y diseño.", field: "Mecatrónica Aplicada", image: "wind", icon: "tornado"),
+                    STEMReferent(name: "Limor Fried", contribution: "Fundadora de Adafruit. Pionera en hardware abierto y electrónica DIY con visión ecosistémica.", field: "Electrónica", image: "cpu", icon: "network")
+                ],
+                .creative: [
+                    STEMReferent(name: "Simone Giertz", contribution: "Inventora de 'robots inútiles'. Usa creatividad y humor para explorar mecatrónica y robótica.", field: "Robótica Creativa", image: "wand.and.stars", icon: "video"),
+                    STEMReferent(name: "Anousheh Ansari", contribution: "Primera mujer turista espacial. Emprendedora que visualizó aplicaciones comerciales de tecnología espacial.", field: "Tecnología Espacial", image: "sparkles", icon: "airplane")
+                ]
+            ],
+            .biomedical: [
+                .teamPlayer: [
+                    STEMReferent(name: "Rosalind Franklin", contribution: "Cristalógrafa cuyo trabajo en equipo fue clave para descubrir la estructura del ADN.", field: "Biología Molecular", image: "dna", icon: "camera"),
+                    STEMReferent(name: "Katalin Karikó", contribution: "Bioquímica pionera en tecnología de ARNm. Su colaboración persistente llevó a vacunas COVID-19.", field: "Bioquímica", image: "cross.case", icon: "heart")
+                ],
+                .communicator: [
+                    STEMReferent(name: "Neil deGrasse Tyson", contribution: "Astrofísico y divulgador científico. Comunica conceptos científicos complejos con claridad.", field: "Divulgación Científica", image: "star.fill", icon: "mic"),
+                    STEMReferent(name: "Temple Grandin", contribution: "Científica con autismo que revolucionó prácticas ganaderas humanas. Comunica perspectivas neurodiversas.", field: "Bienestar Animal", image: "brain", icon: "quote.bubble")
+                ]
+            ],
+            .industrial: [
+                .practical: [
+                    STEMReferent(name: "Lillian Gilbreth", contribution: "Pionera en ingeniería industrial. Desarrolló métodos prácticos para optimizar eficiencia en hogares y fábricas.", field: "Ingeniería Industrial", image: "clock.arrow.2.circlepath", icon: "house"),
+                    STEMReferent(name: "Eiji Toyoda", contribution: "Transformó Toyota con el sistema de producción eficiente 'just-in-time' y mejora continua.", field: "Manufactura", image: "car", icon: "arrow.triangle.2.circlepath")
+                ],
+                .bigPictureThinker: [
+                    STEMReferent(name: "W. Edwards Deming", contribution: "Estadístico que revolucionó la gestión de calidad con enfoque sistémico en lugar de puntual.", field: "Gestión de Calidad", image: "chart.bar", icon: "arrow.up.right"),
+                    STEMReferent(name: "Taiichi Ohno", contribution: "Creador del sistema Toyota. Visualizó la producción como flujo integrado en vez de procesos aislados.", field: "Ingeniería de Procesos", image: "arrow.triangle.pull", icon: "minus.forwardslash.plus")
+                ]
+            ],
+            .electrical: [
+                .analytical: [
+                    STEMReferent(name: "Claude Shannon", contribution: "Padre de la teoría de la información. Estableció bases matemáticas para comunicaciones digitales.", field: "Teoría de la Información", image: "waveform.path", icon: "function"),
+                    STEMReferent(name: "Edith Clarke", contribution: "Primera mujer ingeniera eléctrica profesional. Desarrolló calculadoras para resolver ecuaciones de líneas eléctricas.", field: "Ingeniería Eléctrica", image: "bolt.horizontal", icon: "calculator")
+                ],
+                .detailOriented: [
+                    STEMReferent(name: "Faraday", contribution: "Desarrolló la inducción electromagnética. Su atención meticulosa a experimentos revolucionó la electricidad.", field: "Electromagnetismo", image: "magnet", icon: "lightbulb"),
+                    STEMReferent(name: "Jack Kilby", contribution: "Inventor del circuito integrado. Su precisión en diseños miniaturizados transformó la electrónica.", field: "Microelectrónica", image: "cpu", icon: "plusminus")
+                ]
+            ],
+            .environmental: [
+                .communicator: [
+                    STEMReferent(name: "Rachel Carson", contribution: "Bióloga marina cuyo libro 'Primavera Silenciosa' inició el movimiento ambientalista moderno.", field: "Ecología", image: "leaf", icon: "book"),
+                    STEMReferent(name: "Bill Nye", contribution: "Ingeniero y divulgador que comunica problemas ambientales y soluciones científicas.", field: "Divulgación Científica", image: "theatermasks", icon: "globe")
+                ],
+                .teamPlayer: [
+                    STEMReferent(name: "Wangari Maathai", contribution: "Fundadora del Movimiento Cinturón Verde. Combinó ciencia y comunidad para reforestar Kenia.", field: "Ecología Práctica", image: "tree", icon: "person.3"),
+                    STEMReferent(name: "Jane Goodall", contribution: "Primatóloga que construyó equipos globales para conservación y educación ambiental.", field: "Conservación", image: "pawprint", icon: "hand.raised")
+                ]
+            ]
+        ]
+        
+        // Obtener referentes basados en campo y rasgo principales
+        var referents: [STEMReferent] = []
+        
+        // Añadir referentes del campo y rasgo principal
+        if let fieldReferents = allReferents[primaryField], let traitReferents = fieldReferents[primaryTrait] {
+            referents.append(contentsOf: traitReferents)
+        }
+        
+        // Si no hay suficientes, añadir más del mismo campo pero otro rasgo
+        if referents.count < 2, let fieldReferents = allReferents[primaryField] {
+            for (trait, traitReferents) in fieldReferents where trait != primaryTrait {
+                referents.append(contentsOf: traitReferents)
+                if referents.count >= 4 { break }
+            }
+        }
+        
+        // Si sigue sin haber suficientes, añadir del campo secundario
+        if referents.count < 3 {
+            let secondaryField = result.secondaryField
+            if let fieldReferents = allReferents[secondaryField], let traitReferents = fieldReferents[primaryTrait] {
+                referents.append(contentsOf: traitReferents)
+            }
+        }
+        
+        // Si aún no tenemos al menos 3, añadir predeterminados
+        if referents.count < 2 {
+            referents.append(STEMReferent(name: "Ada Lovelace", contribution: "Primera programadora. Trabajó en la máquina analítica de Babbage en el siglo XIX.", field: "Computación", image: "function", icon: "keyboard"))
+            referents.append(STEMReferent(name: "Katherine Johnson", contribution: "Matemática en la NASA cuyo trabajo fue crucial para las misiones Apolo.", field: "Matemáticas", image: "rocket", icon: "moon.stars"))
+            referents.append(STEMReferent(name: "Marie Curie", contribution: "Primera persona en ganar dos Premios Nobel en distintos campos científicos.", field: "Física y Química", image: "atom", icon: "sparkles"))
+        }
+        
+        // Limitar a 4 referentes máximo
+        return Array(referents.prefix(4))
+    }
+}
+
+// Extensión para validar si un String solo contiene emojis
+extension String {
+    var containsOnlyEmoji: Bool {
+        return !isEmpty && unicodeScalars.allSatisfy { $0.properties.isEmoji }
+    }
+}
+
+extension UnicodeScalar {
+    var isEmoji: Bool {
+        return properties.isEmoji
+    }
 }
 
 // MARK: - Componentes Adicionales
@@ -674,6 +1109,7 @@ struct UniversityInfoCard: View {
     let programs: [String]
     let icon: String
     let color: Color
+    var url: URL?
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -688,9 +1124,20 @@ struct UniversityInfoCard: View {
                 
                 Spacer()
                 
-                Image(systemName: "link.circle")
-                    .font(.system(size: 18))
-                    .foregroundColor(color.opacity(0.7))
+                if let validUrl = url {
+                    Link(destination: validUrl) {
+                        HStack(spacing: 4) {
+                            Text("Admisiones")
+                                .font(.system(size: 12))
+                            Image(systemName: "link.circle")
+                        }
+                        .foregroundColor(color.opacity(0.7))
+                        .padding(.vertical, 4)
+                        .padding(.horizontal, 8)
+                        .background(color.opacity(0.1))
+                        .cornerRadius(8)
+                    }
+                }
             }
             
             Divider()

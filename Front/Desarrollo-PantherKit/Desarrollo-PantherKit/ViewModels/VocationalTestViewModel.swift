@@ -341,48 +341,53 @@ class VocationalTestViewModel: ObservableObject {
         let secondaryScore = Int((result.fieldScores[secondaryField] ?? 0.0) * 100)
         
         // Construir un mensaje más personalizado basado en las respuestas reales
-        var feedback = "Basado en las respuestas de tu test vocacional, tienes una afinidad del \(primaryScore)% con \(primaryField.rawValue). "
+        var feedback = "Tu perfil muestra una afinidad del \(primaryScore)% con \(primaryField.rawValue). "
         
-        // Añadir información sobre los rasgos de personalidad
-        feedback += "Tu perfil destaca como \(primaryTrait.rawValue.lowercased()) y \(secondaryTrait.rawValue.lowercased()), lo que se alinea perfectamente con las carreras en este campo.\n\n"
+        // Mensaje inclusivo sobre diversas formas de inteligencia
+        feedback += "En STEM son valoradas muchas formas de inteligencia, no solo la matemática. "
+        feedback += "Tu combinación de \(primaryTrait.rawValue.lowercased()) y \(secondaryTrait.rawValue.lowercased()) es una fortaleza única que aporta diversidad a estos campos.\n\n"
         
-        // Mencionar campo secundario
-        feedback += "También muestras un \(secondaryScore)% de compatibilidad con \(secondaryField.rawValue), lo que te ofrece una alternativa interesante.\n\n"
+        // Mencionar campo secundario con enfoque en complementariedad
+        feedback += "También muestras un \(secondaryScore)% de compatibilidad con \(secondaryField.rawValue), lo que enriquece tu perfil con una perspectiva complementaria.\n\n"
         
-        // Áreas de aplicación específicas según las respuestas
-        feedback += "Tus respuestas sugieren que podrías destacar en:\n"
+        // Áreas de aplicación específicas según las respuestas, con enfoque en impacto social
+        feedback += "Tus respuestas sugieren que podrías destacar en áreas como:\n"
         feedback += "• \(primaryField.realWorldExample)\n"
+        feedback += "• Proyectos que conecten \(primaryField.rawValue) con áreas sociales y humanísticas\n"
         
-        // Consejos específicos basados en rasgos
-        feedback += "\nPara desarrollar tu potencial en \(primaryField.rawValue):\n"
+        // Consejos específicos basados en rasgos con enfoque en múltiples inteligencias
+        feedback += "\nPara desarrollar tu potencial independientemente de tu formación previa:\n"
         
         // Añadir consejos personalizados según el rasgo principal
         switch primaryTrait {
         case .analytical:
-            feedback += "• Busca oportunidades para analizar datos y resolver problemas complejos\n"
-            feedback += "• Considera cursos adicionales en matemáticas y estadística"
+            feedback += "• Tu pensamiento estructurado es valioso en proyectos que requieren organización\n"
+            feedback += "• No necesitas ser un experto en matemáticas, muchos problemas se resuelven con pensamiento lógico básico"
         case .creative:
-            feedback += "• Participa en proyectos que requieran soluciones innovadoras\n"
-            feedback += "• Explora opciones de diseño dentro de tu campo técnico"
+            feedback += "• La innovación en STEM surge de personas creativas como tú\n"
+            feedback += "• La visualización y diseño son tan importantes como las fórmulas matemáticas"
         case .teamPlayer:
-            feedback += "• Busca programas con componentes de trabajo en equipo\n"
-            feedback += "• Considera especializaciones en gestión de proyectos"
+            feedback += "• La colaboración efectiva es fundamental en los grandes proyectos STEM\n"
+            feedback += "• Tu capacidad para coordinar equipos diversos es esencial para resolver problemas complejos"
         case .practical:
-            feedback += "• Enfócate en aplicaciones prácticas de los conceptos teóricos\n"
-            feedback += "• Busca programas con componentes de laboratorio o prácticas profesionales"
+            feedback += "• El enfoque práctico que tienes permite implementar soluciones reales\n"
+            feedback += "• No todo en ingeniería es teoría; la aplicación práctica es igualmente valiosa"
         case .detailOriented:
-            feedback += "• Considera especializaciones que requieran precisión y atención al detalle\n"
-            feedback += "• Busca certificaciones técnicas específicas"
+            feedback += "• Tu atención al detalle es crucial en áreas que requieren precisión\n"
+            feedback += "• Esta habilidad te permite destacar en pruebas, documentación y control de calidad"
         case .bigPictureThinker:
-            feedback += "• Explora roles que permitan visión estratégica y planificación\n"
-            feedback += "• Considera complementar con estudios en gestión o administración"
+            feedback += "• Tu visión global permite conectar disciplinas diferentes y encontrar soluciones innovadoras\n"
+            feedback += "• Esta habilidad es esencial para liderar proyectos multidisciplinarios"
         case .problemSolver:
-            feedback += "• Enfócate en programas que enfaticen la resolución de problemas complejos\n"
-            feedback += "• Busca experiencias en investigación o desarrollo"
+            feedback += "• Tu enfoque en soluciones te ayudará a superar las dificultades iniciales en cualquier área STEM\n"
+            feedback += "• Las habilidades de resolución de problemas son transferibles entre disciplinas"
         case .communicator:
-            feedback += "• Considera roles técnicos que también requieran habilidades de comunicación\n"
-            feedback += "• Explora oportunidades en áreas como documentación técnica o educación STEM"
+            feedback += "• La comunicación efectiva es una habilidad infravalorada pero crítica en STEM\n"
+            feedback += "• Tu capacidad para explicar conceptos complejos es esencial para equipos y proyectos exitosos"
         }
+        
+        // Mensaje final inclusivo
+        feedback += "\n\nRecuerda: las carreras STEM necesitan todo tipo de mentes y talentos. La diversidad de pensamiento impulsa la innovación."
         
         return feedback
     }
