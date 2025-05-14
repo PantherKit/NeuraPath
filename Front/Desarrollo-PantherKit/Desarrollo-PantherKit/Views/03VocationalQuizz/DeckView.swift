@@ -9,14 +9,29 @@ import SwiftUI
 
 struct DeckView: View {
     var onComplete: () -> Void
+    var mbtiMode: Bool = false
+    var mbtiQuestions: [MBTICard] = []
+    var onMBTIComplete: (([MBTICard.MBTIType: Int]) -> Void)? = nil
+    
     @State private var cards: [STEMCard] = STEMCard.sampleData
     @State private var activeIndex: Int = 0
     @State private var showDetails = false
     @State private var selectedCard: STEMCard? = nil
+    @State private var mbtiResults = [MBTICard.MBTIType: Int]()
+    @State private var dragOffset = CGSize.zero
+    @State private var showFeedback = false
+    @State private var feedbackText = ""
+    @State private var feedbackColor = Color.green
     
     // Colores del tema
     private let accentColor = Color(red: 0.25, green: 0.72, blue: 0.85)
     private let secondaryColor = Color(red: 0.2, green: 0.6, blue: 1.0)
+    private let swipeThreshold: CGFloat = 100
+    private let maxRotation: Double = 15
+    
+    var rotationAngle: Double {
+        Double(dragOffset.width / swipeThreshold) * maxRotation
+    }
     
     var body: some View {
         ZStack {
@@ -25,18 +40,45 @@ struct DeckView: View {
             
             VStack {
                 // Header con progreso
-                progressHeader
+                if mbtiMode {
+                    mbtiProgressHeader
+                } else {
+                    progressHeader
+                }
                 
                 Spacer()
                 
                 // Stack de cards
-                cardStackView
+                if mbtiMode {
+                    mbtiCardView
+                } else {
+                    cardStackView
+                }
                 
                 Spacer()
                 
                 // Controles de acción
-                actionButtons
-                    .padding(.bottom, 30)
+                if !mbtiMode {
+                    actionButtons
+                        .padding(.bottom, 30)
+                } else {
+                    mbtiSwipeInstructions
+                }
+            }
+            
+            // Feedback overlay para MBTI
+            if showFeedback {
+                Color.black.opacity(0.7)
+                    .ignoresSafeArea()
+                    .overlay(
+                        Text(feedbackText)
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .foregroundColor(feedbackColor)
+                            .padding()
+                            .background(.ultraThinMaterial)
+                            .cornerRadius(15)
+                    )
             }
         }
         .sheet(isPresented: $showDetails) {
@@ -44,9 +86,12 @@ struct DeckView: View {
                 CardDetailView(card: card)
             }
         }
+        .onAppear {
+            print("DeckView appeared with \(mbtiQuestions.count) MBTI questions")
+        }
     }
     
-    // MARK: - Componentes
+    // MARK: - Componentes Comunes
     
     private var spaceBackground: some View {
         ZStack {
@@ -93,6 +138,8 @@ struct DeckView: View {
             }
         }
     }
+    
+    // MARK: - Componentes STEM
     
     private var progressHeader: some View {
         HStack {
@@ -162,6 +209,108 @@ struct DeckView: View {
         }
     }
     
+    // MARK: - Componentes MBTI
+    
+    private var mbtiProgressHeader: some View {
+        HStack {
+            Text("Test de Personalidad MBTI")
+                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+            
+            Spacer()
+            
+            Text("\(activeIndex + 1)/\(mbtiQuestions.count)")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(.white.opacity(0.7))
+        }
+        .padding()
+    }
+    
+    private var mbtiCardView: some View {
+        // Convert MBTI question to STEMCard for consistent UI
+        let stemCard = mbtiQuestions[activeIndex].toSTEMCard()
+        
+        return ZStack {
+            // Use CardView with the converted STEMCard
+            CardView(
+                card: stemCard,
+                isActive: true,
+                onSwipedAway: { /* handled by gesture */ },
+                onShowDetails: { /* no details for MBTI cards */ }
+            )
+            
+            // Swipe indicators
+            Group {
+                // Right swipe indicator
+                VStack {
+                    Image(systemName: "arrow.right.circle.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.green)
+                    
+                    Text("Opción A")
+                        .font(.headline)
+                        .foregroundColor(.green)
+                }
+                .padding()
+                .background(.ultraThinMaterial)
+                .cornerRadius(15)
+                .opacity(dragOffset.width > 0 ? Double(min(dragOffset.width / swipeThreshold, 1)) : 0)
+                .position(x: UIScreen.main.bounds.width * 0.75, y: 100)
+                
+                // Left swipe indicator
+                VStack {
+                    Image(systemName: "arrow.left.circle.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.blue)
+                    
+                    Text("Opción B")
+                        .font(.headline)
+                        .foregroundColor(.blue)
+                }
+                .padding()
+                .background(.ultraThinMaterial)
+                .cornerRadius(15)
+                .opacity(dragOffset.width < 0 ? Double(min(-dragOffset.width / swipeThreshold, 1)) : 0)
+                .position(x: UIScreen.main.bounds.width * 0.25, y: 100)
+            }
+        }
+        .frame(width: UIScreen.main.bounds.width - 40, height: 500)
+        .rotationEffect(.degrees(rotationAngle))
+        .offset(dragOffset)
+        .gesture(
+            DragGesture(minimumDistance: 5)
+                .onChanged { value in
+                    withAnimation(.interactiveSpring()) {
+                        dragOffset = value.translation
+                    }
+                }
+                .onEnded { value in
+                    handleMBTISwipe(value)
+                }
+        )
+    }
+    
+    private var mbtiSwipeInstructions: some View {
+        HStack(spacing: 50) {
+            VStack {
+                Image(systemName: "arrow.left")
+                    .font(.system(size: 24))
+                Text("Opción B")
+                    .font(.caption)
+            }
+            .foregroundColor(.blue)
+            
+            VStack {
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 24))
+                Text("Opción A")
+                    .font(.caption)
+            }
+            .foregroundColor(.green)
+        }
+        .padding(.bottom, 30)
+    }
+    
     // MARK: - Funciones
     
     private func handleSwipe() {
@@ -186,4 +335,82 @@ struct DeckView: View {
             handleSwipe()
         }
     }
+    
+  private func handleMBTISwipe(_ value: DragGesture.Value) {
+    print("Handling MBTI swipe, current index: \(activeIndex)/\(mbtiQuestions.count)")
+    
+    if abs(value.translation.width) > swipeThreshold {
+        // Determine which option was selected
+        let selectedRight = value.translation.width > 0
+        
+        // Verificar que el índice sea válido
+        guard activeIndex < mbtiQuestions.count else {
+            print("Error: activeIndex (\(activeIndex)) out of bounds for mbtiQuestions.count (\(mbtiQuestions.count))")
+            return
+        }
+        
+        let currentQuestion = mbtiQuestions[activeIndex]
+        
+        // Record the selected MBTI type
+        let selectedType = selectedRight ? currentQuestion.optionA.type : currentQuestion.optionB.type
+        mbtiResults[selectedType, default: 0] += 1
+        
+        print("Selected \(selectedRight ? "Option A" : "Option B") for question \(activeIndex + 1)")
+        
+        // Show feedback
+        showFeedback = true
+        feedbackText = selectedRight ? "Opción A seleccionada" : "Opción B seleccionada"
+        feedbackColor = selectedRight ? .green : .blue
+        
+        // Animate card away
+        withAnimation(.spring()) {
+            dragOffset = CGSize(
+                width: selectedRight ? 1000 : -1000,
+                height: 0
+            )
+        }
+        
+        // Store the next index to move to
+        let nextIndex = activeIndex + 1
+        let isComplete = nextIndex >= mbtiQuestions.count
+        
+        print("Next index will be: \(nextIndex), isComplete: \(isComplete)")
+        
+        // Reducir el retraso para una respuesta más rápida y asegurar que se ejecute
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            // Reset drag offset first
+            self.dragOffset = .zero
+            
+            // Hide feedback
+            withAnimation(.spring()) {
+                self.showFeedback = false
+            }
+            
+            // Check if there are more questions
+            if !isComplete {
+                print("Moving to next question: \(nextIndex + 1)/\(self.mbtiQuestions.count)")
+                // Actualizar el índice inmediatamente
+                withAnimation(.easeInOut) {
+                    self.activeIndex = nextIndex
+                }
+                print("Active index updated to: \(self.activeIndex)")
+            } else {
+                // Test complete
+                print("MBTI test complete, calling completion handler")
+                // Asegurarse de que el callback se ejecute
+                if let onComplete = self.onMBTIComplete {
+                    onComplete(self.mbtiResults)
+                } else {
+                    print("Warning: onMBTIComplete is nil")
+                }
+            }
+        }
+    } else {
+        // Not enough to trigger a selection, reset position
+        withAnimation(.spring()) {
+            dragOffset = .zero
+        }
+    }
+}
+
 }

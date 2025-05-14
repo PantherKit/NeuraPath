@@ -115,14 +115,14 @@ struct CardView: View {
             if isDragging {
                 VStack {
                     if dragOffset.width > 0 {
-                        Image(systemName: "xmark.circle.fill")
+                        Image(systemName: "arrow.right.circle.fill")
                             .font(.system(size: 80))
-                            .foregroundColor(.red)
+                            .foregroundColor(.blue)
                             .opacity(Double(min(dragOffset.width / swipeThreshold, 1)))
                     } else if dragOffset.width < 0 {
-                        Image(systemName: "checkmark.circle.fill")
+                        Image(systemName: "arrow.left.circle.fill")
                             .font(.system(size: 80))
-                            .foregroundColor(.green)
+                            .foregroundColor(.purple)
                             .opacity(Double(min(-dragOffset.width / swipeThreshold, 1)))
                     }
                 }
