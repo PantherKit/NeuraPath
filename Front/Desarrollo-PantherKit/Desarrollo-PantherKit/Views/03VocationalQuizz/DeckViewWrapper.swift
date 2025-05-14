@@ -154,7 +154,7 @@ struct DeckViewWrapper: View {
     @ObservedObject var viewModel: VocationalTestViewModel
     
     var body: some View {
-        DeckView(onComplete: onComplete)
+        DeckView(onComplete: onComplete, viewModel: viewModel)
     }
 }
 

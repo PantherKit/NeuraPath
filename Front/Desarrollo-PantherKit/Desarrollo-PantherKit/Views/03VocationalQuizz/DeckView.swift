@@ -12,7 +12,7 @@ struct DeckView: View {
     var mbtiMode: Bool = false
     var mbtiQuestions: [MBTICard] = []
     var onMBTIComplete: (([MBTICard.MBTIType: Int]) -> Void)? = nil
-    
+    @ObservedObject var viewModel: VocationalTestViewModel
     @State private var cards: [STEMCard] = STEMCard.sampleData
     @State private var activeIndex: Int = 0
     @State private var showDetails = false
@@ -292,6 +292,19 @@ struct DeckView: View {
         }
     }
     
+    private func mbtiToTrait(_ type: MBTICard.MBTIType) -> PersonalityTrait? {
+        switch type {
+        case .I: return .detailOriented
+        case .E: return .communicator
+        case .S: return .practical
+        case .N: return .creative
+        case .T: return .analytical
+        case .F: return .teamPlayer
+        case .J: return .problemSolver
+        case .P: return .bigPictureThinker
+        }
+    }
+    
   private func handleMBTISwipe(_ value: DragGesture.Value) {
     print("Handling MBTI swipe, current index: \(activeIndex)/\(mbtiQuestions.count)")
     
@@ -310,6 +323,10 @@ struct DeckView: View {
         // Record the selected MBTI type
         let selectedType = selectedRight ? currentQuestion.optionA.type : currentQuestion.optionB.type
         mbtiResults[selectedType, default: 0] += 1
+        
+        if let trait = mbtiToTrait(selectedType) {
+            viewModel.updateTraitScore(trait, by: 1.0)
+        }
         
         print("Selected \(selectedRight ? "Option A" : "Option B") for question \(activeIndex + 1)")
         
