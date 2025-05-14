@@ -57,13 +57,6 @@ struct DeckView: View {
                 
                 Spacer()
                 
-                // Controles de acción
-                if !mbtiMode {
-                    actionButtons
-                        .padding(.bottom, 30)
-                } else {
-                    mbtiSwipeInstructions
-                }
             }
             
             // Feedback overlay para MBTI
@@ -171,43 +164,6 @@ struct DeckView: View {
         .frame(width: 320, height: 450)
     }
     
-    private var actionButtons: some View {
-        HStack(spacing: 30) {
-            // Botón de rechazo
-            Button(action: {
-                swipeCard(accepted: false)
-            }) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(.red)
-                    .padding()
-                    .background(Circle().fill(Color.white.opacity(0.2)))
-            }
-            
-            // Botón de información
-            Button(action: {
-                selectedCard = cards[activeIndex]
-                showDetails = true
-            }) {
-                Image(systemName: "info.circle.fill")
-                    .font(.system(size: 24))
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(Circle().fill(accentColor))
-            }
-            
-            // Botón de aceptación
-            Button(action: {
-                swipeCard(accepted: true)
-            }) {
-                Image(systemName: "checkmark")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(.green)
-                    .padding()
-                    .background(Circle().fill(Color.white.opacity(0.2)))
-            }
-        }
-    }
     
     // MARK: - Componentes MBTI
     
