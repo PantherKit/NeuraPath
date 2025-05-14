@@ -183,19 +183,21 @@ struct WelcomeCard: View {
     
     var body: some View {
         VStack(spacing: 32) {
-            Text("¡Bienvenido al STEM Quiz!")
-                .font(AppTheme.Typography.zonaPro(.bold, size: AppTheme.Typography.largeTitle))
+            Text("¡Bienvenido a NeuraPath!")
+                .font(AppTheme.Typography.zonaPro(.bold, size: AppTheme.Typography.largeTitle * 1.4))
                 .multilineTextAlignment(.center)
                 .foregroundColor(AppTheme.Colors.text)
                 .padding(.top, 40)
                 .opacity(cardExpanded ? 0 : 1)
             
-            Text("Fast & easy test.\nIt takes less than 5 minutes.\nFind your STEM Path")
-                .font(AppTheme.Typography.zonaPro(.bold, size: AppTheme.Typography.headline))
+            Text("El futuro necesita tu talento. Vamos a descubrirlo.")
+                .font(AppTheme.Typography.zonaPro(.bold, size: AppTheme.Typography.headline * 1.2))
                 .multilineTextAlignment(.center)
                 .foregroundColor(AppTheme.Colors.text)
                 .padding(.horizontal)
                 .opacity(cardExpanded ? 0 : 1)
+            
+            Spacer()
             
             Button("Continuar") {
                 withAnimation(.easeInOut(duration: 0.5)) {

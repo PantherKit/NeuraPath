@@ -2,8 +2,11 @@ import SwiftUI
 
 enum FlowStep {
     case welcome
+    case explanationAfterWelcome
     case avatarSelection
+    case explanationAfterAvatar
     case vocationalQuiz
+    case explanationAfterQuiz
     case quickDecision
     case loadingResults
     case results
@@ -32,14 +35,14 @@ struct MainTabView: View {
                             withAnimation(.easeInOut(duration: 0.5)) {
                                 showLoading = true
                             }
-                            
+
                             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                                 withAnimation(.easeInOut(duration: 0.8)) {
                                     loadingOffset = UIScreen.main.bounds.height
                                 }
-                                
+
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                                    flowStep = .avatarSelection
+                                    flowStep = .explanationAfterWelcome
                                     showLoading = false
                                     loadingOffset = 0
                                 }
@@ -47,44 +50,75 @@ struct MainTabView: View {
                         }
                     )
                     .transition(.opacity)
+
+                case .explanationAfterWelcome:
+                    ExplanationTransitionView(
+                        title: "¡Bienvenido al test STEM!",
+                        explanationText: "¿Estás listo para emprender este viaje?",
+                        iconName: "person.crop.circle",
+                        duration: 2.0,
+                        onContinue: {
+                            flowStep = .avatarSelection
+                        }
+                    )
                     
+
                 case .avatarSelection:
                     AvatarSelectionView(
                         viewModel: viewModel,
                         onContinue: {
-                            flowStep = .vocationalQuiz
+                            flowStep = .explanationAfterAvatar
                         }
                     )
                     .transition(.asymmetric(
                         insertion: .move(edge: .bottom),
                         removal: .move(edge: .top)
                     ))
-                    
+
+                case .explanationAfterAvatar:
+                    ExplanationTransitionView(
+                        title: "Conociéndote mejor",
+                        explanationText: "Nos contarás qué prefieres entre dos opciones, ¿Estás listo?",
+                        iconName: "questionmark.circle",
+                        duration: 2.0,
+                        onContinue: {
+                            flowStep = .vocationalQuiz
+                        }
+                    )
+
                 case .vocationalQuiz:
                     DeckViewWrapper(
                         onComplete: {
-                            flowStep = .quickDecision
+                            flowStep = .explanationAfterQuiz
                         },
                         viewModel: viewModel
                     )
                     .transition(.move(edge: .trailing))
-                    
+
+                case .explanationAfterQuiz:
+                    ExplanationTransitionView(
+                        title: "Casi terminamos",
+                        explanationText: "Toma una decisión rápida según tu intuición. No pienses mucho en la respuesta, solo hazlo.",
+                        iconName: "bolt.circle",
+                        duration: 2.0,
+                        onContinue: {
+                            flowStep = .quickDecision
+                        }
+                    )
+
                 case .quickDecision:
                     QuickDecisionView(
                         viewModel: viewModel,
                         onContinue: {
                             // Mostrar pantalla de carga de resultados
-                            // 1) Mostrar la vista de carga sin animar el offset aún
                             showResultsLoading = true
-                            
-                            // 2) En la siguiente pasada de runloop, animar el offset para que suba
+
                             DispatchQueue.main.async {
                                 withAnimation(.spring(response: 0.7, dampingFraction: 0.6)) {
                                     resultsLoadingOffset = 0
                                 }
                             }
-                            
-                            // Simular tiempo de procesamiento (3 segundos)
+
                             DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                                 withAnimation(.easeInOut(duration: 0.5)) {
                                     flowStep = .results
@@ -95,10 +129,10 @@ struct MainTabView: View {
                         }
                     )
                     .transition(.move(edge: .trailing))
-                    
+
                 case .loadingResults:
                     EmptyView()
-                    
+
                 case .results:
                     ResultsView(
                         onContinue: {

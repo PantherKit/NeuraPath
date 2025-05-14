@@ -26,54 +26,45 @@ struct CareerCarouselView: View {
     private let carouselHeight: CGFloat = 220.0
     
     var body: some View {
-        VStack(spacing: 20) {
-            // Título
-            Text("Carreras Recomendadas")
-                .font(.system(size: 22, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal)
-            
-            // Carrusel horizontal
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: cardSpacing) {
-                    // Carreras originales
-                    ForEach(careers) { career in
-                        CareerCardView(career: career)
-                            .frame(width: cardWidth, height: carouselHeight)
-                    }
-                    
-                    // Duplicar las primeras carreras para crear efecto continuo
-                    ForEach(careers.prefix(3)) { career in
-                        CareerCardView(career: career)
-                            .frame(width: cardWidth, height: carouselHeight)
+        // Carrusel horizontal
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: cardSpacing) {
+                // Carreras originales
+                ForEach(careers) { career in
+                    CareerCardView(career: career)
+                        .frame(width: cardWidth, height: carouselHeight)
+                }
+                
+                // Duplicar las primeras carreras para crear efecto continuo
+                ForEach(careers.prefix(3)) { career in
+                    CareerCardView(career: career)
+                        .frame(width: cardWidth, height: carouselHeight)
+                }
+            }
+            .padding(.horizontal)
+            .offset(x: -scrollOffset)
+        }
+        .gesture(
+            DragGesture()
+                .onChanged { _ in
+                    // Pausa el auto-scrolling durante el arrastre manual
+                    autoScrolling = false
+                    isDragging = true
+                }
+                .onEnded { _ in
+                    // Reanudar después de un breve retraso
+                    isDragging = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        autoScrolling = true
                     }
                 }
-                .padding(.horizontal)
-                .offset(x: -scrollOffset)
-            }
-            .gesture(
-                DragGesture()
-                    .onChanged { _ in
-                        // Pausa el auto-scrolling durante el arrastre manual
-                        autoScrolling = false
-                        isDragging = true
-                    }
-                    .onEnded { _ in
-                        // Reanudar después de un breve retraso
-                        isDragging = false
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            autoScrolling = true
-                        }
-                    }
-            )
-            .onAppear {
-                startAutoScroll()
-            }
-            .onDisappear {
-                // Detener el timer cuando la vista desaparece
-                autoScrolling = false
-            }
+        )
+        .onAppear {
+            startAutoScroll()
+        }
+        .onDisappear {
+            // Detener el timer cuando la vista desaparece
+            autoScrolling = false
         }
     }
     

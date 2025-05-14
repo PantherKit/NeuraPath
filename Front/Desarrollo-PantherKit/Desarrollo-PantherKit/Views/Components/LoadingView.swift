@@ -56,7 +56,7 @@ struct LoadingView: View {
                 }
                 
                 // Texto de carga con tipografía espacial
-                Text("Launch Sequence Initiated")
+                Text("¡Empecemos este viaje!")
                     .font(.system(size: 20, weight: .bold, design: .rounded))
                     .foregroundColor(Color(red: 0.2, green: 0.2, blue: 0.4))
                     .shadow(color: Color.white.opacity(0.5), radius: 2, x: 0, y: 1)

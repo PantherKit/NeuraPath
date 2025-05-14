@@ -10,7 +10,7 @@ import SwiftUI
 import Combine
 
 class VocationalTestViewModel: ObservableObject {
-    // Published properties that the views can observe
+    // Propiedades publicadas que las vistas pueden observar
     @Published var missions: [Mission] = []
     @Published var currentMissionIndex: Int = 0
     @Published var selectedAvatar: Avatar?
@@ -21,7 +21,7 @@ class VocationalTestViewModel: ObservableObject {
     @Published var recommendedCareers: [UniversityCareer] = []
     @Published var showCareerCarousel: Bool = false
     
-    // Tracking user choices
+    // Seguimiento de las elecciones del usuario
     @Published var userChoices: [UUID: MissionOption] = [:]
     
     // Timer para actualizar el desplazamiento de carreras
@@ -51,42 +51,42 @@ class VocationalTestViewModel: ObservableObject {
         return currentMissionIndex == missions.count - 1
     }
     
-    // Cancellables set to store subscriptions
+    // Conjunto de cancelables para almacenar suscripciones
     private var cancellables = Set<AnyCancellable>()
     
     init() {
         loadMissions()
     }
     
-    // MARK: - Data Loading
+    // MARK: - Carga de datos
     
     func loadMissions() {
         isLoading = true
         errorMessage = nil
         
-        // In a real app, you might load from an API or database
-        // For now, we'll use sample data
+        // En una aplicación real, podrías cargar desde una API o base de datos
+        // Por ahora, usaremos datos de muestra
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             guard let self = self else { return }
             
             self.missions = Mission.sampleMissions
             self.isLoading = false
             
-            // Shuffle missions to make each test experience unique
+            // Barajar misiones para hacer única cada experiencia de prueba
             self.missions.shuffle()
             
-            // Limit to 5 missions for a quick test
+            // Limitar a 5 misiones para una prueba rápida
             if self.missions.count > 5 {
                 self.missions = Array(self.missions.prefix(5))
             }
         }
     }
     
-    // MARK: - Navigation
+    // MARK: - Navegación
     
     func nextMission() {
         guard currentMissionIndex < missions.count - 1 else {
-            // This is the last mission, complete the test
+            // Esta es la última misión, completar la prueba
             completeTest()
             return
         }
@@ -99,12 +99,12 @@ class VocationalTestViewModel: ObservableObject {
         currentMissionIndex -= 1
     }
     
-    // MARK: - User Choices
+    // MARK: - Elecciones del usuario
     
     func selectOption(_ option: MissionOption, for mission: Mission) {
         userChoices[mission.id] = option
         
-        // Provide haptic feedback
+        // Proporcionar retroalimentación háptica
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
     }
@@ -113,19 +113,19 @@ class VocationalTestViewModel: ObservableObject {
         return userChoices[mission.id]?.id == option.id
     }
     
-    // MARK: - Test Completion
+    // MARK: - Finalización de la prueba
     
     func completeTest() {
         guard let avatar = selectedAvatar else {
-            errorMessage = "Please select an avatar before completing the test"
+            errorMessage = "Por favor selecciona un avatar antes de completar la prueba"
             return
         }
         
-        // Calculate field scores
+        // Calcular puntuaciones de campos
         var fieldScores: [EngineeringField: Double] = [:]
         var traitScores: [PersonalityTrait: Double] = [:]
         
-        // Initialize scores for all fields and traits
+        // Inicializar puntuaciones para todos los campos y rasgos
         for field in EngineeringField.allCases {
             fieldScores[field] = 0.0
         }
@@ -134,25 +134,25 @@ class VocationalTestViewModel: ObservableObject {
             traitScores[trait] = 0.0
         }
         
-        // Calculate scores based on user choices
+        // Calcular puntuaciones basadas en las elecciones del usuario
         for (missionID, option) in userChoices {
-            // Find the corresponding mission
+            // Encontrar la misión correspondiente
             guard let mission = missions.first(where: { $0.id == missionID }) else { continue }
             
-            // Add weights for each field
+            // Agregar pesos para cada campo
             for (fieldName, weight) in option.fieldWeights {
                 if let field = EngineeringField.allCases.first(where: { $0.rawValue == fieldName }) {
                     fieldScores[field, default: 0.0] += weight
                 }
             }
             
-            // Add scores for traits
+            // Agregar puntuaciones para rasgos
             for trait in option.traits {
                 traitScores[trait, default: 0.0] += 1.0
             }
         }
         
-        // Normalize scores
+        // Normalizar puntuaciones
         let maxFieldScore = fieldScores.values.max() ?? 1.0
         let maxTraitScore = traitScores.values.max() ?? 1.0
         
@@ -164,41 +164,55 @@ class VocationalTestViewModel: ObservableObject {
             traitScores[trait] = (traitScores[trait] ?? 0.0) / maxTraitScore
         }
         
-        // Create test result
+        // Crear resultado de la prueba
         testResult = TestResult(
             avatar: avatar,
             fieldScores: fieldScores,
             traitScores: traitScores
         )
         
-        // Update recommended careers based on test result
-        if let result = testResult {
-            recommendedCareers = UniversityCareer.getRecommendedCareers(from: result)
-        }
-        
-        // Send anonymous data for analysis
+        // Enviar datos anónimos para análisis
         sendAnonymousData()
         
-        // Mark test as completed
+        // Marcar prueba como completada
         testCompleted = true
+
+        // Guardar resultado de la prueba en archivo JSON para posterior POST
+        saveTestResultToJSON()
     }
     
-    // MARK: - Data Analysis
+    // MARK: - Guardar JSON localmente
+    private func saveTestResultToJSON() {
+        guard let result = testResult else { return }
+        do {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .prettyPrinted
+            let data = try encoder.encode(result)
+            let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+            let fileURL = directory.appendingPathComponent("testResult.json")
+            try data.write(to: fileURL)
+            print("Resultado de la prueba guardado en JSON en \(fileURL)")
+        } catch {
+            print("Error al guardar el resultado de la prueba en JSON: \(error)")
+        }
+    }
+    
+    // MARK: - Análisis de datos
     
     private func sendAnonymousData() {
         guard let result = testResult else { return }
         
-        // In a real app, you would send this data to your Hadoop cluster
+        // En una aplicación real, enviarías estos datos a tu clúster de Hadoop
         let anonymousData = result.anonymousData()
         
-        // For now, we'll just print it to the console
-        print("Anonymous data for analysis: \(anonymousData)")
+        // Por ahora, solo lo imprimiremos en la consola
+        print("Datos anónimos para análisis: \(anonymousData)")
         
-        // In a real implementation, you would use URLSession or a networking library
-        // to send this data to your backend
+        // En una implementación real, usarías URLSession o una biblioteca de red
+        // para enviar estos datos a tu backend
     }
     
-    // MARK: - Reset Test
+    // MARK: - Reiniciar prueba
     
     func resetTest() {
         currentMissionIndex = 0
@@ -208,25 +222,25 @@ class VocationalTestViewModel: ObservableObject {
         selectedAvatar = nil
         recommendedCareers = []
         
-        // Reload missions to get a fresh set
+        // Recargar misiones para obtener un nuevo conjunto
         loadMissions()
     }
     
-    // MARK: - Career Swipe View
+    // MARK: - Vista de deslizamiento de carrera
     
     func updateFieldScore(_ field: EngineeringField, by value: Double) {
-        // Initialize test result if it doesn't exist
+        // Inicializar resultado de la prueba si no existe
         if testResult == nil {
-            // Create a default avatar if none selected
+            // Crear un avatar predeterminado si no se selecciona ninguno
             let defaultAvatar = selectedAvatar ?? Avatar.allAvatars.first!
             
-            // Initialize empty field scores
+            // Inicializar puntuaciones de campos vacías
             var fieldScores: [EngineeringField: Double] = [:]
             for field in EngineeringField.allCases {
                 fieldScores[field] = 0.0
             }
             
-            // Initialize empty trait scores
+            // Inicializar puntuaciones de rasgos vacías
             var traitScores: [PersonalityTrait: Double] = [:]
             for trait in PersonalityTrait.allCases {
                 traitScores[trait] = 0.0
@@ -239,27 +253,27 @@ class VocationalTestViewModel: ObservableObject {
             )
         }
         
-        // Update the score for the specified field
+        // Actualizar la puntuación para el campo especificado
         if var fieldScores = testResult?.fieldScores {
             fieldScores[field, default: 0.0] += value
             testResult?.fieldScores = fieldScores
         }
     }
     
-    // Add updateTraitScore method
+    // Agregar método updateTraitScore
     func updateTraitScore(_ trait: PersonalityTrait, by value: Double) {
-        // Initialize test result if it doesn't exist
+        // Inicializar resultado de la prueba si no existe
         if testResult == nil {
-            // Create a default avatar if none selected
+            // Crear un avatar predeterminado si no se selecciona ninguno
             let defaultAvatar = selectedAvatar ?? Avatar.allAvatars.first!
             
-            // Initialize empty field scores
+            // Inicializar puntuaciones de campos vacías
             var fieldScores: [EngineeringField: Double] = [:]
             for field in EngineeringField.allCases {
                 fieldScores[field] = 0.0
             }
             
-            // Initialize empty trait scores
+            // Inicializar puntuaciones de rasgos vacías
             var traitScores: [PersonalityTrait: Double] = [:]
             for trait in PersonalityTrait.allCases {
                 traitScores[trait] = 0.0
@@ -272,14 +286,14 @@ class VocationalTestViewModel: ObservableObject {
             )
         }
         
-        // Update the score for the specified trait
+        // Actualizar la puntuación para el rasgo especificado
         if var traitScores = testResult?.traitScores {
             traitScores[trait, default: 0.0] += value
             testResult?.traitScores = traitScores
         }
     }
     
-    // MARK: - Galaxy Results View Helpers
+    // MARK: - Ayudantes de vista de resultados de la galaxia
     
     var fieldScores: [EngineeringField: Double] {
         return testResult?.fieldScores ?? [:]
@@ -312,23 +326,23 @@ class VocationalTestViewModel: ObservableObject {
         return (fieldScores[field] ?? 0.0) / maxScore
     }
     
-    // MARK: - Feedback Generation
+    // MARK: - Generación de retroalimentación
     
     func generateFeedback() -> String {
-        guard let result = testResult else { return "Complete the test to see your results!" }
+        guard let result = testResult else { return "¡Completa la prueba para ver tus resultados!" }
         
         let primaryField = result.primaryField
         let secondaryField = result.secondaryField
         let primaryTrait = result.primaryTrait
         
-        var feedback = "Based on your choices, you might enjoy exploring \(primaryField.rawValue)!\n\n"
+        var feedback = "¡Basado en tus elecciones, podrías disfrutar explorando \(primaryField.rawValue)!\n\n"
         
-        feedback += "You seem to be \(primaryTrait.description.lowercased()). "
-        feedback += "Your interests align well with \(primaryField.rawValue), which \(primaryField.description.lowercased())\n\n"
+        feedback += "Pareces ser \(primaryTrait.description.lowercased()). "
+        feedback += "Tus intereses se alinean bien con \(primaryField.rawValue), que \(primaryField.description.lowercased())\n\n"
         
-        feedback += "You might also enjoy \(secondaryField.rawValue), especially if you're interested in \(secondaryField.realWorldExample).\n\n"
+        feedback += "También podrías disfrutar \(secondaryField.rawValue), especialmente si estás interesado en \(secondaryField.realWorldExample).\n\n"
         
-        feedback += "Engineers in these fields work on exciting projects like:\n"
+        feedback += "Los ingenieros en estos campos trabajan en proyectos emocionantes como:\n"
         feedback += "• \(primaryField.realWorldExample)\n"
         feedback += "• \(secondaryField.realWorldExample)"
         

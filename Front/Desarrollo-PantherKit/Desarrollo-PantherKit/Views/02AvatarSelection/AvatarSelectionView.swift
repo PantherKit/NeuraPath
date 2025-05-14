@@ -86,7 +86,7 @@ struct AvatarSelectionView: View {
     
     private var headerSection: some View {
         VStack(spacing: 12) {
-            Text("Choose Your STEM Avatar")
+            Text("Primero, cuéntanos... ¿Qué personalidad va más contigo?")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
                 .multilineTextAlignment(.center)
                 .foregroundColor(textColor)
@@ -94,7 +94,7 @@ struct AvatarSelectionView: View {
                 .offset(y: animateTitle ? 0 : -30)
                 .shadow(color: accentColor.opacity(0.3), radius: 10, x: 0, y: 5)
             
-            Text("Your digital companion for this engineering journey")
+            Text("Empecemos por algo sencillo, por qué es lo que te apasiona.")
                 .font(.system(size: 18, weight: .medium, design: .rounded))
                 .foregroundColor(secondaryTextColor)
                 .multilineTextAlignment(.center)
@@ -150,7 +150,7 @@ struct AvatarSelectionView: View {
             }
         }) {
             HStack(spacing: 12) {
-                Text("Launch Journey")
+                Text("¡Sigamos!")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundColor(Color.black)
                 
