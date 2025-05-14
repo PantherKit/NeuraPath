@@ -101,11 +101,11 @@ struct MainTabView: View {
                     
                 case .results:
                     ResultsView(
-                        viewModel: viewModel,
                         onContinue: {
                             flowStep = .welcome
                         }
                     )
+                    .environmentObject(viewModel)
                     .transition(.move(edge: .leading))
                 }
             }
