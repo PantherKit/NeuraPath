@@ -403,9 +403,11 @@ struct VocationalCardSwipeView: View {
 struct VocationalCardView_Previews: PreviewProvider {
     static var previews: some View {
         let viewModel = VocationalTestViewModel()
+        viewModel.missions = Mission.sampleMissions // ← ¡esto es importante!
+        viewModel.currentMissionIndex = 0
         
         return Group {
-            if let mission = Mission.sampleMissions.first {
+            if let mission = viewModel.currentMission {
                 VocationalCardView(
                     mission: mission,
                     onSwipedAway: { _ in }
@@ -414,8 +416,9 @@ struct VocationalCardView_Previews: PreviewProvider {
                 .padding()
                 .background(Color.gray.opacity(0.1))
             }
-            
+
             VocationalCardSwipeView(viewModel: viewModel)
         }
     }
 }
+

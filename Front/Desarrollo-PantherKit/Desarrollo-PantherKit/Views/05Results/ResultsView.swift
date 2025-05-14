@@ -1,20 +1,23 @@
 import SwiftUI
 
 struct ResultsView: View {
-    @ObservedObject var viewModel: VocationalTestViewModel
+    @EnvironmentObject var viewModel: VocationalTestViewModel
     @Environment(\.presentationMode) var presentationMode
-    @State private var animateContent = false
+    var onContinue: () -> Void
+    
+    // State properties
     @State private var showingFieldDetail: EngineeringField?
-    @State private var showStars = false
-    @State private var showNebulas = false
+    @State private var showStars: Bool = false
+    @State private var showNebulas: Bool = false
+    @State private var animateContent: Bool = false
     @State private var rocketOffset: CGFloat = 0
     @State private var rocketRotation: Double = 0
-    let onContinue: () -> Void
+    @State private var selectedCareerForSubjects: UniversityCareer?
+    @State private var showingCarousel: Bool = false  // Para controlar la sheet modal
     
-    // Colores consistentes con QuickDecisionView
+    // Colors
     private let accentColor = Color(red: 0.25, green: 0.72, blue: 0.85)
-    private let secondaryColor = Color(red: 0.2, green: 0.6, blue: 1.0)
-    private let successColor = Color(red: 0.2, green: 0.8, blue: 0.4)
+    private let secondaryColor = Color(red: 0.35, green: 0.42, blue: 0.95)
     
     var body: some View {
         ZStack {
@@ -34,6 +37,9 @@ struct ResultsView: View {
         .navigationBarBackButtonHidden(true)
         .sheet(item: $showingFieldDetail) { field in
             fieldDetailView(field: field)
+        }
+        .sheet(isPresented: $showingCarousel) {
+            careerCarouselSheet
         }
         .onAppear {
             startAnimations()
@@ -109,6 +115,52 @@ struct ResultsView: View {
         }
     }
     
+    private var careerCarouselSheet: some View {
+        ZStack {
+            Color.black.opacity(0.95).edgesIgnoringSafeArea(.all)
+            
+            VStack {
+                // Header con título y botón de cierre
+                HStack {
+                    Text("Carreras Recomendadas")
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                    
+                    Spacer()
+                    
+                    Button(action: {
+                        withAnimation(.spring()) {
+                            viewModel.hideCarousel()
+                            showingCarousel = false
+                        }
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.white.opacity(0.8))
+                            .font(.system(size: 28))
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 20)
+                
+                // Carrusel
+                if !viewModel.recommendedCareers.isEmpty {
+                    CareerCarouselView(careers: viewModel.recommendedCareers)
+                        .environmentObject(viewModel)
+                        .padding(.top, 20)
+                } else {
+                    Text("No se encontraron carreras para este campo")
+                        .foregroundColor(.white.opacity(0.7))
+                        .padding(.top, 40)
+                }
+                
+                Spacer()
+            }
+            .padding(.vertical)
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+    
     private func resultContent(_ result: TestResult) -> some View {
         ScrollView {
             VStack(spacing: 30) {
@@ -121,7 +173,9 @@ struct ResultsView: View {
                     score: result.fieldScores[result.primaryField] ?? 0.0,
                     isPrimary: true,
                     action: {
-                        showingFieldDetail = result.primaryField
+                        // Mostrar carrusel filtrado para el campo primario
+                        viewModel.showCarouselFor(field: result.primaryField)
+                        showingCarousel = true
                     }
                 )
                 .padding(.horizontal)
@@ -134,7 +188,9 @@ struct ResultsView: View {
                     score: result.fieldScores[result.secondaryField] ?? 0.0,
                     isPrimary: false,
                     action: {
-                        showingFieldDetail = result.secondaryField
+                        // Mostrar carrusel filtrado para el campo secundario
+                        viewModel.showCarouselFor(field: result.secondaryField)
+                        showingCarousel = true
                     }
                 )
                 .padding(.horizontal)
@@ -338,8 +394,13 @@ struct FieldResultCard: View {
     let isPrimary: Bool
     let action: () -> Void
     
+    @State private var isPressed: Bool = false
+    
     var body: some View {
-        Button(action: action) {
+        Button(action: {
+            hapticFeedback()
+            action()
+        }) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     // Icono
@@ -406,8 +467,16 @@ struct FieldResultCard: View {
                     
                     Spacer()
                     
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(field.color)
+                    // Añadir etiqueta para indicar que se puede ver carreras
+                    HStack(spacing: 4) {
+                        Text("Ver carreras")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(field.color)
+                        
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(field.color)
+                            .font(.system(size: 12))
+                    }
                 }
             }
             .padding(20)
@@ -420,8 +489,18 @@ struct FieldResultCard: View {
                     )
             )
             .shadow(color: isPrimary ? field.color.opacity(0.3) : .clear, radius: 20, x: 0, y: 5)
+            .scaleEffect(isPressed ? 0.98 : 1.0)
+            .animation(.spring(response: 0.3), value: isPressed)
         }
-        .buttonStyle(ScaleButtonStyle())
+        .buttonStyle(PlainButtonStyle())
+        .onLongPressGesture(minimumDuration: .infinity, maximumDistance: .infinity, pressing: { pressing in
+            self.isPressed = pressing
+        }, perform: {})
+    }
+    
+    private func hapticFeedback() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
     }
 }
 
@@ -518,5 +597,10 @@ struct Particle: Identifiable {
             .communicator: 0.2
         ]
     )
-    return ResultsView(viewModel: viewModel, onContinue: {})
+    
+    // Add recommended careers for preview
+    viewModel.recommendedCareers = UniversityCareer.getRecommendedCareers(from: viewModel.testResult!)
+    
+    return ResultsView(onContinue: {})
+        .environmentObject(viewModel)
 }

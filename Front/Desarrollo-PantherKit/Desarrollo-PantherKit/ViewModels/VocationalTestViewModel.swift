@@ -18,11 +18,16 @@ class VocationalTestViewModel: ObservableObject {
     @Published var testResult: TestResult?
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var recommendedCareers: [UniversityCareer] = []
+    @Published var showCareerCarousel: Bool = false
     
     // Seguimiento de las elecciones del usuario
     @Published var userChoices: [UUID: MissionOption] = [:]
     
-    // Propiedades calculadas
+    // Timer para actualizar el desplazamiento de carreras
+    private var carouselTimer: Timer?
+    
+    // Computed properties
     var currentMission: Mission? {
         guard currentMissionIndex < missions.count else { return nil }
         return missions[currentMissionIndex]
@@ -215,6 +220,7 @@ class VocationalTestViewModel: ObservableObject {
         testCompleted = false
         testResult = nil
         selectedAvatar = nil
+        recommendedCareers = []
         
         // Recargar misiones para obtener un nuevo conjunto
         loadMissions()
@@ -341,5 +347,82 @@ class VocationalTestViewModel: ObservableObject {
         feedback += "• \(secondaryField.realWorldExample)"
         
         return feedback
+    }
+    
+    // MARK: - Career Carousel Control
+    
+    func showCarouselFor(field: EngineeringField) {
+        // Filter careers to show only those matching the selected field
+        if let result = testResult {
+            // Start with all recommended careers
+            let allRecommendedCareers = UniversityCareer.getRecommendedCareers(from: result)
+            
+            // Filter by field
+            let fieldCareers = allRecommendedCareers.filter { $0.field == field }
+            
+            // If no careers found for this specific field, show all recommended
+            if fieldCareers.isEmpty {
+                recommendedCareers = allRecommendedCareers
+            } else {
+                recommendedCareers = fieldCareers
+            }
+            
+            // Show the carousel with animation
+            withAnimation(.spring()) {
+                showCareerCarousel = true
+            }
+            
+            // Iniciar el temporizador para el desplazamiento continuo
+            startCarouselAutoScroll()
+        }
+    }
+    
+    func hideCarousel() {
+        // Hide the carousel with animation
+        withAnimation(.spring()) {
+            showCareerCarousel = false
+        }
+        
+        // Detener el temporizador
+        stopCarouselAutoScroll()
+        
+        // After hiding, restore all recommended careers with a delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            guard let self = self, let result = self.testResult else { return }
+            self.recommendedCareers = UniversityCareer.getRecommendedCareers(from: result)
+        }
+    }
+    
+    // Iniciar desplazamiento automático del carrusel
+    private func startCarouselAutoScroll() {
+        // Detener cualquier temporizador existente
+        stopCarouselAutoScroll()
+        
+        // Crear nuevo temporizador que se dispara cada 3 segundos
+        carouselTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { [weak self] _ in
+            guard let self = self, !self.recommendedCareers.isEmpty else { return }
+            
+            withAnimation(.easeInOut(duration: 1.0)) {
+                // Rotar las carreras para crear efecto de desplazamiento hacia la derecha
+                // (mover el último elemento al principio)
+                if let lastCareer = self.recommendedCareers.last {
+                    var updatedCareers = self.recommendedCareers
+                    updatedCareers.removeLast()
+                    updatedCareers.insert(lastCareer, at: 0)
+                    self.recommendedCareers = updatedCareers
+                }
+            }
+        }
+    }
+    
+    // Detener desplazamiento automático
+    private func stopCarouselAutoScroll() {
+        carouselTimer?.invalidate()
+        carouselTimer = nil
+    }
+    
+    // Asegurar que el temporizador se detenga cuando el ViewModel sea liberado
+    deinit {
+        stopCarouselAutoScroll()
     }
 }
