@@ -103,16 +103,7 @@ struct QuickDecisionView: View {
             
             // Estrellas
             if showStars {
-                ForEach(0..<150) { _ in
-                    Circle()
-                        .fill(Color.white)
-                        .frame(width: CGFloat.random(in: 1...3))
-                        .opacity(Double.random(in: 0.1...0.8))
-                        .position(
-                            x: CGFloat.random(in: 0..<UIScreen.main.bounds.width),
-                            y: CGFloat.random(in: 0..<UIScreen.main.bounds.height)
-                        )
-                }
+                StarField()
             }
             
             // Nébulas - versión corregida
