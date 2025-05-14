@@ -334,17 +334,55 @@ class VocationalTestViewModel: ObservableObject {
         let primaryField = result.primaryField
         let secondaryField = result.secondaryField
         let primaryTrait = result.primaryTrait
+        let secondaryTrait = result.secondaryTrait
         
-        var feedback = "¡Basado en tus elecciones, podrías disfrutar explorando \(primaryField.rawValue)!\n\n"
+        // Porcentajes exactos para los campos principales
+        let primaryScore = Int((result.fieldScores[primaryField] ?? 0.0) * 100)
+        let secondaryScore = Int((result.fieldScores[secondaryField] ?? 0.0) * 100)
         
-        feedback += "Pareces ser \(primaryTrait.description.lowercased()). "
-        feedback += "Tus intereses se alinean bien con \(primaryField.rawValue), que \(primaryField.description.lowercased())\n\n"
+        // Construir un mensaje más personalizado basado en las respuestas reales
+        var feedback = "Basado en las respuestas de tu test vocacional, tienes una afinidad del \(primaryScore)% con \(primaryField.rawValue). "
         
-        feedback += "También podrías disfrutar \(secondaryField.rawValue), especialmente si estás interesado en \(secondaryField.realWorldExample).\n\n"
+        // Añadir información sobre los rasgos de personalidad
+        feedback += "Tu perfil destaca como \(primaryTrait.rawValue.lowercased()) y \(secondaryTrait.rawValue.lowercased()), lo que se alinea perfectamente con las carreras en este campo.\n\n"
         
-        feedback += "Los ingenieros en estos campos trabajan en proyectos emocionantes como:\n"
+        // Mencionar campo secundario
+        feedback += "También muestras un \(secondaryScore)% de compatibilidad con \(secondaryField.rawValue), lo que te ofrece una alternativa interesante.\n\n"
+        
+        // Áreas de aplicación específicas según las respuestas
+        feedback += "Tus respuestas sugieren que podrías destacar en:\n"
         feedback += "• \(primaryField.realWorldExample)\n"
-        feedback += "• \(secondaryField.realWorldExample)"
+        
+        // Consejos específicos basados en rasgos
+        feedback += "\nPara desarrollar tu potencial en \(primaryField.rawValue):\n"
+        
+        // Añadir consejos personalizados según el rasgo principal
+        switch primaryTrait {
+        case .analytical:
+            feedback += "• Busca oportunidades para analizar datos y resolver problemas complejos\n"
+            feedback += "• Considera cursos adicionales en matemáticas y estadística"
+        case .creative:
+            feedback += "• Participa en proyectos que requieran soluciones innovadoras\n"
+            feedback += "• Explora opciones de diseño dentro de tu campo técnico"
+        case .teamPlayer:
+            feedback += "• Busca programas con componentes de trabajo en equipo\n"
+            feedback += "• Considera especializaciones en gestión de proyectos"
+        case .practical:
+            feedback += "• Enfócate en aplicaciones prácticas de los conceptos teóricos\n"
+            feedback += "• Busca programas con componentes de laboratorio o prácticas profesionales"
+        case .detailOriented:
+            feedback += "• Considera especializaciones que requieran precisión y atención al detalle\n"
+            feedback += "• Busca certificaciones técnicas específicas"
+        case .bigPictureThinker:
+            feedback += "• Explora roles que permitan visión estratégica y planificación\n"
+            feedback += "• Considera complementar con estudios en gestión o administración"
+        case .problemSolver:
+            feedback += "• Enfócate en programas que enfaticen la resolución de problemas complejos\n"
+            feedback += "• Busca experiencias en investigación o desarrollo"
+        case .communicator:
+            feedback += "• Considera roles técnicos que también requieran habilidades de comunicación\n"
+            feedback += "• Explora oportunidades en áreas como documentación técnica o educación STEM"
+        }
         
         return feedback
     }
