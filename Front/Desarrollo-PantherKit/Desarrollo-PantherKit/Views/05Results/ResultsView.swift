@@ -424,11 +424,6 @@ struct ResultsView: View {
     private func resultHeader(_ result: TestResult) -> some View {
         ZStack(alignment: .top) {
             // Cohete animado
-            Text("🚀")
-                .font(.system(size: 40))
-                .rotationEffect(.degrees(rocketRotation))
-                .offset(y: rocketOffset)
-                .shadow(radius: 10, x: 0, y: 0)
             
             VStack(spacing: 20) {
                 // Avatar

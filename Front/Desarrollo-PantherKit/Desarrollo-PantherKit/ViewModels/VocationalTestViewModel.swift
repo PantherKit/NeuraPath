@@ -116,10 +116,21 @@ class VocationalTestViewModel: ObservableObject {
     // MARK: - Finalización de la prueba
     
     func completeTest() {
+        
+        if userChoices.isEmpty, testResult != nil {
+            testCompleted = true
+            // (opcional) sigue enviando/guardando tu resultado
+            saveTestResultToJSON()
+            uploadTestResult()
+            return
+        }
+        
+        
         guard let avatar = selectedAvatar else {
             errorMessage = "Por favor selecciona un avatar antes de completar la prueba"
             return
         }
+
         
         // Calcular puntuaciones de campos
         var fieldScores: [EngineeringField: Double] = [:]
@@ -220,15 +231,15 @@ class VocationalTestViewModel: ObservableObject {
         
     }
     
-    func uploadTestResult() {
+    func uploadTestResult(retries: Int = 3) {
         guard let result = testResult else {
             print("No hay resultado de test para enviar")
             return
         }
 
-        // Construir el diccionario del JSON manualmente (como backend espera)
+        // Construir el payload JSON
         let payload: [String: Any] = [
-            "usuario_id": UUID().uuidString,  // puedes usar ID anónimo o de sesión
+            "usuario_id": UUID().uuidString,
             "respuestas": result.anonymousData()
         ]
 
@@ -240,7 +251,6 @@ class VocationalTestViewModel: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: payload, options: [])
         } catch {
@@ -248,27 +258,38 @@ class VocationalTestViewModel: ObservableObject {
             return
         }
 
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            // Error de red
             if let error = error {
-                print("Error de red: \(error.localizedDescription)")
-                return
+                print("Error de red: \(error.localizedDescription). Quedan \(retries) intentos.")
             }
 
-            if let httpResponse = response as? HTTPURLResponse {
-                print("Respuesta del servidor: \(httpResponse.statusCode)")
-                if httpResponse.statusCode == 200 {
+            // Respuesta HTTP
+            if let http = response as? HTTPURLResponse {
+                print("Código de respuesta: \(http.statusCode)")
+                if http.statusCode == 200 {
                     print("✅ Resultado enviado correctamente")
+                    return
                 } else {
-                    print("❌ Falló el envío. Código: \(httpResponse.statusCode)")
+                    print("⚠️ Falló el envío. Código: \(http.statusCode). Quedan \(retries) intentos.")
                 }
             }
 
-            if let data = data, let responseBody = String(data: data, encoding: .utf8) {
-                print("Respuesta del backend: \(responseBody)")
+            // Body del servidor
+            if let data = data, let body = String(data: data, encoding: .utf8) {
+                print("Respuesta del backend: \(body)")
+            }
+
+            // Reintentar si quedan intentos
+            if retries > 0 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    self.uploadTestResult(retries: retries - 1)
+                }
+            } else {
+                print("❌ Tras varios intentos, persiste el error 503 Service Unavailable.")
             }
         }
-
-        task.resume()
+        .resume()
     }
     
     // MARK: - Análisis de datos
