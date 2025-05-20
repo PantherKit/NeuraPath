@@ -5,16 +5,18 @@ services:
     image: postgres:14
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     env_file:
       - ./.env
     environment:
-      - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
-      - POSTGRES_DB=${POSTGRES_DB:-stem_careers}
+      POSTGRES_USER: nlp
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: stem_careers
+
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U nlp -d stem_careers"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -27,12 +29,13 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     env_file:
       - ./.env
     environment:
       - POSTGRES_HOST=db
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-stem_careers}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-nlp}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-stem_careers}
 
 volumes:
   postgres_data: 
