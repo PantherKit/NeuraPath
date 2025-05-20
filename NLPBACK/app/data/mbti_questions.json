@@ -1,0 +1,146 @@
+[
+  {
+    "id": 1,
+    "question": "Cuando estás en grupo, prefieres:",
+    "dimension": "E/I",
+    "options": [
+      {"text": "Iniciar conversaciones y conocer a todos", "value": "E"},
+      {"text": "Escuchar y hablar cuando tengo algo relevante que decir", "value": "I"}
+    ]
+  },
+  {
+    "id": 2,
+    "question": "Te sientes más cómodo/a:",
+    "dimension": "E/I",
+    "options": [
+      {"text": "En ambientes sociales con mucha gente", "value": "E"},
+      {"text": "En entornos tranquilos con pocas personas", "value": "I"}
+    ]
+  },
+  {
+    "id": 3,
+    "question": "Para recargar energías, prefieres:",
+    "dimension": "E/I",
+    "options": [
+      {"text": "Salir con amigos", "value": "E"},
+      {"text": "Tiempo a solas", "value": "I"}
+    ]
+  },
+  {
+    "id": 4,
+    "question": "Cuando aprendes, te enfocas más en:",
+    "dimension": "S/N",
+    "options": [
+      {"text": "Datos concretos y ejemplos prácticos", "value": "S"},
+      {"text": "Conceptos abstractos y posibilidades teóricas", "value": "N"}
+    ]
+  },
+  {
+    "id": 5,
+    "question": "Cuando trabajas en un proyecto, prefieres:",
+    "dimension": "S/N",
+    "options": [
+      {"text": "Seguir métodos probados paso a paso", "value": "S"},
+      {"text": "Probar enfoques nuevos e innovadores", "value": "N"}
+    ]
+  },
+  {
+    "id": 6,
+    "question": "Te consideras más:",
+    "dimension": "S/N",
+    "options": [
+      {"text": "Práctico/a y orientado/a a la realidad", "value": "S"},
+      {"text": "Imaginativo/a y orientado/a a las ideas", "value": "N"}
+    ]
+  },
+  {
+    "id": 7,
+    "question": "Al tomar decisiones importantes, te basas más en:",
+    "dimension": "T/F",
+    "options": [
+      {"text": "Lógica y análisis objetivo", "value": "T"},
+      {"text": "Valores personales y cómo afecta a otros", "value": "F"}
+    ]
+  },
+  {
+    "id": 8,
+    "question": "En un debate, te importa más:",
+    "dimension": "T/F",
+    "options": [
+      {"text": "Encontrar la verdad, aunque cause incomodidad", "value": "T"},
+      {"text": "Mantener la armonía y considerar los sentimientos", "value": "F"}
+    ]
+  },
+  {
+    "id": 9,
+    "question": "Te consideras principalmente:",
+    "dimension": "T/F",
+    "options": [
+      {"text": "Una persona justa y objetiva", "value": "T"},
+      {"text": "Una persona compasiva y empática", "value": "F"}
+    ]
+  },
+  {
+    "id": 10,
+    "question": "Con respecto a tus actividades diarias, prefieres:",
+    "dimension": "J/P",
+    "options": [
+      {"text": "Planificar con anticipación y seguir horarios", "value": "J"},
+      {"text": "Ser flexible y decidir sobre la marcha", "value": "P"}
+    ]
+  },
+  {
+    "id": 11,
+    "question": "Te sientes más cómodo/a cuando:",
+    "dimension": "J/P",
+    "options": [
+      {"text": "Todo está organizado y decidido", "value": "J"},
+      {"text": "Hay espacio para la improvisación", "value": "P"}
+    ]
+  },
+  {
+    "id": 12,
+    "question": "En tu espacio de trabajo prefieres:",
+    "dimension": "J/P",
+    "options": [
+      {"text": "Un lugar ordenado con todo en su sitio", "value": "J"},
+      {"text": "Un ambiente creativo, aunque haya algo de desorden", "value": "P"}
+    ]
+  },
+  {
+    "id": 13,
+    "question": "En situaciones de estrés, tiendes a:",
+    "dimension": "E/I",
+    "options": [
+      {"text": "Hablar con otros para procesar tus pensamientos", "value": "E"},
+      {"text": "Reflexionar internamente para encontrar soluciones", "value": "I"}
+    ]
+  },
+  {
+    "id": 14,
+    "question": "Cuando lees o estudias, te atraen más los temas:",
+    "dimension": "S/N",
+    "options": [
+      {"text": "Prácticos y aplicables a la vida real", "value": "S"},
+      {"text": "Teóricos y que exploran posibilidades futuras", "value": "N"}
+    ]
+  },
+  {
+    "id": 15,
+    "question": "Cuando alguien está pasando por un problema, prefieres:",
+    "dimension": "T/F",
+    "options": [
+      {"text": "Ayudar a analizar la situación y encontrar soluciones", "value": "T"},
+      {"text": "Ofrecer apoyo emocional y comprensión", "value": "F"}
+    ]
+  },
+  {
+    "id": 16,
+    "question": "En proyectos grupales, prefieres:",
+    "dimension": "J/P",
+    "options": [
+      {"text": "Definir roles y fechas límite claras desde el principio", "value": "J"},
+      {"text": "Mantener las opciones abiertas y adaptarse según avanza el proyecto", "value": "P"}
+    ]
+  }
+] 

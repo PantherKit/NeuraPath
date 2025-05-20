@@ -1,0 +1,130 @@
+[
+  {
+    "id": 1,
+    "question": "¿Qué actividad disfrutas más?",
+    "options": [
+      {"text": "Escribir historias o ensayos", "intelligence_type": "Lin", "score": 1.0},
+      {"text": "Resolver problemas matemáticos", "intelligence_type": "LogMath", "score": 1.0}
+    ]
+  },
+  {
+    "id": 2,
+    "question": "¿Qué tipo de explicación prefieres?",
+    "options": [
+      {"text": "Detallada con ejemplos visuales", "intelligence_type": "Spa", "score": 1.0},
+      {"text": "Lógica con pasos secuenciales", "intelligence_type": "LogMath", "score": 1.0}
+    ]
+  },
+  {
+    "id": 3,
+    "question": "¿Cómo prefieres aprender algo nuevo?",
+    "options": [
+      {"text": "Experimentándolo físicamente", "intelligence_type": "BodKin", "score": 1.0},
+      {"text": "Leyendo y analizando información", "intelligence_type": "Lin", "score": 1.0}
+    ]
+  },
+  {
+    "id": 4,
+    "question": "En tu tiempo libre, prefieres:",
+    "options": [
+      {"text": "Escuchar o crear música", "intelligence_type": "Mus", "score": 1.0},
+      {"text": "Actividades sociales con amigos", "intelligence_type": "Inter", "score": 1.0}
+    ]
+  },
+  {
+    "id": 5,
+    "question": "¿Qué habilidad valoras más en ti mismo?",
+    "options": [
+      {"text": "Entender tus propias emociones y motivaciones", "intelligence_type": "Intra", "score": 1.0},
+      {"text": "Entender y conectar con otras personas", "intelligence_type": "Inter", "score": 1.0}
+    ]
+  },
+  {
+    "id": 6,
+    "question": "Te gustaría trabajar en un proyecto sobre:",
+    "options": [
+      {"text": "Conservación de animales o plantas", "intelligence_type": "Nat", "score": 1.0},
+      {"text": "Diseño de estructuras o espacios", "intelligence_type": "Spa", "score": 1.0}
+    ]
+  },
+  {
+    "id": 7,
+    "question": "Si tuvieras que enseñar algo, preferirías:",
+    "options": [
+      {"text": "Explicar conceptos con palabras precisas", "intelligence_type": "Lin", "score": 1.0},
+      {"text": "Guiar a través de actividades prácticas", "intelligence_type": "BodKin", "score": 1.0}
+    ]
+  },
+  {
+    "id": 8,
+    "question": "¿Qué tipo de desafío disfrutas más?",
+    "options": [
+      {"text": "Problemas que requieren análisis lógico", "intelligence_type": "LogMath", "score": 1.0},
+      {"text": "Componer o interpretar música", "intelligence_type": "Mus", "score": 1.0}
+    ]
+  },
+  {
+    "id": 9,
+    "question": "¿Qué te resulta más fácil recordar?",
+    "options": [
+      {"text": "Rostros y lugares", "intelligence_type": "Spa", "score": 1.0},
+      {"text": "Nombres y fechas", "intelligence_type": "Lin", "score": 1.0}
+    ]
+  },
+  {
+    "id": 10,
+    "question": "¿Cómo prefieres resolver un conflicto?",
+    "options": [
+      {"text": "Mediando entre las partes involucradas", "intelligence_type": "Inter", "score": 1.0},
+      {"text": "Reflexionando sobre tus emociones y las de otros", "intelligence_type": "Intra", "score": 1.0}
+    ]
+  },
+  {
+    "id": 11,
+    "question": "¿Qué información notas primero en un ambiente nuevo?",
+    "options": [
+      {"text": "Elementos naturales como plantas o animales", "intelligence_type": "Nat", "score": 1.0},
+      {"text": "Patrones sonoros o música de fondo", "intelligence_type": "Mus", "score": 1.0}
+    ]
+  },
+  {
+    "id": 12,
+    "question": "¿Qué tipo de actividad física prefieres?",
+    "options": [
+      {"text": "Deportes o danza que requieren coordinación", "intelligence_type": "BodKin", "score": 1.0},
+      {"text": "Actividades en la naturaleza", "intelligence_type": "Nat", "score": 1.0}
+    ]
+  },
+  {
+    "id": 13,
+    "question": "Al estudiar un tema complejo, prefieres:",
+    "options": [
+      {"text": "Discutirlo en grupo para escuchar diferentes perspectivas", "intelligence_type": "Inter", "score": 1.0},
+      {"text": "Reflexionar a solas para entender tus propias ideas", "intelligence_type": "Intra", "score": 1.0}
+    ]
+  },
+  {
+    "id": 14,
+    "question": "¿Qué tipo de representación te ayuda más a entender?",
+    "options": [
+      {"text": "Diagramas, mapas o representaciones visuales", "intelligence_type": "Spa", "score": 1.0},
+      {"text": "Explicaciones rítmicas o musicales", "intelligence_type": "Mus", "score": 1.0}
+    ]
+  },
+  {
+    "id": 15,
+    "question": "En un proyecto de ciencias, preferirías estudiar:",
+    "options": [
+      {"text": "Ecosistemas o comportamiento animal", "intelligence_type": "Nat", "score": 1.0},
+      {"text": "Fórmulas químicas o ecuaciones", "intelligence_type": "LogMath", "score": 1.0}
+    ]
+  },
+  {
+    "id": 16,
+    "question": "Al comunicar ideas importantes, prefieres:",
+    "options": [
+      {"text": "Expresarlo con metáforas y explicaciones verbales", "intelligence_type": "Lin", "score": 1.0},
+      {"text": "Usar gestos y expresiones corporales", "intelligence_type": "BodKin", "score": 1.0}
+    ]
+  }
+] 

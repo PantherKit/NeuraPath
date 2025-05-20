@@ -1,0 +1,92 @@
+[
+  {
+    "nombre": "Ingeniería en Biotecnología",
+    "universidad": "Tec de Monterrey",
+    "descripcion": "Carrera que combina biología y tecnología para el desarrollo de soluciones en salud, alimentos y medio ambiente. Ideal para personas analíticas con interés en ciencias naturales.",
+    "ubicacion": "Querétaro"
+  },
+  {
+    "nombre": "Ciencia de Datos",
+    "universidad": "UNAM",
+    "descripcion": "Carrera enfocada en el análisis de grandes volúmenes de datos, aprendizaje automático y estadística aplicada. Para personas lógicas y analíticas que disfrutan encontrando patrones.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Ingeniería Mecatrónica",
+    "universidad": "IPN",
+    "descripcion": "Combina mecánica, electrónica, control y programación para crear sistemas robotizados y automatizados. Ideal para personas prácticas y creativas con habilidades técnicas.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Diseño UX",
+    "universidad": "IBERO",
+    "descripcion": "Enfocada en crear experiencias digitales centradas en el usuario, combinando diseño e investigación. Para personas creativas y empáticas que disfrutan resolviendo problemas de usuarios.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Ingeniería Ambiental",
+    "universidad": "UAEM",
+    "descripcion": "Carrera enfocada en el desarrollo de soluciones para problemas ambientales y sustentabilidad. Para personas analíticas con vocación por el cuidado del medio ambiente.",
+    "ubicacion": "Toluca"
+  },
+  {
+    "nombre": "Ingeniería en Robótica",
+    "universidad": "Universidad Anáhuac",
+    "descripcion": "Especialización en el diseño, construcción y programación de robots y sistemas autónomos. Ideal para personas metódicas y creativas con interés en automatización.",
+    "ubicacion": "Estado de México"
+  },
+  {
+    "nombre": "Nanotecnología",
+    "universidad": "UANL",
+    "descripcion": "Estudio y manipulación de la materia a escala nanométrica, con aplicaciones en medicina, electrónica y materiales. Para personas detallistas y pacientes con interés en física y química.",
+    "ubicacion": "Monterrey"
+  },
+  {
+    "nombre": "Bioingeniería",
+    "universidad": "UAG",
+    "descripcion": "Enfocada en el desarrollo de soluciones tecnológicas para problemas médicos y biológicos. Ideal para personas con interés en tecnología aplicada a la medicina.",
+    "ubicacion": "Guadalajara"
+  },
+  {
+    "nombre": "Desarrollo de Videojuegos",
+    "universidad": "ITESM",
+    "descripcion": "Especialización en el diseño y programación de experiencias interactivas y videojuegos. Para personas creativas con habilidades técnicas e interés en entretenimiento digital.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Inteligencia Artificial",
+    "universidad": "ITAM",
+    "descripcion": "Enfocada en el desarrollo de sistemas que simulan la inteligencia humana y el aprendizaje automático. Ideal para personas analíticas con interés en matemáticas y programación.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Biotecnología Marina",
+    "universidad": "UABC",
+    "descripcion": "Estudio de organismos marinos para desarrollar productos y soluciones tecnológicas. Para personas con interés en biología marina y aplicaciones industriales.",
+    "ubicacion": "Ensenada"
+  },
+  {
+    "nombre": "Ingeniería en Energías Renovables",
+    "universidad": "UNAM",
+    "descripcion": "Especialización en diseño e implementación de sistemas de energía sostenible. Ideal para personas técnicas con preocupación por la crisis climática y sostenibilidad.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Ingeniería Biomédica",
+    "universidad": "UP",
+    "descripcion": "Combina principios de ingeniería con ciencias médicas para desarrollar tecnologías para el diagnóstico y tratamiento. Para personas analíticas con interés en medicina y tecnología.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Matemáticas Aplicadas",
+    "universidad": "CIMAT",
+    "descripcion": "Enfocada en el uso de teorías y métodos matemáticos para resolver problemas reales en ciencia e industria. Ideal para personas con gran capacidad de abstracción y pensamiento lógico.",
+    "ubicacion": "Guanajuato"
+  },
+  {
+    "nombre": "Ingeniería Aeroespacial",
+    "universidad": "IPN",
+    "descripcion": "Especialización en el diseño, fabricación y mantenimiento de aeronaves y vehículos espaciales. Para personas metódicas con interés en física y mecánica.",
+    "ubicacion": "Ciudad de México"
+  }
+] 
