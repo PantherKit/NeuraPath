@@ -28,6 +28,12 @@ services:
       - .:/app
     ports:
       - "8000:8000"
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
     depends_on:
       db:
         condition: service_healthy
@@ -36,6 +42,7 @@ services:
     environment:
       - POSTGRES_HOST=db
       - DATABASE_URL=postgresql://${POSTGRES_USER:-nlp}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-stem_careers}
+      - TF_CPP_MIN_LOG_LEVEL=2  # Reducir nivel de logs de TensorFlow
 
 volumes:
   postgres_data: 
