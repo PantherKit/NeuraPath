@@ -76,74 +76,38 @@ extension STEMCard {
     static let sampleData: [STEMCard] = [
         STEMCard(
             imageName: "brain.head.profile",
-            title: "Te sientes con más energía cuando…",
+            title: "¿Te recargas de energía estando solo o al convivir con otros?",
             subtitle: "Introversión vs Extroversión",
             details: [
-                CardDetail(icon: "person.3.fill", title: "Opción A (Desliza →)", description: "Estás en una expo STEM hablando con muchas personas"),
-                CardDetail(icon: "person.fill", title: "Opción B (Desliza ←)", description: "Te encierras a resolver un circuito por tu cuenta")
+                CardDetail(icon: "person.3.fill", title: "Opción A (Desliza →)", description: "Al convivir con otros"),
+                CardDetail(icon: "person.fill", title: "Opción B (Desliza ←)", description: "Estando solo")
             ]
         ),
         STEMCard(
             imageName: "brain.head.profile",
-            title: "¿Cómo prefieres trabajar en un proyecto final?",
-            subtitle: "Introversión vs Extroversión",
-            details: [
-                CardDetail(icon: "person.3.sequence.fill", title: "Opción A (Desliza →)", description: "En equipo, rebotando ideas"),
-                CardDetail(icon: "person.fill.checkmark", title: "Opción B (Desliza ←)", description: "A tu ritmo, sin interrupciones")
-            ]
-        ),
-        STEMCard(
-            imageName: "brain.head.profile",
-            title: "Prefieres tareas que…",
+            title: "¿Te enfocas más en los hechos concretos o en ideas abstractas?",
             subtitle: "Sensorial vs Intuición",
             details: [
-                CardDetail(icon: "list.bullet", title: "Opción A (Desliza →)", description: "Tengan pasos claros y específicos"),
-                CardDetail(icon: "lightbulb.fill", title: "Opción B (Desliza ←)", description: "Te permitan imaginar soluciones nuevas")
+                CardDetail(icon: "list.bullet", title: "Opción A (Desliza →)", description: "En los hechos concretos"),
+                CardDetail(icon: "lightbulb.fill", title: "Opción B (Desliza ←)", description: "En ideas abstractas")
             ]
         ),
         STEMCard(
             imageName: "brain.head.profile",
-            title: "¿Qué te interesa más?",
-            subtitle: "Sensorial vs Intuición",
-            details: [
-                CardDetail(icon: "wrench.and.screwdriver.fill", title: "Opción A (Desliza →)", description: "Cómo funcionan las cosas en la realidad"),
-                CardDetail(icon: "brain.head.profile", title: "Opción B (Desliza ←)", description: "Las teorías detrás de cómo podrían funcionar")
-            ]
-        ),
-        STEMCard(
-            imageName: "brain.head.profile",
-            title: "Al tomar decisiones en un equipo…",
+            title: "¿Tomas decisiones más con lógica o con tus emociones?",
             subtitle: "Pensamiento vs Sentimiento",
             details: [
-                CardDetail(icon: "chart.bar.fill", title: "Opción A (Desliza →)", description: "Priorizas la lógica del proyecto"),
-                CardDetail(icon: "heart.fill", title: "Opción B (Desliza ←)", description: "Te enfocas en cómo se sienten tus compañeros")
+                CardDetail(icon: "chart.bar.fill", title: "Opción A (Desliza →)", description: "Con lógica"),
+                CardDetail(icon: "heart.fill", title: "Opción B (Desliza ←)", description: "Con mis emociones")
             ]
         ),
         STEMCard(
             imageName: "brain.head.profile",
-            title: "¿Qué suena más interesante?",
-            subtitle: "Pensamiento vs Sentimiento",
-            details: [
-                CardDetail(icon: "gearshape.2.fill", title: "Opción A (Desliza →)", description: "Optimizar el rendimiento de un sistema"),
-                CardDetail(icon: "figure.2.and.child.holdinghands", title: "Opción B (Desliza ←)", description: "Diseñar una solución que impacte a la comunidad")
-            ]
-        ),
-        STEMCard(
-            imageName: "brain.head.profile",
-            title: "Cuando tienes un reto técnico…",
+            title: "¿Prefieres tener todo planeado o decidir sobre la marcha?",
             subtitle: "Juicio vs Percepción",
             details: [
-                CardDetail(icon: "checklist", title: "Opción A (Desliza →)", description: "Planeas y sigues un esquema paso a paso"),
-                CardDetail(icon: "shuffle", title: "Opción B (Desliza ←)", description: "Improvisas y vas probando cosas sobre la marcha")
-            ]
-        ),
-        STEMCard(
-            imageName: "brain.head.profile",
-            title: "¿Cómo organizas tu trabajo?",
-            subtitle: "Juicio vs Percepción",
-            details: [
-                CardDetail(icon: "calendar", title: "Opción A (Desliza →)", description: "Con listas, fechas y estructura"),
-                CardDetail(icon: "scribble.variable", title: "Opción B (Desliza ←)", description: "Con ideas generales y flexibilidad")
+                CardDetail(icon: "calendar", title: "Opción A (Desliza →)", description: "Tener todo planeado"),
+                CardDetail(icon: "shuffle", title: "Opción B (Desliza ←)", description: "Decidir sobre la marcha")
             ]
         )
     ]
@@ -166,4 +130,20 @@ extension Color {
             blue: .random(in: 0.3...1)
         )
     }
+}
+
+// MARK: - Preview
+struct DeckPreviewView: View {
+    @StateObject private var viewModel = VocationalTestViewModel()
+    
+    var body: some View {
+        DeckViewWrapper(
+            onComplete: { print("Test completed!") },
+            viewModel: viewModel
+        )
+    }
+}
+
+#Preview {
+    DeckPreviewView()
 }
