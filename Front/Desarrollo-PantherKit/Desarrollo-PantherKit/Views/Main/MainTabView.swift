@@ -192,13 +192,8 @@ struct MainTabView: View {
 
                 case .results:
                     ResultsView(
-                        onContinue: {
-                            flowStep = .welcome
-                            // Desactivar toasts al volver al inicio
-                            toastManager.enableToasts(false)
-                        }
+                        viewModel: viewModel
                     )
-                    .environmentObject(viewModel)
                     .transition(.move(edge: .leading))
                     .onAppear {
                         // Habilitar toasts en la pantalla de resultados

@@ -219,7 +219,8 @@ async def process_complete_flow(
     db: Session = Depends(get_db),
     user_id: Optional[int] = None,
     session_id: Optional[str] = None,
-    llm_provider: Optional[str] = Query("openai", description="Proveedor LLM a utilizar: openai, anthropic o mock")
+    llm_provider: Optional[str] = Query("openai", description="Proveedor LLM a utilizar: openai, anthropic o mock"),
+    include_analysis: Optional[bool] = Query(False, description="Incluir análisis detallado de las recomendaciones")
 ):
     """
     Procesa el flujo completo:
@@ -228,7 +229,8 @@ async def process_complete_flow(
     3. Usa el LLMProfileInterpreter para obtener el perfil MBTI y MI
     4. Guarda el resultado en la base de datos
     5. Pasa el resultado a la red neuronal para generar recomendaciones
-    6. Devuelve el resultado final con recomendaciones
+    6. Opcionalmente, solicita un análisis de las recomendaciones al LLM
+    7. Devuelve el resultado final con recomendaciones y análisis
     
     Args:
         questions_responses: Lista de preguntas y respuestas
@@ -236,6 +238,7 @@ async def process_complete_flow(
         user_id: ID del usuario (opcional)
         session_id: ID de sesión (opcional)
         llm_provider: Proveedor de LLM a utilizar (openai, anthropic, mock)
+        include_analysis: Si se debe incluir un análisis detallado de las recomendaciones
     """
     try:
         logger.info(f"Iniciando procesamiento completo con proveedor LLM: {llm_provider}")
@@ -311,8 +314,32 @@ async def process_complete_flow(
             use_cnn=False  # Usar el modelo FNN por defecto
         )
         
-        # 7. Devolver el resultado completo
-        logger.info("Paso 6: Preparando respuesta final")
+        # 7. Opcionalmente, solicitar un análisis de las recomendaciones al LLM
+        career_analysis = None
+        if include_analysis:
+            logger.info("Paso 6: Solicitando análisis de recomendaciones al LLM")
+            # Generar prompt para el análisis
+            analysis_prompt = llm_service.generate_career_analysis_prompt(
+                mbti_code=mbti_code,
+                mi_scores=mi_scores,
+                career_recommendations=career_recommendations
+            )
+            
+            # Llamar al LLM para obtener análisis
+            llm_api = LLMApiService()
+            llm_response = await llm_api.call_llm(
+                prompt=analysis_prompt,
+                provider=llm_provider,
+                max_tokens=1500  # Análisis más largo
+            )
+            
+            # Procesar la respuesta
+            analysis_result = llm_service.process_career_analysis_response(llm_response)
+            career_analysis = analysis_result["analysis"]
+            logger.info(f"Análisis de carreras generado: {len(career_analysis)} caracteres")
+        
+        # 8. Devolver el resultado completo
+        logger.info("Paso final: Preparando respuesta final")
         
         result = {
             "status": "success",
@@ -329,6 +356,10 @@ async def process_complete_flow(
             "mi_ranking": list(mi_scores.keys()),  # Ordenar por valor descendente
             "career_recommendations": career_recommendations
         }
+        
+        # Incluir el análisis si fue solicitado
+        if include_analysis and career_analysis:
+            result["career_analysis"] = career_analysis
         
         logger.info("Procesamiento completo finalizado exitosamente")
         return result

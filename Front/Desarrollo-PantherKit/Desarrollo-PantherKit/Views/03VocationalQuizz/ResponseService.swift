@@ -18,8 +18,9 @@ class ResponseService {
     private let responsesKey = "userTestResponses"
     private let apiResponseKey = "apiResponseData"
     
-    // URL del endpoint
+    // URLs de los endpoints
     private let apiURL = "http://192.168.0.11:8000/api/questions/process-complete"
+    private let analysisURL = "http://192.168.0.11:8000/api/neural/recommendations-with-analysis"
     
     // Inicializador privado para singleton
     private init() {}
@@ -197,8 +198,8 @@ class ResponseService {
             return
         }
         
-        // Crear URL
-        guard let url = URL(string: apiURL) else {
+        // Crear URL con parámetro para incluir análisis detallado
+        guard var urlComponents = URLComponents(string: apiURL) else {
             completion(.failure(NSError(
                 domain: "ResponseService",
                 code: 2,
@@ -207,7 +208,21 @@ class ResponseService {
             return
         }
         
-        print("Enviando directamente a URL: \(apiURL)")
+        // Añadir el parámetro para solicitar análisis detallado
+        urlComponents.queryItems = [
+            URLQueryItem(name: "include_analysis", value: "true")
+        ]
+        
+        guard let url = urlComponents.url else {
+            completion(.failure(NSError(
+                domain: "ResponseService",
+                code: 2,
+                userInfo: [NSLocalizedDescriptionKey: "URL inválida"]
+            )))
+            return
+        }
+        
+        print("Enviando directamente a URL: \(url.absoluteString)")
         
         // Crear request
         var request = URLRequest(url: url)
@@ -258,6 +273,9 @@ class ResponseService {
                         // Guardar respuesta para uso posterior
                         UserDefaults.standard.set(data, forKey: self.apiResponseKey)
                         
+                        // Guardar respuesta en archivo JSON
+                        self.saveResponseToFile(data: data)
+                        
                         DispatchQueue.main.async {
                             completion(.success(responseBody))
                         }
@@ -290,6 +308,91 @@ class ResponseService {
         }
     }
     
+    /// Obtiene análisis detallado sin procesar nuevas respuestas
+    func getDetailedAnalysis(completion: @escaping (Result<String, Error>) -> Void) {
+        // Crear URL
+        guard let url = URL(string: analysisURL) else {
+            completion(.failure(NSError(
+                domain: "ResponseService",
+                code: 2,
+                userInfo: [NSLocalizedDescriptionKey: "URL inválida"]
+            )))
+            return
+        }
+        
+        print("Solicitando análisis detallado a: \(analysisURL)")
+        
+        // Crear request
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        // Realizar solicitud
+        let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            guard let self = self else { return }
+            
+            // Verificar si hay error
+            if let error = error {
+                print("Error de red: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    completion(.failure(error))
+                }
+                return
+            }
+            
+            // Verificar respuesta HTTP
+            guard let httpResponse = response as? HTTPURLResponse else {
+                DispatchQueue.main.async {
+                    completion(.failure(NSError(
+                        domain: "ResponseService",
+                        code: 3,
+                        userInfo: [NSLocalizedDescriptionKey: "Respuesta inválida sin código HTTP"]
+                    )))
+                }
+                return
+            }
+            
+            print("Código de respuesta: \(httpResponse.statusCode)")
+            
+            // Verificar código de estado
+            if httpResponse.statusCode >= 200 && httpResponse.statusCode < 300 {
+                // Verificar datos en la respuesta
+                if let data = data, let responseBody = String(data: data, encoding: .utf8) {
+                    print("Respuesta del backend: \(responseBody)")
+                    
+                    // Guardar respuesta para uso posterior
+                    UserDefaults.standard.set(data, forKey: self.apiResponseKey)
+                    
+                    // Guardar respuesta en archivo JSON
+                    self.saveResponseToFile(data: data)
+                    
+                    DispatchQueue.main.async {
+                        completion(.success(responseBody))
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        completion(.success("Respuesta vacía"))
+                    }
+                }
+            } else {
+                var errorMessage = "Error del servidor: \(httpResponse.statusCode)"
+                if let data = data, let responseBody = String(data: data, encoding: .utf8) {
+                    errorMessage += " - \(responseBody)"
+                    print("Respuesta del backend: \(responseBody)")
+                }
+                
+                DispatchQueue.main.async {
+                    completion(.failure(NSError(
+                        domain: "ResponseService",
+                        code: httpResponse.statusCode,
+                        userInfo: [NSLocalizedDescriptionKey: errorMessage]
+                    )))
+                }
+            }
+        }
+        
+        task.resume()
+    }
+    
     /// Recupera la última respuesta de la API
     func getLastAPIResponse() -> Data? {
         return UserDefaults.standard.data(forKey: apiResponseKey)
@@ -298,5 +401,19 @@ class ResponseService {
     /// Limpia todas las respuestas guardadas
     func clearResponses() {
         UserDefaults.standard.removeObject(forKey: responsesKey)
+    }
+    
+    // MARK: - Métodos adicionales
+    
+    /// Guarda la respuesta en un archivo JSON
+    private func saveResponseToFile(data: Data) {
+        // Implementa la lógica para guardar la respuesta en un archivo JSON
+        // Este es un ejemplo básico y deberías ajustarlo según tus necesidades
+        let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("apiResponse.json")
+        do {
+            try data.write(to: fileURL)
+        } catch {
+            print("Error guardando respuesta en archivo: \(error)")
+        }
     }
 } 
