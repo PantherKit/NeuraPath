@@ -15,6 +15,75 @@ class LLMService:
     def __init__(self):
         logger.info("LLMService inicializado")
     
+    def generate_career_analysis_prompt(self, mbti_code: str, mi_scores: Dict[str, float], 
+                                      career_recommendations: List[Dict[str, Any]]) -> str:
+        """
+        Genera un prompt para que el LLM analice las recomendaciones de carrera
+        
+        Args:
+            mbti_code: Código MBTI del usuario (ej. "INTJ")
+            mi_scores: Puntuaciones de inteligencias múltiples
+            career_recommendations: Lista de recomendaciones de carrera con puntuaciones
+            
+        Returns:
+            Prompt para el LLM
+        """
+        logger.info(f"Generando prompt para análisis de carreras para perfil {mbti_code}")
+        
+        # Crear una representación ordenada de las puntuaciones MI
+        mi_sorted = sorted(mi_scores.items(), key=lambda x: x[1], reverse=True)
+        mi_text = "\n".join([f"- {name}: {score:.2f}" for name, score in mi_sorted])
+        
+        # Crear una representación de las recomendaciones
+        rec_text = "\n".join([
+            f"- {i+1}. {rec['nombre']} ({rec['universidad']}, {rec['ciudad']}): {rec['match_score']:.2f} match"
+            for i, rec in enumerate(career_recommendations[:5])  # Limitar a 5 recomendaciones
+        ])
+        
+        prompt = f"""Actúa como un consejero vocacional experto. Basándote en el perfil de personalidad MBTI, 
+las puntuaciones de inteligencias múltiples y las recomendaciones de carrera proporcionadas, 
+genera un análisis detallado y personalizado explicando:
+
+1. Por qué estas carreras son adecuadas para este perfil específico
+2. Cómo las características del perfil MBTI se alinean con cada carrera recomendada
+3. Cómo las inteligencias múltiples del usuario se relacionan con las demandas de cada carrera
+4. Qué habilidades específicas podría desarrollar el usuario para tener éxito en estas carreras
+5. Oportunidades y desafíos potenciales que podría enfrentar en estos campos
+
+Perfil MBTI: {mbti_code}
+
+Inteligencias Múltiples (ordenadas de mayor a menor):
+{mi_text}
+
+Recomendaciones de Carrera:
+{rec_text}
+
+Proporciona un análisis detallado, personalizado y práctico que ayude al usuario a entender por qué estas 
+carreras son compatibles con su perfil y cómo podría aprovechar sus fortalezas naturales.
+"""
+        
+        logger.info(f"Prompt generado con longitud: {len(prompt)} caracteres")
+        return prompt
+    
+    def process_career_analysis_response(self, llm_response: str) -> Dict[str, Any]:
+        """
+        Procesa la respuesta del LLM sobre el análisis de carreras
+        
+        Args:
+            llm_response: Respuesta del LLM en formato de texto
+            
+        Returns:
+            Diccionario con el análisis procesado
+        """
+        logger.info("Procesando respuesta de análisis de carreras del LLM")
+        logger.info(f"Longitud de la respuesta: {len(llm_response)} caracteres")
+        
+        # Simplemente devolvemos la respuesta como texto, no necesitamos procesarla
+        return {
+            "analysis": llm_response.strip(),
+            "raw_response": llm_response
+        }
+    
     def save_user_responses(self, db: Session, responses: List[QuestionResponse], 
                            user_id: Optional[int] = None, session_id: Optional[str] = None) -> UserResponse:
         """
