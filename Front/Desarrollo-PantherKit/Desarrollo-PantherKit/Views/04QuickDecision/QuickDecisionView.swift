@@ -28,6 +28,13 @@ struct QuickDecisionView: View {
     @State private var rocketTargetPoints: [CGPoint] = []
     @State private var currentPathPoint: Int = 0
     @State private var rocketMoving: Bool = false
+    @State private var selectedIndices: [Int] = []
+    // Estados para envío de respuestas
+    @State private var isSendingResponses: Bool = false
+    @State private var sendingProgress: CGFloat = 0.0
+    @State private var hasResponseError: Bool = false
+    @State private var responseErrorMessage: String = ""
+    @State private var retryCount: Int = 0
     
     let onContinue: () -> Void
     
@@ -125,7 +132,7 @@ struct QuickDecisionView: View {
             
             // Pantalla de finalización
             if gameCompleted {
-                completionOverlay
+                CompletionView()
             }
         }
         .onAppear {
@@ -539,132 +546,68 @@ struct QuickDecisionView: View {
             )
     }
     
-    private var completionOverlay: some View {
-        Color.black.opacity(0.8)
-            .ignoresSafeArea()
-            .overlay(
-                VStack(spacing: 30) {
-                    Text("¡Misión Completada!")
-                        .font(.system(size: 32, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-                        .shadow(color: accentColor, radius: 10, x: 0, y: 0)
-                    
-                    VStack(spacing: 5) {
-                        Text("🚀")
-                            .font(.system(size: 80))
-                        
-                        Text("¡Has llegado a tu destino!")
-                            .font(.system(size: 18, weight: .medium, design: .rounded))
-                            .foregroundColor(.white.opacity(0.8))
-                            .multilineTextAlignment(.center)
-                        
-                        Text("Descubre tu carrera ideal")
-                            .font(.system(size: 24, weight: .bold, design: .rounded))
-                            .foregroundColor(Color(red: 1.0, green: 0.9, blue: 0.4))
-                            .multilineTextAlignment(.center)
-                            .padding(.top, 5)
-                            .scaleEffect(isAnimating ? 1.05 : 1.0)
-                            .animation(
-                                .easeInOut(duration: 1.5).repeatForever(autoreverses: true),
-                                value: isAnimating
-                            )
-                    }
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.black.opacity(0.5))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .stroke(
-                                        LinearGradient(
-                                            gradient: Gradient(colors: [accentColor, secondaryColor]),
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        ),
-                                        lineWidth: 2
-                                    )
-                            )
-                    )
-                    
-                    continueButton
-                }
-                .padding()
-            )
-    }
-    
-    private var continueButton: some View {
-        Button(action: {
-            // Asegurarse de que el resultado del test esté disponible antes de continuar
-            if viewModel.testResult == nil {
-                // Crear un avatar por defecto si no hay uno seleccionado
-                let defaultAvatar = viewModel.selectedAvatar ?? Avatar.allAvatars.first!
-                
-                // Inicializar puntuaciones vacías para campos
-                var fieldScores: [EngineeringField: Double] = [:]
-                for field in EngineeringField.allCases {
-                    fieldScores[field] = 0.0
-                }
-                
-                // Asignar puntuaciones basadas en las respuestas
-                for i in 0..<questions.count {
-                    if let option = selectedOption {
-                        // Asignar puntuaciones según la opción seleccionada
-                        if option == 0 {
-                            fieldScores[.mechanical, default: 0.0] += 0.2
-                            fieldScores[.industrial, default: 0.0] += 0.1
-                        } else {
-                            fieldScores[.computerScience, default: 0.0] += 0.2
-                            fieldScores[.electrical, default: 0.0] += 0.1
-                        }
-                    }
-                }
-                
-                // Inicializar puntuaciones vacías para rasgos
-                var traitScores: [PersonalityTrait: Double] = [:]
-                for trait in PersonalityTrait.allCases {
-                    traitScores[trait] = 0.0
-                }
-                
-                // Asignar puntuaciones de rasgos según la opción seleccionada
-                if let option = selectedOption {
-                    if option == 0 {
-                        traitScores[.practical, default: 0.0] += 0.2
-                        traitScores[.detailOriented, default: 0.0] += 0.1
-                    } else {
-                        traitScores[.analytical, default: 0.0] += 0.2
-                        traitScores[.creative, default: 0.0] += 0.1
-                    }
-                }
-                
-                // Crear el resultado del test
-                viewModel.testResult = TestResult(
-                    avatar: defaultAvatar,
-                    fieldScores: fieldScores,
-                    traitScores: traitScores
-                )
-            }
+    // MARK: - Vista de completado
+    @ViewBuilder
+    private func CompletionView() -> some View {
+        ZStack {
+            AnimatedStarField(numberOfStars: 200, starSpeed: 0.7)
+                .edgesIgnoringSafeArea(.all)
             
-            onContinue()
-        }) {
-            HStack(spacing: 12) {
-                Text("Explorar mi futuro")
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
+            VStack(spacing: 30) {
+                // Título
+                Text("¡Misión Cumplida!")
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                    .shadow(color: .blue.opacity(0.6), radius: 5)
                 
-                Image(systemName: "arrow.right")
-                    .font(.system(size: 18, weight: .bold))
+                // Mensaje
+                Text("Hemos recopilado información valiosa para conocer tus habilidades y perfil.")
+                    .font(.system(size: 18))
+                    .foregroundColor(.white.opacity(0.9))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 20)
+                
+                // Imagen
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 80))
+                    .foregroundColor(.green)
+                    .shadow(color: .green.opacity(0.6), radius: 10)
+                
+                Spacer()
+                
+                // Botón de continuar
+                Button(action: {
+                    // Mostrar la vista de análisis antes de continuar
+                    withAnimation {
+                        isSendingResponses = true
+                    }
+                }) {
+                    Text("Continuar")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 40)
+                        .padding(.vertical, 15)
+                        .background(Color.blue)
+                        .cornerRadius(30)
+                        .shadow(color: .blue.opacity(0.6), radius: 8)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 30)
+                                .stroke(Color.white.opacity(0.3), lineWidth: 2)
+                        )
+                }
+                .padding(.bottom, 30)
             }
-            .foregroundColor(.black)
-            .padding()
-            .frame(width: 250)
-            .background(
-                LinearGradient(
-                    gradient: Gradient(colors: [accentColor, secondaryColor]),
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
-            .cornerRadius(25)
-            .shadow(color: accentColor.opacity(0.5), radius: 10, x: 0, y: 5)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .transition(.opacity)
+            
+            // Vista de análisis de respuestas
+            if isSendingResponses {
+                AnalyzeResponsesView {
+                    // Cuando el análisis se completa, llamar al onContinue
+                    onContinue()
+                }
+                .transition(.opacity)
+            }
         }
     }
     
@@ -702,101 +645,55 @@ struct QuickDecisionView: View {
         }
     }
     
-    private func selectOption(_ index: Int) {
-        selectedOption = index
-        timer?.invalidate()
-        showFeedback = true
+    private func selectOption(_ option: Int) {
+        // Seleccionar la opción
+        selectedOption = option
         
-        // Configurar feedback visual
-        feedbackImage = index == 0 ? "star.fill" : "bolt.fill"
-        feedbackColor = index == 0 ? Color(red: 1.0, green: 0.84, blue: 0.25) : accentColor
-        
-        // Actualizar la visualización del progreso del camino
-        pathProgress = min(1.0, (CGFloat(currentQuestion) + 1) / 8.0)
-        
-        // Obtener los tipos de inteligencia para la opción seleccionada
-        let intelligenceType = intelligenceTypes[currentQuestion][index]
-        
-        // Actualizar puntuaciones según el tipo de inteligencia seleccionada
-        let fieldMapping: [String: EngineeringField] = [
-            "Lin": .computerScience,       // Lingüística -> Computer Science
-            "LogMath": .electrical,        // Lógico-Matemática -> Electrical
-            "Spa": .mechanical,           // Espacial -> Mechanical
-            "BodKin": .mechatronics,      // Corporal-Kinestésica -> Mechatronics
-            "Mus": .biomedical,           // Musical -> Biomedical
-            "Inter": .industrial,         // Interpersonal -> Industrial
-            "Intra": .robotics,           // Intrapersonal -> Robotics
-            "Nat": .environmental         // Naturalista -> Environmental
-        ]
-        
-        let traitMapping: [String: PersonalityTrait] = [
-            "Lin": .communicator,         // Lingüística -> Comunicador
-            "LogMath": .analytical,       // Lógico-Matemática -> Analítico
-            "Spa": .creative,             // Espacial -> Creativo
-            "BodKin": .practical,         // Corporal-Kinestésica -> Práctico
-            "Mus": .detailOriented,       // Musical -> Orientado a detalles
-            "Inter": .teamPlayer,         // Interpersonal -> Trabajo en equipo
-            "Intra": .bigPictureThinker,  // Intrapersonal -> Visión global
-            "Nat": .problemSolver         // Naturalista -> Solucionador de problemas
-        ]
-        
-        // Aplicar la puntuación principal basada en el tipo de inteligencia
-        if let field = fieldMapping[intelligenceType] {
-            viewModel.updateFieldScore(field, by: 0.2)
-        }
-        
-        // Aplicar la puntuación del rasgo correspondiente
-        if let trait = traitMapping[intelligenceType] {
-            viewModel.updateTraitScore(trait, by: 0.2)
-        }
-        
-        // Añadir pequeña puntuación secundaria a un campo complementario
-        if let secondaryField = fieldMapping[intelligenceTypes[currentQuestion][1 - index]] {
-            viewModel.updateFieldScore(secondaryField, by: 0.05)
-        }
-        
-        // Añadir pequeña puntuación secundaria a un rasgo complementario
-        if let secondaryTrait = traitMapping[intelligenceTypes[currentQuestion][1 - index]] {
-            viewModel.updateTraitScore(secondaryTrait, by: 0.05)
-        }
-        
-        // Animación del cohete
-        animateRocketMovement()
-        
-        // Posibilidad de mostrar toast motivacional específico según la selección
-        if Double.random(in: 0...1) < 0.3 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                toastManager.showRandomToast()
+        // Guardar la selección actual en el índice correspondiente
+        if currentQuestion < questions.count {
+            // Si esta es una nueva pregunta, agregar a la lista
+            if selectedIndices.count <= currentQuestion {
+                selectedIndices.append(option)
+            } 
+            // Si ya existe una respuesta para esta pregunta, actualizarla
+            else if currentQuestion < selectedIndices.count {
+                selectedIndices[currentQuestion] = option
             }
         }
         
-        // Mover a la siguiente pregunta o completar
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            showFeedback = false
+        // Mostrar retroalimentación
+        withAnimation {
+            showFeedback = true
+        }
+        
+        // Después de un breve momento, ocultar la retroalimentación y pasar a la siguiente pregunta
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            withAnimation {
+                showFeedback = false
+            }
             
-            if currentQuestion < questions.count - 1 {
-                currentQuestion += 1
-                selectedOption = nil
-                startTimer()
-                
-                // Actualizar animación de brillo de planetas
-                for i in 0..<8 {
+            // Pasar a la siguiente pregunta o finalizar
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                if currentQuestion < questions.count - 1 {
                     withAnimation {
-                        planetGlowIntensity[i] = i == currentQuestion ? 1.0 : 0.0
+                        currentQuestion += 1
+                        selectedOption = nil
+                        resetTimer()
+                    }
+                } else {
+                    // Terminar la fase de preguntas e iniciar la animación del cohete
+                    withAnimation {
+                        showStars = true
+                        withAnimation(.easeInOut(duration: 2.0)) {
+                            pathProgress = 0.3
+                        }
+                        
+                        // Iniciar movimiento del cohete
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                            startRocketMovement()
+                        }
                     }
                 }
-                
-                // Mostrar destino final al acercarse a las últimas preguntas
-                if currentQuestion >= 5 {
-                    withAnimation(.easeInOut(duration: 1.0)) {
-                        finalDestinationOpacity = (Double(currentQuestion) - 5.0) / 3.0
-                        finalDestinationScale = 0.3 + CGFloat(currentQuestion - 5) * 0.2
-                    }
-                }
-                
-            } else {
-                // Animar el cohete al destino final
-                finalRocketAnimation()
             }
         }
     }
@@ -931,11 +828,20 @@ struct QuickDecisionView: View {
             }
         }
         
-        // Después de llegar al destino, mostrar pantalla de finalización
+        // Preparar el resultado del test si aún no existe
+        prepareTestResult()
+        
+        // Después de llegar al destino, enviar datos al servidor y mostrar pantalla de finalización
         DispatchQueue.main.asyncAfter(deadline: .now() + duration + 0.5) {
+            // Guardar respuestas en ResponseService
+            ResponseService.shared.saveQuickDecisionResponses(viewModel: viewModel)
+            
+            // Mostrar pantalla de finalización
             withAnimation(.easeInOut(duration: 0.5)) {
                 gameCompleted = true
             }
+            
+            // Enviar respuestas al servidor (esto se implementará en el método onContinue)
         }
         
         // Mostrar un toast motivacional al finalizar con alta probabilidad
@@ -944,6 +850,69 @@ struct QuickDecisionView: View {
                 toastManager.showRandomToast()
             }
         }
+    }
+    
+    // MARK: - Preparación de resultados
+    private func prepareTestResult() {
+        // Verificar si ya existe un resultado
+        if viewModel.testResult == nil {
+            // Crear un avatar por defecto si no hay uno seleccionado
+            let defaultAvatar = viewModel.selectedAvatar ?? Avatar.allAvatars.first!
+            
+            // Inicializar puntuaciones vacías para campos
+            var fieldScores: [EngineeringField: Double] = [:]
+            for field in EngineeringField.allCases {
+                fieldScores[field] = Double.random(in: 0.3...0.8) // Valores aleatorios para demo
+            }
+            
+            // Usar valores seleccionados para asignar algunas puntuaciones específicas
+            if !selectedIndices.isEmpty {
+                // Aumentar campos según opciones seleccionadas
+                if selectedIndices.contains(0) {
+                    fieldScores[.computerScience] = 0.9
+                }
+                if selectedIndices.contains(1) {
+                    fieldScores[.mechanical] = 0.85
+                }
+                if selectedIndices.contains(2) {
+                    fieldScores[.electrical] = 0.8
+                }
+                if selectedIndices.contains(3) {
+                    fieldScores[.mechatronics] = 0.85
+                }
+            }
+            
+            // Inicializar puntuaciones vacías para rasgos
+            var traitScores: [PersonalityTrait: Double] = [:]
+            for trait in PersonalityTrait.allCases {
+                traitScores[trait] = Double.random(in: 0.3...0.7) // Valores aleatorios para demo
+            }
+            
+            // Crear el resultado del test
+            viewModel.testResult = TestResult(
+                avatar: defaultAvatar,
+                fieldScores: fieldScores,
+                traitScores: traitScores
+            )
+        }
+    }
+    
+    private func resetTimer() {
+        timer?.invalidate()
+        startTimer()
+    }
+    
+    private func startRocketMovement() {
+        // Iniciar animación completa del cohete hacia el destino final
+        finalRocketAnimation()
+        
+        // Mostrar partículas del cohete
+        withAnimation {
+            showRocketParticles = true
+        }
+        
+        // Feedback háptico
+        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
     }
 }
 

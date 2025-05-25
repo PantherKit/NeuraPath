@@ -30,7 +30,7 @@ class NeuralCareerService:
         careers = [career["nombre"] for career in self.career_recommender.careers]
         
         # Inicializar matrices de características y etiquetas
-        X = np.zeros((num_samples, 12))  # 4 MBTI + 4 pesos MBTI + 8 MI
+        X = np.zeros((num_samples, 16))  # 4 MBTI + 4 pesos MBTI + 8 MI
         y_labels = []
         
         # Generar datos simulados basados en reglas y probabilidades

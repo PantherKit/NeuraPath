@@ -35,7 +35,7 @@ class NeuralCareerModel:
             mi_scores: Puntuaciones de inteligencias múltiples (ej. {"Lin": 0.7, "LogMath": 0.9, ...})
             
         Returns:
-            Vector numpy de 12 dimensiones (4 MBTI + 8 MI)
+            Vector numpy de 16 dimensiones (4 MBTI + 4 pesos MBTI + 8 MI)
         """
         # Convertir mbti_weights a vector (mismas dimensiones que mbti_vector pero con intensidades)
         mbti_dimensions = ["E/I", "S/N", "T/F", "J/P"]
@@ -55,7 +55,7 @@ class NeuralCareerModel:
         Entrena un modelo de red neuronal feedforward para predecir carreras.
         
         Args:
-            X: Matriz de características (N x 12) - MBTI + MI
+            X: Matriz de características (N x 16) - MBTI + pesos MBTI + MI
             y: Etiquetas de carreras (codificadas con one-hot)
             epochs: Número de epochs para entrenamiento
             batch_size: Tamaño del batch
@@ -89,7 +89,7 @@ class NeuralCareerModel:
         Entrena un modelo CNN para capturar patrones en la secuencia MBTI+MI.
         
         Args:
-            X: Matriz de características (N x 12) - MBTI + MI
+            X: Matriz de características (N x 16) - MBTI + pesos MBTI + MI
             y: Etiquetas de carreras (codificadas con one-hot)
             epochs: Número de epochs para entrenamiento
             batch_size: Tamaño del batch
@@ -168,7 +168,7 @@ class NeuralCareerModel:
         Visualiza los embeddings de perfil y carreras usando t-SNE.
         
         Args:
-            X: Matriz de características (N x 12) - MBTI + MI
+            X: Matriz de características (N x 16) - MBTI + pesos MBTI + MI
             career_labels: Etiquetas correspondientes a cada muestra
             perplexity: Parámetro de perplexity para t-SNE
         """

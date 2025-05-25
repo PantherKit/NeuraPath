@@ -203,6 +203,7 @@ struct ExplanationTransitionView: View {
             )
             .opacity(buttonOpacity)
         }
+        .scaleEffect(isRotating ? 1.02 : 1.0) // Simular el ScaleButtonStyle
         .buttonStyle(ScaleButtonStyle())
         .padding(.bottom, 40)
     }
@@ -237,7 +238,7 @@ struct ExplanationTransitionView: View {
     }
 }
 
-class Star: Identifiable, ObservableObject {
+class ExplanationStar: Identifiable, ObservableObject {
     let id = UUID()
     let x = Float.random(in: 0...1)
     let y = Float.random(in: 0...1)

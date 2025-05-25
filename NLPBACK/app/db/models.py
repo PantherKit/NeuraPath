@@ -28,6 +28,8 @@ class User(Base):
     mbti_profiles = relationship("MBTIProfile", back_populates="user")
     mi_profiles = relationship("MIProfile", back_populates="user")
     career_matches = relationship("Career", secondary=user_career_association, back_populates="matched_users")
+    user_responses = relationship("UserResponse", back_populates="user")
+    llm_results = relationship("LLMResult", back_populates="user")
 
 class MBTIProfile(Base):
     """Modelo para almacenar perfiles de personalidad MBTI"""
@@ -91,4 +93,41 @@ class CareerMatch(Base):
     career = relationship("Career")
     user = relationship("User")
     mbti_profile = relationship("MBTIProfile")
-    mi_profile = relationship("MIProfile") 
+    mi_profile = relationship("MIProfile")
+
+class UserResponse(Base):
+    """Modelo para almacenar respuestas de los usuarios a las preguntas combinadas"""
+    __tablename__ = "user_responses"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # Puede ser anónimo
+    session_id = Column(String, index=True)  # Para identificar una sesión aunque el usuario no esté logueado
+    responses_data = Column(JSON)  # Almacena el array completo de preguntas y respuestas
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relaciones
+    user = relationship("User", back_populates="user_responses")
+    llm_results = relationship("LLMResult", back_populates="user_response")
+
+class LLMResult(Base):
+    """Modelo para almacenar resultados del análisis del LLM"""
+    __tablename__ = "llm_results"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    user_response_id = Column(Integer, ForeignKey("user_responses.id"))
+    
+    # Resultados del LLM
+    mbti_result = Column(String(4))  # INTP, ESTJ, etc.
+    mbti_vector = Column(JSON)  # [0, 1, 0, 1] correspondiente a [E/I, S/N, T/F, J/P]
+    mbti_weights = Column(JSON)  # {"E/I": 0.8, "S/N": 0.6, ...}
+    mi_ranking = Column(JSON)  # ["Espacial", "Interpersonal", ...]
+    
+    # Resultado completo del LLM
+    full_result = Column(JSON)  # El resultado completo del LLM
+    prompt_used = Column(Text)  # El prompt que se utilizó
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relaciones
+    user = relationship("User", back_populates="llm_results")
+    user_response = relationship("UserResponse", back_populates="llm_results") 

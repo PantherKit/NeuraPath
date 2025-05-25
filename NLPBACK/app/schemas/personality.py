@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from pydantic import BaseModel, Field
 
 class MBTIQuestion(BaseModel):
@@ -35,4 +35,58 @@ class UserProfile(BaseModel):
     mbti_result: Optional[MBTIResult] = None
     mi_result: Optional[MIResult] = None
     career_recommendations: Optional[List[CareerMatch]] = None
-    profile_description: Optional[str] = None 
+    profile_description: Optional[str] = None
+
+class QuestionResponse(BaseModel):
+    pregunta: str
+    respuesta: str
+
+class UserResponseCreate(BaseModel):
+    responses: List[QuestionResponse]
+    session_id: Optional[str] = None
+    user_id: Optional[int] = None
+
+class UserResponseDB(BaseModel):
+    id: int
+    session_id: str
+    responses_data: List[Dict[str, str]]
+    created_at: str
+    user_id: Optional[int] = None
+    
+    class Config:
+        orm_mode = True
+
+class MBTIWeightDetail(BaseModel):
+    value: str  # "I fuerte", "N medio", etc.
+    score: Optional[float] = None
+
+class LLMResultCreate(BaseModel):
+    mbti_result: str  # e.g., "INTP"
+    mbti_vector: Optional[List[float]] = None  # e.g., [0.1, 0.8, 0.2, 0.7]
+    mbti_weights: Dict[str, str]  # e.g., {"E/I": "I fuerte", "S/N": "N medio", ...}
+    mi_ranking: List[str]  # e.g., ["Espacial", "Interpersonal", ...]
+    full_analysis: Optional[Dict[str, Any]] = None
+
+class LLMResultDB(BaseModel):
+    id: int
+    user_response_id: int
+    mbti_result: str
+    mbti_vector: Optional[List[float]] = None
+    mbti_weights: Dict[str, Any]
+    mi_ranking: List[str]
+    full_result: Dict[str, Any]
+    prompt_used: str
+    created_at: str
+    user_id: Optional[int] = None
+    
+    class Config:
+        orm_mode = True
+
+class LLMRequestPrompt(BaseModel):
+    responses: List[QuestionResponse]
+    
+class LLMResponse(BaseModel):
+    status: str
+    message: str
+    prompt: str
+    raw_data: List[Dict[str, str]] 
