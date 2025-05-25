@@ -88,5 +88,191 @@
     "universidad": "IPN",
     "descripcion": "Especialización en el diseño, fabricación y mantenimiento de aeronaves y vehículos espaciales. Para personas metódicas con interés en física y mecánica.",
     "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Ciberseguridad",
+    "universidad": "Tec de Monterrey",
+    "descripcion": "Especialización en protección de sistemas y redes informáticas. Ideal para personas analíticas con interés en seguridad informática y programación.",
+    "ubicacion": "Monterrey"
+  },
+  {
+    "nombre": "Bioinformática",
+    "universidad": "UNAM",
+    "descripcion": "Combina la biología molecular con la informática para el análisis de datos biológicos. Para personas analíticas con interés en biología y programación.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Astrofísica",
+    "universidad": "UNAM",
+    "descripcion": "Estudio de los fenómenos físicos a nivel cósmico. Ideal para personas con alta capacidad de abstracción e interés en física y astronomía.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Ingeniería Química",
+    "universidad": "UAM",
+    "descripcion": "Diseño y operación de procesos químicos a escala industrial. Para personas analíticas con interés en química y procesos industriales.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Ingeniería en Sistemas Computacionales",
+    "universidad": "UASLP",
+    "descripcion": "Desarrollo de soluciones informáticas para problemas complejos. Ideal para personas lógicas con capacidad de resolución de problemas.",
+    "ubicacion": "San Luis Potosí"
+  },
+  {
+    "nombre": "Física de Materiales",
+    "universidad": "BUAP",
+    "descripcion": "Estudio de las propiedades y aplicaciones de nuevos materiales. Para personas con interés en física experimental y aplicaciones tecnológicas.",
+    "ubicacion": "Puebla"
+  },
+  {
+    "nombre": "Neurociencias",
+    "universidad": "UNAM",
+    "descripcion": "Estudio multidisciplinario del sistema nervioso y el cerebro. Ideal para personas analíticas con interés en biología y funcionamiento cerebral.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Geología",
+    "universidad": "UANL",
+    "descripcion": "Estudio de la Tierra, su composición, estructura y evolución. Para personas observadoras con interés en ciencias naturales y trabajo de campo.",
+    "ubicacion": "Monterrey"
+  },
+  {
+    "nombre": "Ingeniería en Telecomunicaciones",
+    "universidad": "IPN",
+    "descripcion": "Diseño y gestión de sistemas de comunicación. Ideal para personas técnicas con interés en redes y tecnologías de comunicación.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Ingeniería Nuclear",
+    "universidad": "IPN",
+    "descripcion": "Aplicación de energía nuclear para fines pacíficos. Para personas meticulosas con interés en física nuclear y seguridad.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Genómica",
+    "universidad": "CINVESTAV",
+    "descripcion": "Estudio del genoma completo de organismos. Ideal para personas detallistas con interés en biología molecular y análisis de datos.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Oceanografía",
+    "universidad": "UABC",
+    "descripcion": "Estudio multidisciplinario de los océanos y sus fenómenos. Para personas con interés en ciencias marinas y medio ambiente.",
+    "ubicacion": "Ensenada"
+  },
+  {
+    "nombre": "Ingeniería Geofísica",
+    "universidad": "UNAM",
+    "descripcion": "Aplicación de métodos físicos para el estudio del subsuelo. Ideal para personas analíticas con interés en geología y física.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Meteorología",
+    "universidad": "Universidad Veracruzana",
+    "descripcion": "Estudio de la atmósfera y predicción del clima. Para personas observadoras con interés en física atmosférica y análisis de datos.",
+    "ubicacion": "Veracruz"
+  },
+  {
+    "nombre": "Ingeniería en Alimentos",
+    "universidad": "UAM",
+    "descripcion": "Diseño y mejora de procesos alimentarios. Ideal para personas metódicas con interés en química y procesos industriales.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Matemáticas Computacionales",
+    "universidad": "CIMAT",
+    "descripcion": "Aplicación de métodos matemáticos avanzados en computación. Para personas con alta capacidad analítica e interés en programación avanzada.",
+    "ubicacion": "Guanajuato"
+  },
+  {
+    "nombre": "Ingeniería en Nanosistemas",
+    "universidad": "UDLAP",
+    "descripcion": "Diseño y desarrollo de sistemas a escala nanométrica. Ideal para personas detallistas con interés en física y química de materiales.",
+    "ubicacion": "Puebla"
+  },
+  {
+    "nombre": "Astronomía",
+    "universidad": "UNAM",
+    "descripcion": "Estudio de los cuerpos celestes y fenómenos astronómicos. Para personas observadoras con interés en física y exploración espacial.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Ingeniería en Mecánica de Precisión",
+    "universidad": "Tec de Monterrey",
+    "descripcion": "Diseño y fabricación de componentes de alta precisión. Ideal para personas meticulosas con interés en mecánica y manufactura.",
+    "ubicacion": "Monterrey"
+  },
+  {
+    "nombre": "Ciencias Genómicas",
+    "universidad": "UNAM",
+    "descripcion": "Estudio integral del genoma y sus aplicaciones. Para personas analíticas con interés en biología molecular y biotecnología.",
+    "ubicacion": "Cuernavaca"
+  },
+  {
+    "nombre": "Ingeniería en Sistemas Robóticos",
+    "universidad": "ITESM",
+    "descripcion": "Diseño y programación de sistemas robotizados avanzados. Ideal para personas creativas con sólidas bases en programación y electrónica.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Química Farmacéutica",
+    "universidad": "UNAM",
+    "descripcion": "Desarrollo y análisis de fármacos y medicamentos. Para personas metódicas con interés en química y salud.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Ingeniería en Fotónica",
+    "universidad": "INAOE",
+    "descripcion": "Estudio y aplicación de la luz en tecnologías avanzadas. Ideal para personas precisas con interés en física óptica.",
+    "ubicacion": "Puebla"
+  },
+  {
+    "nombre": "Estadística",
+    "universidad": "ITAM",
+    "descripcion": "Recolección, análisis e interpretación de datos. Para personas analíticas con interés en matemáticas y análisis de información.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Química de Materiales",
+    "universidad": "UNAM",
+    "descripcion": "Desarrollo y caracterización de materiales avanzados. Ideal para personas meticulosas con interés en química y aplicaciones industriales.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Ingeniería en Computación Cuántica",
+    "universidad": "UNAM",
+    "descripcion": "Desarrollo de sistemas de computación basados en principios cuánticos. Para personas con alta capacidad de abstracción e interés en física cuántica.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Bioestadística",
+    "universidad": "UAEM",
+    "descripcion": "Aplicación de métodos estadísticos en ciencias biológicas y médicas. Ideal para personas analíticas con interés en matemáticas y ciencias de la salud.",
+    "ubicacion": "Cuernavaca"
+  },
+  {
+    "nombre": "Ingeniería en IoT",
+    "universidad": "Tec de Monterrey",
+    "descripcion": "Desarrollo de soluciones basadas en Internet de las Cosas. Para personas innovadoras con interés en conectividad y programación.",
+    "ubicacion": "Guadalajara"
+  },
+  {
+    "nombre": "Ciencias Atmosféricas",
+    "universidad": "UNAM",
+    "descripcion": "Estudio de la atmósfera y sus procesos. Ideal para personas observadoras con interés en física atmosférica y cambio climático.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Microbiología Industrial",
+    "universidad": "UAM",
+    "descripcion": "Aplicación de microorganismos en procesos industriales. Para personas detallistas con interés en biología y biotecnología.",
+    "ubicacion": "Ciudad de México"
+  },
+  {
+    "nombre": "Ingeniería en Realidad Virtual",
+    "universidad": "ITESM",
+    "descripcion": "Diseño y desarrollo de entornos virtuales inmersivos. Ideal para personas creativas con sólidas bases en programación y diseño 3D.",
+    "ubicacion": "Ciudad de México"
   }
 ] 

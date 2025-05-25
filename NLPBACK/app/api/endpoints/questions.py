@@ -10,6 +10,7 @@ from app.db.session import get_db
 from app.services.llm_service import LLMService
 from app.services.llm_api_service import LLMApiService
 from app.services.neural_service import NeuralCareerService
+from app.services.llm_profile_interpreter import LLMProfileInterpreter
 from app.schemas.personality import QuestionResponse, UserResponseCreate, LLMResponse, MBTIResult, MIResult
 
 from app.db.models import UserResponse
@@ -224,12 +225,10 @@ async def process_complete_flow(
     Procesa el flujo completo:
     1. Recibe las preguntas y respuestas
     2. Las guarda en la base de datos
-    3. Genera el prompt para el LLM
-    4. Llama a la API del LLM seleccionado
-    5. Procesa la respuesta
-    6. Guarda el resultado
-    7. Pasa el resultado a la red neuronal para generar recomendaciones
-    8. Devuelve el resultado final con recomendaciones
+    3. Usa el LLMProfileInterpreter para obtener el perfil MBTI y MI
+    4. Guarda el resultado en la base de datos
+    5. Pasa el resultado a la red neuronal para generar recomendaciones
+    6. Devuelve el resultado final con recomendaciones
     
     Args:
         questions_responses: Lista de preguntas y respuestas
@@ -251,95 +250,58 @@ async def process_complete_flow(
             session_id=session_id
         )
         
-        # 2. Generar el prompt para el LLM
-        logger.info("Paso 2: Generando prompt para el LLM")
-        prompt_text = llm_service.generate_llm_prompt(questions_responses)
+        # 2. Usar el intérprete de perfiles para obtener los vectores
+        logger.info("Paso 2: Obteniendo perfil MBTI y MI con LLMProfileInterpreter")
+        profile_interpreter = LLMProfileInterpreter(llm_provider=llm_provider)
+        mbti_vector, mbti_weights, mi_scores = await profile_interpreter.interpret_responses(questions_responses)
         
-        # 3. Llamar al LLM con el proveedor seleccionado
-        logger.info(f"Paso 3: Llamando al LLM con proveedor: {llm_provider}")
-        llm_response = await llm_api_service.call_llm(
-            prompt=prompt_text,
-            provider=llm_provider,
-            max_tokens=1000
+        # 3. Convertir el código MBTI a partir del vector
+        letter_mapping = [
+            ["E", "I"],
+            ["S", "N"],
+            ["T", "F"],
+            ["J", "P"]
+        ]
+        mbti_code = "".join(letter_mapping[i][v] for i, v in enumerate(mbti_vector))
+        logger.info(f"Código MBTI generado: {mbti_code}")
+        
+        # 4. Guardar el resultado en la base de datos (usando el servicio existente)
+        # Crear un objeto LLMResultCreate para compatibilidad
+        from app.schemas.personality import LLMResultCreate
+        llm_result = LLMResultCreate(
+            mbti_result=mbti_code,
+            mbti_vector=mbti_vector,
+            mbti_weights=mbti_weights,
+            mi_ranking=list(mi_scores.keys()),  # Usar las claves como ranking
+            full_analysis={
+                "MBTI": mbti_code,
+                "MBTI_vector": mbti_vector,
+                "MBTI_weights": mbti_weights,
+                "MI_scores": mi_scores
+            }
         )
         
-        # 4. Procesar la respuesta del LLM
-        logger.info("Paso 4: Procesando respuesta del LLM")
-        llm_result = llm_service.process_llm_response(llm_response)
-        logger.info(f"Resultado MBTI: {llm_result.mbti_result}")
-        
-        # 5. Guardar el resultado en la base de datos
-        logger.info("Paso 5: Guardando resultado en la base de datos")
+        logger.info("Paso 3: Guardando resultado en la base de datos")
         db_result = llm_service.save_llm_result(
             db=db,
             user_response_id=db_response.id,
             llm_result=llm_result,
-            prompt_used=prompt_text,
+            prompt_used="Generado con LLMProfileInterpreter",
             user_id=user_id
         )
         
-        # 6. Convertir el resultado del LLM a formato para red neuronal
-        logger.info("Paso 6: Convirtiendo resultado a formato para red neuronal")
-        
-        # Convertir el formato de MBTI_vector si está presente, de lo contrario usar [1, 1, 1, 1] como ejemplo
-        mbti_vector = llm_result.mbti_vector if llm_result.mbti_vector else [1, 1, 1, 1]
-        
-        # Asegurarnos de que todos los elementos del vector son enteros
-        mbti_vector = [int(v) for v in mbti_vector]
-        logger.info(f"Vector MBTI convertido: {mbti_vector}")
-        
-        # Crear objeto MBTIResult para la red neuronal
+        # 5. Crear objetos para la red neuronal
+        logger.info("Paso 4: Preparando datos para la red neuronal")
         mbti_result = MBTIResult(
-            MBTI_code=llm_result.mbti_result,
+            MBTI_code=mbti_code,
             MBTI_vector=mbti_vector,
-            MBTI_weights={
-                "E/I": 0.8,  # Estos valores se podrían inferir del llm_result.mbti_weights
-                "S/N": 0.7,  # Por ahora usamos valores de ejemplo
-                "T/F": 0.9,
-                "J/P": 0.6
-            }
+            MBTI_weights=mbti_weights
         )
-        
-        # Crear objeto MIResult para la red neuronal basado en el ranking de MI
-        # Convertir el ranking de MI a puntuaciones (las primeras tienen mayor puntuación)
-        mi_scores = {}
-        mi_types = ["Lin", "LogMath", "Spa", "BodKin", "Mus", "Inter", "Intra", "Nat"]
-        
-        # Asignar puntuaciones basadas en el ranking (si está disponible)
-        if llm_result.mi_ranking:
-            for i, mi_type in enumerate(llm_result.mi_ranking):
-                # Mapear nombres largos a códigos cortos
-                mi_code = None
-                if "Lingüística" in mi_type:
-                    mi_code = "Lin"
-                elif "Lógico" in mi_type or "Matemática" in mi_type:
-                    mi_code = "LogMath"
-                elif "Espacial" in mi_type:
-                    mi_code = "Spa"
-                elif "Corporal" in mi_type or "Kinestésica" in mi_type:
-                    mi_code = "BodKin"
-                elif "Musical" in mi_type:
-                    mi_code = "Mus"
-                elif "Interpersonal" in mi_type:
-                    mi_code = "Inter"
-                elif "Intrapersonal" in mi_type:
-                    mi_code = "Intra"
-                elif "Natural" in mi_type:
-                    mi_code = "Nat"
-                
-                if mi_code:
-                    # Asignar puntuación inversamente proporcional a la posición en el ranking
-                    mi_scores[mi_code] = 1.0 - (i * 0.1)  # De 1.0 a 0.3 aproximadamente
-        
-        # Si no hay puntuaciones para algún tipo, asignar un valor por defecto
-        for mi_type in mi_types:
-            if mi_type not in mi_scores:
-                mi_scores[mi_type] = 0.5  # Valor neutro
         
         mi_result = MIResult(MI_scores=mi_scores)
         
-        # 7. Usar la red neuronal para obtener recomendaciones de carreras
-        logger.info("Paso 7: Obteniendo recomendaciones de carreras con la red neuronal")
+        # 6. Usar la red neuronal para obtener recomendaciones de carreras
+        logger.info("Paso 5: Obteniendo recomendaciones de carreras con la red neuronal")
         career_recommendations = neural_service.predict_careers(
             mbti_code=mbti_result.MBTI_code,
             mbti_vector=mbti_result.MBTI_vector,
@@ -349,8 +311,8 @@ async def process_complete_flow(
             use_cnn=False  # Usar el modelo FNN por defecto
         )
         
-        # 8. Devolver el resultado completo
-        logger.info("Paso 8: Preparando respuesta final")
+        # 7. Devolver el resultado completo
+        logger.info("Paso 6: Preparando respuesta final")
         
         result = {
             "status": "success",
@@ -359,11 +321,12 @@ async def process_complete_flow(
             "llm_result_id": db_result.id,
             "llm_provider": llm_provider,
             "mbti_profile": {
-                "code": llm_result.mbti_result,
-                "weights": llm_result.mbti_weights,
+                "code": mbti_code,
+                "weights": mbti_weights,
                 "vector": mbti_vector
             },
-            "mi_ranking": llm_result.mi_ranking,
+            "mi_scores": mi_scores,
+            "mi_ranking": list(mi_scores.keys()),  # Ordenar por valor descendente
             "career_recommendations": career_recommendations
         }
         
@@ -384,4 +347,64 @@ async def health_check():
     """
     Simple health check endpoint
     """
-    return {"status": "ok"} 
+    return {"status": "ok"}
+
+@router.post("/train-models")
+async def train_neural_models(
+    num_samples: int = Query(1000, description="Número de muestras a generar para entrenamiento"),
+    epochs: int = Query(50, description="Número de epochs para entrenamiento"),
+    batch_size: int = Query(32, description="Tamaño del batch para entrenamiento"),
+    validation: bool = Query(True, description="Si se debe realizar validación cruzada")
+):
+    """
+    Entrena los modelos neuronales con datos sintéticos
+    
+    Args:
+        num_samples: Número de muestras para entrenamiento
+        epochs: Número de epochs para entrenamiento
+        batch_size: Tamaño del batch
+        validation: Si se debe realizar validación cruzada
+    """
+    try:
+        logger.info(f"Iniciando entrenamiento de modelos con {num_samples} muestras")
+        result = neural_service.train_models(
+            num_samples=num_samples,
+            epochs=epochs,
+            batch_size=batch_size,
+            validation=validation
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error entrenando modelos: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error entrenando modelos: {str(e)}"
+        )
+
+@router.get("/evaluate-models")
+async def evaluate_neural_models(
+    num_samples: int = Query(500, description="Número de muestras a generar para evaluación")
+):
+    """
+    Evalúa los modelos neuronales con datos sintéticos
+    
+    Args:
+        num_samples: Número de muestras para evaluación
+    """
+    try:
+        logger.info(f"Iniciando evaluación de modelos con {num_samples} muestras")
+        result = neural_service.evaluate_models(num_samples=num_samples)
+        
+        if "error" in result:
+            raise HTTPException(
+                status_code=400,
+                detail=result["error"]
+            )
+            
+        return result
+    except Exception as e:
+        logger.error(f"Error evaluando modelos: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error evaluando modelos: {str(e)}"
+        ) 

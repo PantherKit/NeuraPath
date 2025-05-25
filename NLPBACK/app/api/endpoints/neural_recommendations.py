@@ -7,6 +7,20 @@ from app.services.neural_service import NeuralCareerService
 router = APIRouter()
 neural_service = NeuralCareerService()
 
+@router.post("/reset", response_model=Dict[str, Any])
+async def reset_neural_models():
+    """
+    Reinicia los modelos neurales para un nuevo entrenamiento
+    """
+    try:
+        # Crear una nueva instancia del servicio
+        global neural_service
+        neural_service = NeuralCareerService()
+        
+        return {"message": "Modelos neurales reiniciados correctamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reiniciando modelos: {str(e)}")
+
 @router.post("/train", response_model=Dict[str, Any])
 async def train_neural_models(
     num_samples: Optional[int] = Query(1000, description="Número de muestras para entrenamiento"),
