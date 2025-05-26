@@ -222,6 +222,8 @@ Preguntas y respuestas del usuario:
         """
         logger.info("Procesando respuesta del LLM")
         logger.info(f"Longitud de la respuesta: {len(llm_response)} caracteres")
+        logger.info(f"Primeros 100 caracteres de la respuesta: '{llm_response[:100]}'")
+        logger.info(f"Últimos 100 caracteres de la respuesta: '{llm_response[-100:]}'")
         
         # Por ahora, asumimos que el LLM devuelve un JSON bien formateado
         # En un entorno real, se necesitaría un procesamiento más robusto
@@ -235,7 +237,8 @@ Preguntas y respuestas del usuario:
             if json_start >= 0 and json_end > json_start:
                 json_str = llm_response[json_start:json_end]
                 logger.info(f"Extrayendo JSON. Longitud: {len(json_str)} caracteres")
-                logger.info(f"JSON extraído: {json_str}")
+                logger.info(f"Primeros 100 caracteres del JSON extraído: '{json_str[:100]}'")
+                logger.info(f"Últimos 100 caracteres del JSON extraído: '{json_str[-100:]}'")
                 
                 result_dict = json.loads(json_str)
                 logger.info(f"JSON parseado correctamente. Claves: {', '.join(result_dict.keys())}")
@@ -247,11 +250,21 @@ Preguntas y respuestas del usuario:
                 
                 logger.info(f"MBTI extraído: {mbti_result}")
                 logger.info(f"MBTI weights extraídos: {mbti_weights}")
-                logger.info(f"MI ranking extraído: {mi_ranking}")
+                logger.info(f"MI ranking extraído: {mi_ranking[:3]}...")
                 
                 # Opcionalmente, intentar extraer el vector MBTI si está presente
                 mbti_vector = result_dict.get("MBTI_vector", None)
                 logger.info(f"MBTI vector extraído: {mbti_vector}")
+                
+                # Verificar la estructura de los datos extraídos
+                if not mbti_result:
+                    logger.warning("MBTI code vacío en la respuesta")
+                    
+                if not mbti_weights:
+                    logger.warning("MBTI weights vacíos en la respuesta")
+                    
+                if not mi_ranking:
+                    logger.warning("MI ranking vacío en la respuesta")
                 
                 return LLMResultCreate(
                     mbti_result=mbti_result,
@@ -268,6 +281,7 @@ Preguntas y respuestas del usuario:
         except Exception as e:
             logger.error(f"Error procesando respuesta del LLM: {str(e)}")
             logger.error(f"Respuesta que causó el error: {llm_response}")
+            logger.error(f"Traza de error completa:", exc_info=True)
             
             # En caso de error, crear un resultado genérico
             return LLMResultCreate(

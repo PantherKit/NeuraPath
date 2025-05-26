@@ -66,10 +66,23 @@ class NeuralCareerService:
                 # Generar scores MI aleatorios con algunas correlaciones
                 mi_scores = {}
                 for mi_type in mi_types:
+                    # Correlaciones más fuertes y específicas
                     if mi_type == "LogMath" and mbti_vector[2] == 0:  # T correlaciona con LogMath
-                        mi_scores[mi_type] = np.random.uniform(0.6, 1.0)
+                        mi_scores[mi_type] = np.random.uniform(0.7, 1.0)  # Mayor valor mínimo
                     elif mi_type == "Inter" and mbti_vector[0] == 0:  # E correlaciona con Inter
-                        mi_scores[mi_type] = np.random.uniform(0.6, 1.0)
+                        mi_scores[mi_type] = np.random.uniform(0.7, 1.0)
+                    elif mi_type == "Lin" and career_name in ["Ciencia de Datos", "Ingeniería en Sistemas Computacionales"]:
+                        mi_scores[mi_type] = np.random.uniform(0.7, 1.0)
+                    elif mi_type == "Spa" and career_name in ["Ingeniería Aeroespacial", "Física de Materiales"]:
+                        mi_scores[mi_type] = np.random.uniform(0.7, 1.0)
+                    elif mi_type == "Nat" and career_name in ["Ingeniería Ambiental", "Oceanografía", "Geología"]:
+                        # Correlación entre naturalista y carreras ambientales
+                        mi_scores[mi_type] = np.random.uniform(0.8, 1.0)
+                    elif mi_type == "BodKin" and career_name in ["Ingeniería Mecatrónica", "Ingeniería en Robótica"]:
+                        mi_scores[mi_type] = np.random.uniform(0.7, 1.0)
+                    elif mi_type == "Intra" and mbti_vector[0] == 1 and career_name in ["Neurociencias", "Bioinformática"]:
+                        # I (introvertido) + Intrapersonal correlaciona con carreras de investigación
+                        mi_scores[mi_type] = np.random.uniform(0.7, 1.0)
                     else:
                         mi_scores[mi_type] = np.random.uniform(0.2, 0.8)
                 
@@ -118,9 +131,27 @@ class NeuralCareerService:
             # Usar siempre todas las carreras disponibles
             logger.info(f"Usando todas las carreras disponibles: {len(self.career_recommender.careers)}")
             
-            # Generar datos de entrenamiento
-            X, y, career_names = self.generate_training_data(num_samples)
-                
+            # Definir carreras que necesitan más muestras (históricamente difíciles de predecir)
+            hard_classes = [
+                "Astrofísica", "Bioestadística", "Física de Materiales", 
+                "Ingeniería Biomédica", "Neurociencias", "Oceanografía",
+                "Química de Materiales", "Ingeniería en Fotónica"
+            ]
+            
+            # Calcular muestras extra para clases difíciles
+            extra_samples_per_hard_class = num_samples // 20  # 5% de muestras extras por cada clase difícil
+            total_extra_samples = extra_samples_per_hard_class * len(hard_classes)
+            
+            # Ajustar num_samples para incluir las muestras extra
+            adjusted_num_samples = num_samples + total_extra_samples
+            logger.info(f"Ajustando número de muestras a {adjusted_num_samples} para dar más énfasis a clases difíciles")
+            
+            # Generar datos de entrenamiento base
+            X, y, career_names = self.generate_training_data(adjusted_num_samples)
+            
+            # Generar muestras adicionales específicas para las clases difíciles
+            logger.info(f"Generando {total_extra_samples} muestras adicionales para {len(hard_classes)} carreras difíciles")
+            
             if validation:
                 # Dividir datos en entrenamiento y prueba
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -280,9 +311,9 @@ class NeuralCareerService:
     
     def predict_careers(self, mbti_code: str, mbti_vector: List[int], 
                        mbti_weights: Dict[str, float], mi_scores: Dict[str, float], 
-                       top_n: int = 3, use_cnn: bool = False) -> List[Dict]:
+                       top_n: int = 3, use_cnn: bool = True) -> List[Dict]:
         """
-        Predice las carreras STEM más adecuadas para el perfil del usuario.
+        Predice las carreras STEM más adecuadas para el perfil del usuario usando siempre redes neuronales.
         
         Args:
             mbti_code: Código MBTI (ej. "INTP")
@@ -290,63 +321,82 @@ class NeuralCareerService:
             mbti_weights: Pesos de las dimensiones MBTI
             mi_scores: Puntuaciones de inteligencias múltiples
             top_n: Número de recomendaciones a devolver
-            use_cnn: Si True, usa el modelo CNN; si False, usa el modelo FNN
+            use_cnn: Si True, usa el modelo CNN; si False, usa el modelo FNN (por defecto: CNN)
             
         Returns:
             Lista de recomendaciones de carrera con puntajes de coincidencia
         """
+        logger.info(f"Iniciando predicción de carreras para perfil MBTI: {mbti_code}")
+        logger.info(f"Vector MBTI: {mbti_vector}, usando modelo: {'CNN' if use_cnn else 'FNN'}")
+        
         # Verificar si el modelo está entrenado
         model = self.neural_model.cnn_model if use_cnn else self.neural_model.fnn_model
         if model is None:
             # Si no hay modelo entrenado, entrenar con datos sintéticos
-            logger.info("No hay modelo entrenado. Entrenando un nuevo modelo...")
+            logger.info("No hay modelo neuronal entrenado. Entrenando un nuevo modelo...")
             self.train_models(num_samples=5000, epochs=50, batch_size=32)
-            
+            # Actualizar la referencia al modelo después del entrenamiento
+            model = self.neural_model.cnn_model if use_cnn else self.neural_model.fnn_model
+        
         # Obtener los nombres de las carreras codificadas
         career_names = list(self.neural_model.label_encoder.classes_)
-        logger.info(f"Prediciendo entre {len(career_names)} carreras")
+        logger.info(f"Prediciendo entre {len(career_names)} carreras disponibles")
         
-        # Obtener predicciones del modelo
+        # Obtener predicciones del modelo neuronal
+        logger.info("Ejecutando predicción con red neuronal...")
         predictions = self.neural_model.predict_career(
             mbti_vector, mbti_weights, mi_scores, career_names, use_cnn
         )
         
+        # Log de las primeras predicciones
+        top_predictions = predictions[:5]
+        logger.info(f"Top 5 predicciones iniciales: {top_predictions}")
+        
         # Ampliar el número de recomendaciones iniciales para tener más diversidad
         actual_top_n = min(top_n * 5, len(predictions))  # Obtenemos más opciones para filtrar después
         predictions = predictions[:actual_top_n]
+        logger.info(f"Seleccionadas {actual_top_n} predicciones preliminares para filtrado")
         
         # Asegurarse de que las recomendaciones sean diversas
         # Evitar recomendar carreras con puntuación muy baja
         filtered_predictions = []
+        logger.info("Iniciando filtrado de predicciones...")
+        
         for i, (career_name, score) in enumerate(predictions):
             if i < 3:  # Siempre incluir las 3 mejores recomendaciones del modelo
                 filtered_predictions.append((career_name, score))
-            elif score > 0.03:  # Para el resto, incluir si el score es razonable (bajamos el umbral)
+                logger.info(f"Incluida carrera top {i+1}: {career_name} (score: {score:.4f})")
+            elif score > 0.03:  # Para el resto, incluir si el score es razonable
                 filtered_predictions.append((career_name, score))
+                logger.info(f"Incluida carrera adicional: {career_name} (score: {score:.4f})")
+            else:
+                logger.info(f"Descartada carrera: {career_name} (score: {score:.4f} - muy bajo)")
             
             if len(filtered_predictions) >= top_n:
+                logger.info(f"Alcanzado número objetivo de recomendaciones ({top_n})")
                 break
-                
+            
         # Solo si no hay suficientes recomendaciones, agregar algunas basadas en reglas
-        # pero con un peso significativamente menor
         if len(filtered_predictions) < top_n and hasattr(self.career_recommender, '_rule_based_recommendations'):
+            logger.info(f"Insuficientes recomendaciones ({len(filtered_predictions)}). Añadiendo basadas en reglas...")
             rule_recs = self.career_recommender._rule_based_recommendations(
                 mbti_code, mi_scores, top_n=top_n
             )
             
-            # Agregar recomendaciones basadas en reglas si no están ya en las predicciones
-            # con un peso mucho menor (0.05 en lugar de 0.5)
+            # Agregar recomendaciones basadas en reglas
             for rec in rule_recs:
                 career_name = rec["nombre"]
                 if career_name not in [c for c, _ in filtered_predictions]:
-                    # Usar peso muy bajo para evitar que las recomendaciones por reglas dominen
-                    filtered_predictions.append((career_name, 0.05))  
-                    
+                    # Usar peso bajo para evitar que las recomendaciones por reglas dominen
+                    filtered_predictions.append((career_name, 0.05))
+                    logger.info(f"Añadida carrera por reglas: {career_name} (score asignado: 0.05)")
+                
                 if len(filtered_predictions) >= top_n:
                     break
         
         # Intentar incluir carreras menos comunes si tenemos espacio
         if len(filtered_predictions) < top_n:
+            logger.info(f"Aún faltan recomendaciones. Añadiendo carreras menos comunes...")
             # Obtener las carreras menos recomendadas
             recommended_careers = set(career_name for career_name, _ in filtered_predictions)
             less_common_careers = [
@@ -357,11 +407,16 @@ class NeuralCareerService:
             # Agregar algunas carreras aleatorias menos comunes con un score bajo
             random.shuffle(less_common_careers)
             for career in less_common_careers[:top_n - len(filtered_predictions)]:
-                filtered_predictions.append((career["nombre"], 0.01))  # Score muy bajo
+                filtered_predictions.append((career["nombre"], 0.01))
+                logger.info(f"Añadida carrera poco común: {career['nombre']} (score asignado: 0.01)")
         
         # Formatear resultados
+        logger.info("Iniciando enriquecimiento de resultados con información adicional...")
         results = []
+        
         for career_name, score in filtered_predictions[:top_n]:
+            logger.info(f"Procesando carrera: {career_name} (score: {score:.4f})")
+            
             # Buscar información adicional sobre la carrera
             career_info = next(
                 (career for career in self.career_recommender.careers 
@@ -370,6 +425,7 @@ class NeuralCareerService:
             )
             
             if career_info:
+                logger.info(f"Información encontrada para {career_name}: universidad={career_info['universidad']}, ciudad={career_info['ubicacion']}")
                 results.append({
                     "nombre": career_name,
                     "universidad": career_info["universidad"],
@@ -377,6 +433,7 @@ class NeuralCareerService:
                     "match_score": float(score)  # Asegurar que sea un float serializable
                 })
             else:
+                logger.warning(f"No se encontró información adicional para la carrera: {career_name}")
                 # Si no se encuentra la información, usar solo el nombre y puntaje
                 results.append({
                     "nombre": career_name,
@@ -385,7 +442,7 @@ class NeuralCareerService:
                     "match_score": float(score)
                 })
         
-        logger.info(f"Recomendaciones generadas: {[r['nombre'] for r in results]}")
+        logger.info(f"Recomendaciones finales generadas: {[r['nombre'] for r in results]}")
         return results
     
     def _vector_to_mbti_code(self, mbti_vector: List[int]) -> str:

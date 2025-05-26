@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, Conv1D, MaxPooling1D, Flatten
+from tensorflow.keras.layers import Dense, Dropout, Conv1D, MaxPooling1D, Flatten, BatchNormalization
 from tensorflow.keras.utils import to_categorical
 from sklearn.preprocessing import LabelEncoder
 from sklearn.manifold import TSNE
@@ -62,27 +62,57 @@ class NeuralCareerModel:
         """
         num_classes = y.shape[1]
         
-        # Definir arquitectura de red FNN
+        # Definir arquitectura de red FNN mejorada
         self.fnn_model = Sequential([
-            Dense(128, activation='relu', input_shape=(X.shape[1],)),
+            Dense(256, activation='relu', input_shape=(X.shape[1],),
+                  kernel_regularizer=tf.keras.regularizers.l2(0.001)),
+            BatchNormalization(),
+            Dropout(0.4),
+            
+            Dense(128, activation='relu',
+                  kernel_regularizer=tf.keras.regularizers.l2(0.001)),
+            BatchNormalization(),
             Dropout(0.3),
-            Dense(64, activation='relu'),
+            
+            Dense(64, activation='relu',
+                  kernel_regularizer=tf.keras.regularizers.l2(0.001)),
             Dropout(0.3),
+            
             Dense(num_classes, activation='softmax')
         ])
         
-        # Compilar el modelo
+        # Compilar el modelo con learning rate reducido
+        optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)
         self.fnn_model.compile(
-            optimizer='adam',
+            optimizer=optimizer,
             loss='categorical_crossentropy',
             metrics=['accuracy']
         )
         
-        # Entrenar el modelo
-        self.fnn_model.fit(X, y, epochs=epochs, batch_size=batch_size, verbose=1)
+        # Implementar early stopping para evitar overfitting
+        early_stopping = tf.keras.callbacks.EarlyStopping(
+            monitor='val_loss', patience=10, restore_best_weights=True
+        )
+        
+        # Reducción de learning rate cuando se estanca
+        reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
+            monitor='val_loss', factor=0.2, patience=5, min_lr=0.00001
+        )
+        
+        # Entrenar el modelo con más epochs y callbacks
+        history = self.fnn_model.fit(
+            X, y, 
+            epochs=200,  # 4x más epochs
+            batch_size=batch_size, 
+            validation_split=0.2,
+            callbacks=[early_stopping, reduce_lr],
+            verbose=1
+        )
         
         # Guardar el modelo entrenado
         self.save_models()
+        
+        return history
     
     def train_cnn_model(self, X: np.ndarray, y: np.ndarray, epochs: int = 50, batch_size: int = 32):
         """
@@ -99,34 +129,76 @@ class NeuralCareerModel:
         # Reestructurar datos para CNN (samples, timesteps, features)
         X_reshaped = X.reshape(X.shape[0], X.shape[1], 1)
         
-        # Definir arquitectura CNN
+        # Definir arquitectura CNN mejorada
         self.cnn_model = Sequential([
-            Conv1D(32, 3, activation='relu', input_shape=(X.shape[1], 1)),
+            # Primera capa convolucional
+            Conv1D(64, 2, activation='relu', input_shape=(X.shape[1], 1), 
+                   kernel_regularizer=tf.keras.regularizers.l2(0.001)),
+            BatchNormalization(),
+            
+            # Segunda capa convolucional sin MaxPooling
+            Conv1D(128, 2, activation='relu',
+                   kernel_regularizer=tf.keras.regularizers.l2(0.001)),
+            BatchNormalization(),
             MaxPooling1D(2),
-            Conv1D(64, 3, activation='relu'),
-            MaxPooling1D(2),
+            
+            # Tercera capa convolucional con kernel más pequeño
+            Conv1D(256, 2, activation='relu',
+                   kernel_regularizer=tf.keras.regularizers.l2(0.001)),
+            BatchNormalization(),
+            
+            # Aplanar para las capas densas
             Flatten(),
-            Dense(64, activation='relu'),
+            
+            # Capas densas con regularización
+            Dense(256, activation='relu', 
+                  kernel_regularizer=tf.keras.regularizers.l2(0.001)),
+            Dropout(0.4),
+            
+            Dense(128, activation='relu',
+                  kernel_regularizer=tf.keras.regularizers.l2(0.001)),
             Dropout(0.3),
+            
+            # Capa de salida
             Dense(num_classes, activation='softmax')
         ])
         
-        # Compilar el modelo
+        # Compilar el modelo con learning rate reducido
+        optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)
         self.cnn_model.compile(
-            optimizer='adam',
+            optimizer=optimizer,
             loss='categorical_crossentropy', 
             metrics=['accuracy']
         )
         
-        # Entrenar el modelo
-        self.cnn_model.fit(X_reshaped, y, epochs=epochs, batch_size=batch_size, verbose=1)
+        # Implementar early stopping para evitar overfitting
+        early_stopping = tf.keras.callbacks.EarlyStopping(
+            monitor='val_loss', patience=10, restore_best_weights=True
+        )
+        
+        # Reducción de learning rate cuando se estanca
+        reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
+            monitor='val_loss', factor=0.2, patience=5, min_lr=0.00001
+        )
+        
+        # Entrenar el modelo con más epochs y callbacks
+        history = self.cnn_model.fit(
+            X_reshaped, y, 
+            epochs=200,  # 4x más epochs
+            batch_size=batch_size, 
+            validation_split=0.2,
+            callbacks=[early_stopping, reduce_lr],
+            verbose=1
+        )
         
         # Guardar el modelo entrenado
         self.save_models()
+        
+        return history
     
     def predict_career(self, mbti_vector: List[int], mbti_weights: Dict[str, float], 
                       mi_scores: Dict[str, float], career_names: List[str], 
-                      use_cnn: bool = False) -> List[Tuple[str, float]]:
+                      use_cnn: bool = True) -> List[Tuple[str, float]]:
         """
         Predice carreras recomendadas basado en el perfil MBTI y MI del usuario.
         

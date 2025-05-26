@@ -17,9 +17,7 @@ class LLMProfileInterpreter:
     def __init__(self, llm_provider: str = "openai"):
         """
         Inicializa el intérprete de perfiles
-        
-        Args:
-            llm_provider: Proveedor LLM a utilizar (openai, anthropic, mock)
+    
         """
         self.llm_api = LLMApiService()
         self.llm_provider = llm_provider
@@ -126,17 +124,22 @@ Respuestas del usuario:
             Tupla con (mbti_vector, mbti_weights, mi_scores)
         """
         logger.info("Procesando respuesta del LLM")
+        logger.info(f"Respuesta completa del LLM (primeros 200 chars): {llm_response[:200]}...")
         
         try:
             # Extraer la parte JSON de la respuesta
             json_start = llm_response.find('{')
             json_end = llm_response.rfind('}') + 1
             
+            logger.info(f"Índices JSON encontrados: inicio={json_start}, fin={json_end}")
+            
             if json_start >= 0 and json_end > json_start:
                 json_str = llm_response[json_start:json_end]
                 logger.info(f"JSON extraído, longitud: {len(json_str)}")
+                logger.info(f"JSON extraído (primeros 200 chars): {json_str[:200]}...")
                 
                 result = json.loads(json_str)
+                logger.info(f"JSON parseado correctamente. Claves encontradas: {', '.join(result.keys())}")
                 
                 # Extraer los datos necesarios
                 mbti_vector = result.get("MBTI_vector", [1, 1, 1, 1])  # Valores por defecto si no hay datos
@@ -148,17 +151,25 @@ Respuestas del usuario:
                     "Mus": 0.5, "Inter": 0.5, "Intra": 0.5, "Nat": 0.5
                 })
                 
+                logger.info(f"MBTI extraído: {mbti_vector}")
+                logger.info(f"MBTI weights extraídos: {mbti_weights}")
+                logger.info(f"MI scores extraídos (primeras 3 entradas): {dict(list(mi_scores.items())[:3])}")
+                
                 # Asegurar que el vector MBTI tiene valores enteros
                 mbti_vector = [int(v) for v in mbti_vector]
+                logger.info(f"MBTI vector final (después de convertir a enteros): {mbti_vector}")
                 
                 return mbti_vector, mbti_weights, mi_scores
             else:
                 logger.error("No se encontró un JSON válido en la respuesta")
+                logger.error(f"Contenido de la respuesta problemática: {llm_response}")
                 
         except Exception as e:
             logger.error(f"Error procesando respuesta del LLM: {str(e)}")
+            logger.error(f"JSON que causó el error: {json_str if 'json_str' in locals() else 'No se pudo extraer JSON'}")
         
         # Valores por defecto en caso de error
+        logger.warning("Usando valores por defecto debido a error en procesamiento")
         default_mbti_vector = [1, 1, 1, 1]
         default_mbti_weights = {"E/I": 0.5, "S/N": 0.5, "T/F": 0.5, "J/P": 0.5}
         default_mi_scores = {

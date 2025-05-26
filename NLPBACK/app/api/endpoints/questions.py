@@ -311,7 +311,7 @@ async def process_complete_flow(
             mbti_weights=mbti_result.MBTI_weights,
             mi_scores=mi_result.MI_scores,
             top_n=5,  # Obtener 5 recomendaciones
-            use_cnn=False  # Usar el modelo FNN por defecto
+            use_cnn=True  # Usar el modelo CNN por defecto
         )
         
         # 7. Opcionalmente, solicitar un análisis de las recomendaciones al LLM
