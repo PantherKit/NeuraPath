@@ -14,7 +14,7 @@ services:
       POSTGRES_DB: stem_careers
 
     ports:
-      - "5433:5432"
+      - "5434:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U nlp -d stem_careers"]
       interval: 5s
@@ -27,7 +27,7 @@ services:
     volumes:
       - .:/app
     ports:
-      - "8000:8000"
+      - "8001:8000"
     deploy:
       resources:
         limits:

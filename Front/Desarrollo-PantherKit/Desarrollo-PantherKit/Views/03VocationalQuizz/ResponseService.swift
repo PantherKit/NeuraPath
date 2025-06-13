@@ -19,9 +19,9 @@ class ResponseService {
     private let apiResponseKey = "apiResponseData"
     
     // URLs de los endpoints
-    private let apiURL = "http://192.168.0.11:8000/api/questions/process-complete"
-    private let analysisURL = "http://192.168.0.11:8000/api/neural/recommendations-with-analysis"
-    
+private let apiURL = "http://172.29.19.161:8001/api/questions/process-complete"
+private let analysisURL = "http://172.29.19.161:8001/api/neural/recommendations-with-analysis"
+
     // Inicializador privado para singleton
     private init() {}
     
