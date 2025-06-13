@@ -17,47 +17,35 @@ async def get_neural_recommendations_with_analysis(
     mbti_result: MBTIResult,
     mi_result: MIResult,
     top_n: Optional[int] = Query(5, description="Número de recomendaciones a devolver"),
-    use_cnn: Optional[bool] = Query(False, description="Usar modelo CNN en lugar de FNN"),
     llm_provider: Optional[str] = Query(None, description="Proveedor LLM a utilizar")
 ):
     """
-    Obtiene recomendaciones de carrera usando el modelo neural entrenado
-    junto con un análisis detallado generado por un LLM
+    Obtiene recomendaciones de carrera usando el modelo CNN entrenado junto con un análisis detallado generado por un LLM
     """
     try:
-        # 1. Obtener recomendaciones del modelo neural
         recommendations = neural_service.predict_careers(
             mbti_code=mbti_result.MBTI_code,
             mbti_vector=mbti_result.MBTI_vector,
             mbti_weights=mbti_result.MBTI_weights,
             mi_scores=mi_result.MI_scores,
-            top_n=top_n,
-            use_cnn=use_cnn
+            top_n=top_n
         )
-        
-        # 2. Generar un prompt para el LLM para analizar las recomendaciones
         analysis_prompt = llm_service.generate_career_analysis_prompt(
             mbti_code=mbti_result.MBTI_code,
             mi_scores=mi_result.MI_scores,
             career_recommendations=recommendations
         )
-        
-        # 3. Llamar al LLM para obtener el análisis
         llm_response = await llm_api_service.call_llm(
             prompt=analysis_prompt,
             provider=llm_provider,
-            max_tokens=1500  # Análisis más largo
+            max_tokens=1500
         )
-        
-        # 4. Procesar la respuesta del LLM
         analysis_result = llm_service.process_career_analysis_response(llm_response)
-        
-        # 5. Devolver tanto las recomendaciones como el análisis
         return {
             "recommendations": recommendations,
             "analysis": analysis_result["analysis"],
             "mbti_profile": mbti_result.MBTI_code,
-            "model_type": "CNN" if use_cnn else "FNN"
+            "model_type": "CNN"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generando recomendaciones con análisis: {str(e)}")
@@ -99,11 +87,10 @@ async def train_neural_models(
 async def get_neural_recommendations(
     mbti_result: MBTIResult,
     mi_result: MIResult,
-    top_n: Optional[int] = Query(3, description="Número de recomendaciones a devolver"),
-    use_cnn: Optional[bool] = Query(False, description="Usar modelo CNN en lugar de FNN")
+    top_n: Optional[int] = Query(3, description="Número de recomendaciones a devolver")
 ):
     """
-    Obtiene recomendaciones de carrera usando el modelo neural entrenado
+    Obtiene recomendaciones de carrera usando el modelo CNN entrenado
     """
     try:
         recommendations = neural_service.predict_careers(
@@ -111,57 +98,8 @@ async def get_neural_recommendations(
             mbti_vector=mbti_result.MBTI_vector,
             mbti_weights=mbti_result.MBTI_weights,
             mi_scores=mi_result.MI_scores,
-            top_n=top_n,
-            use_cnn=use_cnn
+            top_n=top_n
         )
         return recommendations
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generando recomendaciones: {str(e)}")
-
-@router.get("/compare", response_model=Dict[str, Any])
-async def compare_models(
-    mbti_result: MBTIResult,
-    mi_result: MIResult,
-    top_n: Optional[int] = Query(3, description="Número de recomendaciones a devolver")
-):
-    """
-    Compara las recomendaciones del modelo neural (FNN y CNN) con el modelo basado en similitud coseno
-    """
-    try:
-        # Obtener recomendaciones del modelo FNN
-        fnn_recommendations = neural_service.predict_careers(
-            mbti_code=mbti_result.MBTI_code,
-            mbti_vector=mbti_result.MBTI_vector,
-            mbti_weights=mbti_result.MBTI_weights,
-            mi_scores=mi_result.MI_scores,
-            top_n=top_n,
-            use_cnn=False
-        )
-        
-        # Obtener recomendaciones del modelo CNN
-        cnn_recommendations = neural_service.predict_careers(
-            mbti_code=mbti_result.MBTI_code,
-            mbti_vector=mbti_result.MBTI_vector,
-            mbti_weights=mbti_result.MBTI_weights,
-            mi_scores=mi_result.MI_scores,
-            top_n=top_n,
-            use_cnn=True
-        )
-        
-        # Obtener recomendaciones del modelo de similitud coseno
-        cosine_recommendations = neural_service.career_recommender.recommend_careers(
-            mbti_code=mbti_result.MBTI_code,
-            mbti_vector=mbti_result.MBTI_vector,
-            mbti_weights=mbti_result.MBTI_weights,
-            mi_scores=mi_result.MI_scores,
-            top_n=top_n
-        )
-        
-        return {
-            "fnn_recommendations": fnn_recommendations,
-            "cnn_recommendations": cnn_recommendations,
-            "cosine_recommendations": cosine_recommendations,
-            "mbti_profile": mbti_result.MBTI_code
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error comparando modelos: {str(e)}") 
+        raise HTTPException(status_code=500, detail=f"Error generando recomendaciones: {str(e)}") 

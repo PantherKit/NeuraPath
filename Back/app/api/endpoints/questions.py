@@ -305,13 +305,12 @@ async def process_complete_flow(
         
         # 6. Usar la red neuronal para obtener recomendaciones de carreras
         logger.info("Paso 5: Obteniendo recomendaciones de carreras con la red neuronal")
-        career_recommendations = neural_service.predict_careers(
+        recommendations = neural_service.predict_careers(
             mbti_code=mbti_result.MBTI_code,
-            mbti_vector=mbti_result.MBTI_vector,
-            mbti_weights=mbti_result.MBTI_weights,
-            mi_scores=mi_result.MI_scores,
-            top_n=5,  # Obtener 5 recomendaciones
-            use_cnn=True  # Usar el modelo CNN por defecto
+            mbti_vector=mbti_vector,
+            mbti_weights=mbti_weights,
+            mi_scores=mi_scores,
+            top_n=5
         )
         
         # 7. Opcionalmente, solicitar un análisis de las recomendaciones al LLM
@@ -322,7 +321,7 @@ async def process_complete_flow(
             analysis_prompt = llm_service.generate_career_analysis_prompt(
                 mbti_code=mbti_code,
                 mi_scores=mi_scores,
-                career_recommendations=career_recommendations
+                career_recommendations=recommendations
             )
             
             # Llamar al LLM para obtener análisis
@@ -354,7 +353,7 @@ async def process_complete_flow(
             },
             "mi_scores": mi_scores,
             "mi_ranking": list(mi_scores.keys()),  # Ordenar por valor descendente
-            "career_recommendations": career_recommendations
+            "career_recommendations": recommendations
         }
         
         # Incluir el análisis si fue solicitado

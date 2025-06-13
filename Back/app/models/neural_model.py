@@ -15,13 +15,10 @@ import json
 class NeuralCareerModel:
     def __init__(self):
         """Inicializa el modelo de red neuronal para recomendación de carreras."""
-        self.fnn_model = None
         self.cnn_model = None
         self.label_encoder = LabelEncoder()
         self.model_path = Path(os.path.dirname(os.path.abspath(__file__))) / ".." / "data" / "neural_models"
         os.makedirs(self.model_path, exist_ok=True)
-        
-        # Cargar el modelo si ya existe
         self.load_models()
         
     def prepare_input_features(self, mbti_vector: List[int], mbti_weights: Dict[str, float], 
@@ -49,70 +46,6 @@ class NeuralCareerModel:
         combined_vector = np.array(mbti_vector + mbti_weight_vector + mi_vector)
         
         return combined_vector.reshape(1, -1)  # Formato para predicción (batch_size=1)
-    
-    def train_fnn_model(self, X: np.ndarray, y: np.ndarray, epochs: int = 50, batch_size: int = 32):
-        """
-        Entrena un modelo de red neuronal feedforward para predecir carreras.
-        
-        Args:
-            X: Matriz de características (N x 16) - MBTI + pesos MBTI + MI
-            y: Etiquetas de carreras (codificadas con one-hot)
-            epochs: Número de epochs para entrenamiento
-            batch_size: Tamaño del batch
-        """
-        num_classes = y.shape[1]
-        
-        # Definir arquitectura de red FNN mejorada
-        self.fnn_model = Sequential([
-            Dense(256, activation='relu', input_shape=(X.shape[1],),
-                  kernel_regularizer=tf.keras.regularizers.l2(0.001)),
-            BatchNormalization(),
-            Dropout(0.4),
-            
-            Dense(128, activation='relu',
-                  kernel_regularizer=tf.keras.regularizers.l2(0.001)),
-            BatchNormalization(),
-            Dropout(0.3),
-            
-            Dense(64, activation='relu',
-                  kernel_regularizer=tf.keras.regularizers.l2(0.001)),
-            Dropout(0.3),
-            
-            Dense(num_classes, activation='softmax')
-        ])
-        
-        # Compilar el modelo con learning rate reducido
-        optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)
-        self.fnn_model.compile(
-            optimizer=optimizer,
-            loss='categorical_crossentropy',
-            metrics=['accuracy']
-        )
-        
-        # Implementar early stopping para evitar overfitting
-        early_stopping = tf.keras.callbacks.EarlyStopping(
-            monitor='val_loss', patience=10, restore_best_weights=True
-        )
-        
-        # Reducción de learning rate cuando se estanca
-        reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
-            monitor='val_loss', factor=0.2, patience=5, min_lr=0.00001
-        )
-        
-        # Entrenar el modelo con más epochs y callbacks
-        history = self.fnn_model.fit(
-            X, y, 
-            epochs=200,  # 4x más epochs
-            batch_size=batch_size, 
-            validation_split=0.2,
-            callbacks=[early_stopping, reduce_lr],
-            verbose=1
-        )
-        
-        # Guardar el modelo entrenado
-        self.save_models()
-        
-        return history
     
     def train_cnn_model(self, X: np.ndarray, y: np.ndarray, epochs: int = 50, batch_size: int = 32):
         """
@@ -197,42 +130,17 @@ class NeuralCareerModel:
         return history
     
     def predict_career(self, mbti_vector: List[int], mbti_weights: Dict[str, float], 
-                      mi_scores: Dict[str, float], career_names: List[str], 
-                      use_cnn: bool = True) -> List[Tuple[str, float]]:
+                      mi_scores: Dict[str, float], career_names: List[str]) -> List[Tuple[str, float]]:
         """
-        Predice carreras recomendadas basado en el perfil MBTI y MI del usuario.
-        
-        Args:
-            mbti_vector: Vector binario de MBTI (ej. [0, 1, 0, 1])
-            mbti_weights: Pesos de las dimensiones MBTI 
-            mi_scores: Puntuaciones de inteligencias múltiples
-            career_names: Lista de nombres de carreras disponibles
-            use_cnn: Si True, usa el modelo CNN; si False, usa el modelo FNN
-            
-        Returns:
-            Lista de tuplas (nombre_carrera, probabilidad) ordenadas por probabilidad
+        Predice carreras recomendadas basado en el perfil MBTI y MI del usuario usando solo CNN.
         """
-        # Verificar si el modelo está entrenado
-        model = self.cnn_model if use_cnn else self.fnn_model
-        if model is None:
-            raise ValueError("El modelo no está entrenado. Entrena el modelo primero.")
-            
-        # Preparar datos de entrada
+        if self.cnn_model is None:
+            raise ValueError("El modelo CNN no está entrenado. Entrena el modelo primero.")
         X = self.prepare_input_features(mbti_vector, mbti_weights, mi_scores)
-        
-        # Remodelar para CNN si es necesario
-        if use_cnn:
-            X = X.reshape(X.shape[0], X.shape[1], 1)
-        
-        # Hacer predicción
-        probs = model.predict(X)[0]
-        
-        # Combinar resultados con nombres de carreras
+        X = X.reshape(X.shape[0], X.shape[1], 1)
+        probs = self.cnn_model.predict(X)[0]
         results = [(career, float(prob)) for career, prob in zip(career_names, probs)]
-        
-        # Ordenar por probabilidad de mayor a menor
         results.sort(key=lambda x: x[1], reverse=True)
-        
         return results
         
     def visualize_embeddings(self, X: np.ndarray, career_labels: List[str], perplexity: int = 30):
@@ -268,33 +176,21 @@ class NeuralCareerModel:
         plt.close()
     
     def save_models(self):
-        """Guarda los modelos entrenados y el codificador de etiquetas."""
-        if self.fnn_model:
-            self.fnn_model.save(str(self.model_path / "fnn_model"))
-        
+        """Guarda el modelo CNN entrenado y el codificador de etiquetas."""
         if self.cnn_model:
             self.cnn_model.save(str(self.model_path / "cnn_model"))
-            
         if hasattr(self, 'label_encoder') and self.label_encoder.classes_.size > 0:
             joblib.dump(self.label_encoder, str(self.model_path / "label_encoder.pkl"))
     
     def load_models(self):
-        """Carga los modelos entrenados si existen."""
+        """Carga el modelo CNN entrenado si existe."""
         try:
-            fnn_path = self.model_path / "fnn_model"
-            if fnn_path.exists():
-                self.fnn_model = tf.keras.models.load_model(str(fnn_path))
-                
             cnn_path = self.model_path / "cnn_model"
             if cnn_path.exists():
                 self.cnn_model = tf.keras.models.load_model(str(cnn_path))
-                
             encoder_path = self.model_path / "label_encoder.pkl"
             if encoder_path.exists():
                 self.label_encoder = joblib.load(str(encoder_path))
-                
         except Exception as e:
-            print(f"Error al cargar los modelos: {e}")
-            # Si hay error, inicializar modelos nuevos
-            self.fnn_model = None
+            print(f"Error al cargar el modelo CNN: {e}")
             self.cnn_model = None 

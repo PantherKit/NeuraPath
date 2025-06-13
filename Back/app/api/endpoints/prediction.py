@@ -40,8 +40,7 @@ async def recommend_careers(
             mbti_vector=mbti_vector,
             mbti_weights=mbti_weights,
             mi_scores=mi_scores,
-            top_n=profile_data.num_recommendations or 5,
-            use_cnn=True  # Usar CNN por defecto
+            top_n=profile_data.num_recommendations or 5
         )
         logger.info(f"Recomendaciones generadas: {len(recommendations)}")
         
