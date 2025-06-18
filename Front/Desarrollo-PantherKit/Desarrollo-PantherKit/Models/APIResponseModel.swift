@@ -1,5 +1,97 @@
 import Foundation
 
+// Forward declarations to fix Codable issues
+struct MBTIProfile: Codable {
+    let code: String
+    let weights: MBTIWeights
+    let vector: [Int]
+}
+
+struct MBTIWeights: Codable {
+    let ei: Double
+    let sn: Double
+    let tf: Double
+    let jp: Double
+    
+    enum CodingKeys: String, CodingKey {
+        case ei = "E/I"
+        case sn = "S/N"
+        case tf = "T/F"
+        case jp = "J/P"
+    }
+}
+
+struct MIScores: Codable {
+    let linguistic: Double
+    let logicalMath: Double
+    let spatial: Double
+    let bodilyKinesthetic: Double
+    let musical: Double
+    let interpersonal: Double
+    let intrapersonal: Double
+    let naturalist: Double
+    
+    enum CodingKeys: String, CodingKey {
+        case linguistic = "Lin"
+        case logicalMath = "LogMath"
+        case spatial = "Spa"
+        case bodilyKinesthetic = "BodKin"
+        case musical = "Mus"
+        case interpersonal = "Inter"
+        case intrapersonal = "Intra"
+        case naturalist = "Nat"
+    }
+}
+
+struct DetailedAnalysis: Codable {
+    let personalitySummary: String
+    let intelligencesSummary: String
+    let recommendationRationale: String
+    let suggestedSkills: [String]
+    let opportunities: [String]
+    let challenges: [String]
+    
+    enum CodingKeys: String, CodingKey {
+        case personalitySummary = "personality_summary"
+        case intelligencesSummary = "intelligences_summary"
+        case recommendationRationale = "recommendation_rationale"
+        case suggestedSkills = "suggested_skills"
+        case opportunities
+        case challenges
+    }
+}
+
+struct CareerAnalysis: Codable {
+    let personalityFit: String
+    let intelligencesFit: String
+    let skillsToFocus: [String]
+    let whyRecommended: String
+    
+    enum CodingKeys: String, CodingKey {
+        case personalityFit = "personality_fit"
+        case intelligencesFit = "intelligences_fit"
+        case skillsToFocus = "skills_to_focus"
+        case whyRecommended = "why_recommended"
+    }
+}
+
+struct APICareerRecommendation: Codable, Identifiable {
+    var id: String { nombre + universidad }
+    let nombre: String
+    let universidad: String
+    let ciudad: String
+    let matchScore: Double
+    let careerAnalysis: CareerAnalysis?
+    
+    enum CodingKeys: String, CodingKey {
+        case nombre
+        case universidad
+        case ciudad
+        case matchScore = "match_score"
+        case careerAnalysis = "career_analysis"
+    }
+}
+
 struct APIResponse: Codable {
     let status: String
     let message: String
@@ -9,7 +101,7 @@ struct APIResponse: Codable {
     let mbtiProfile: MBTIProfile
     let miScores: MIScores
     let miRanking: [String]
-    let careerRecommendations: [CareerRecommendation]
+    let careerRecommendations: [APICareerRecommendation]
     let careerAnalysis: String?
     let detailedAnalysis: DetailedAnalysis?
     
@@ -270,110 +362,4 @@ struct APIResponse: Codable {
     }
 }
 
-struct MBTIProfile: Codable {
-    let code: String
-    let weights: MBTIWeights
-    let vector: [Int]
-}
-
-struct MBTIWeights: Codable {
-    let ei: Double
-    let sn: Double
-    let tf: Double
-    let jp: Double
-    
-    enum CodingKeys: String, CodingKey {
-        case ei = "E/I"
-        case sn = "S/N"
-        case tf = "T/F"
-        case jp = "J/P"
-    }
-}
-
-struct MIScores: Codable {
-    let linguistic: Double
-    let logicalMath: Double
-    let spatial: Double
-    let bodilyKinesthetic: Double
-    let musical: Double
-    let interpersonal: Double
-    let intrapersonal: Double
-    let naturalist: Double
-    
-    enum CodingKeys: String, CodingKey {
-        case linguistic = "Lin"
-        case logicalMath = "LogMath"
-        case spatial = "Spa"
-        case bodilyKinesthetic = "BodKin"
-        case musical = "Mus"
-        case interpersonal = "Inter"
-        case intrapersonal = "Intra"
-        case naturalist = "Nat"
-    }
-}
-
-struct CareerRecommendation: Codable, Identifiable {
-    var id: String { nombre + universidad }
-    let nombre: String
-    let universidad: String
-    let ciudad: String
-    let matchScore: Double
-    let careerAnalysis: CareerAnalysis?
-    
-    enum CodingKeys: String, CodingKey {
-        case nombre
-        case universidad
-        case ciudad
-        case matchScore = "match_score"
-        case careerAnalysis = "career_analysis"
-    }
-}
-
-struct DetailedAnalysis: Codable {
-    let personalitySummary: String
-    let intelligencesSummary: String
-    let recommendationRationale: String
-    let suggestedSkills: [String]
-    let opportunities: [String]
-    let challenges: [String]
-    
-    enum CodingKeys: String, CodingKey {
-        case personalitySummary = "personality_summary"
-        case intelligencesSummary = "intelligences_summary"
-        case recommendationRationale = "recommendation_rationale"
-        case suggestedSkills = "suggested_skills"
-        case opportunities
-        case challenges
-    }
-}
-
-struct CareerAnalysis: Codable {
-    let personalityFit: String
-    let intelligencesFit: String
-    let skillsToFocus: [String]
-    let whyRecommended: String
-    
-    enum CodingKeys: String, CodingKey {
-        case personalityFit = "personality_fit"
-        case intelligencesFit = "intelligences_fit"
-        case skillsToFocus = "skills_to_focus"
-        case whyRecommended = "why_recommended"
-    }
-}
-
-extension ResponseService {
-    /// Carga la respuesta de la API desde UserDefaults
-    func loadAPIResponse() -> APIResponse? {
-        guard let data = getLastAPIResponse() else {
-            return nil
-        }
-        
-        do {
-            let response = try JSONDecoder().decode(APIResponse.self, from: data)
-            return response
-        } catch {
-            print("Error decodificando respuesta de API: \(error)")
-            return nil
-        }
-    }
-} 
+// Extension removed - loadAPIResponse() is now in ResponseService.swift 

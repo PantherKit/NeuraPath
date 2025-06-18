@@ -324,9 +324,8 @@ struct DeckView: View {
         let selectedType = selectedRight ? currentQuestion.optionA.type : currentQuestion.optionB.type
         mbtiResults[selectedType, default: 0] += 1
         
-        if let trait = mbtiToTrait(selectedType) {
-            viewModel.updateTraitScore(trait, by: 1.0)
-        }
+        // Note: We now just track the selection, processing is done by backend
+        print("MBTI trait selection recorded: \(selectedType)")
         
         print("Selected \(selectedRight ? "Option A" : "Option B") for question \(activeIndex + 1)")
         

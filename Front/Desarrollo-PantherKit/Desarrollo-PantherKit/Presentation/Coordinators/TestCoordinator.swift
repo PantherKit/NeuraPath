@@ -1,8 +1,6 @@
 //
 //  TestCoordinator.swift
-//  NeuraPath
-//
-//  Created for Clean Architecture refactoring
+//  NeuraPath - Simplified for Frontend-Only Architecture
 //
 
 import SwiftUI
@@ -32,7 +30,7 @@ final class TestCoordinator: Coordinator {
     // MARK: - Initialization
     init(container: DIContainer = DIContainer.shared) {
         self.container = container
-        self.viewModel = VocationalTestViewModel() // TODO: Inject in Phase 2
+        self.viewModel = container.makeVocationalTestViewModel()
     }
     
     // MARK: - Coordinator Protocol
@@ -55,7 +53,6 @@ final class TestCoordinator: Coordinator {
     }
     
     func completeTest() {
-        // Aquí se ejecutará la lógica de completar el test
         viewModel.completeTest()
         finish()
     }

@@ -163,18 +163,12 @@ struct AnalyzeResponsesView: View {
         }
     }
     
-    // Enviar respuestas a la API
+    // Simplified response handling - backend communication via ViewModel
     private func sendResponses() {
-        ResponseService.shared.sendResponsesToAPI { result in
-            switch result {
-            case .success(_):
-                // Si es exitoso, completar el progreso y continuar
-                completeProgress()
-                
-            case .failure(let error):
-                // Mostrar error y opción para reintentar
-                showErrorMessage(error.localizedDescription)
-            }
+        // For frontend-only version, just simulate success
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            // Always complete successfully - real backend communication via ViewModel
+            completeProgress()
         }
     }
     

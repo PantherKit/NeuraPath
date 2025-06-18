@@ -14,7 +14,7 @@ struct SplashView: View {
 
     var body: some View {
         if isActive {
-            MainTabView() // Reemplaza con tu vista principal
+            MainAppView() // Reemplaza con tu vista principal
         } else {
             ZStack {
                 Color.black.ignoresSafeArea()

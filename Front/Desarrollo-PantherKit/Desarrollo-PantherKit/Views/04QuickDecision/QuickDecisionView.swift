@@ -852,49 +852,14 @@ struct QuickDecisionView: View {
         }
     }
     
-    // MARK: - Preparación de resultados
+    // MARK: - Quick Decision Logic (Frontend Only)
     private func prepareTestResult() {
-        // Verificar si ya existe un resultado
-        if viewModel.testResult == nil {
-            // Crear un avatar por defecto si no hay uno seleccionado
-            let defaultAvatar = viewModel.selectedAvatar ?? Avatar.allAvatars.first!
-            
-            // Inicializar puntuaciones vacías para campos
-            var fieldScores: [EngineeringField: Double] = [:]
-            for field in EngineeringField.allCases {
-                fieldScores[field] = Double.random(in: 0.3...0.8) // Valores aleatorios para demo
-            }
-            
-            // Usar valores seleccionados para asignar algunas puntuaciones específicas
-            if !selectedIndices.isEmpty {
-                // Aumentar campos según opciones seleccionadas
-                if selectedIndices.contains(0) {
-                    fieldScores[.computerScience] = 0.9
-                }
-                if selectedIndices.contains(1) {
-                    fieldScores[.mechanical] = 0.85
-                }
-                if selectedIndices.contains(2) {
-                    fieldScores[.electrical] = 0.8
-                }
-                if selectedIndices.contains(3) {
-                    fieldScores[.mechatronics] = 0.85
-                }
-            }
-            
-            // Inicializar puntuaciones vacías para rasgos
-            var traitScores: [PersonalityTrait: Double] = [:]
-            for trait in PersonalityTrait.allCases {
-                traitScores[trait] = Double.random(in: 0.3...0.7) // Valores aleatorios para demo
-            }
-            
-            // Crear el resultado del test
-            viewModel.testResult = TestResult(
-                avatar: defaultAvatar,
-                fieldScores: fieldScores,
-                traitScores: traitScores
-            )
-        }
+        // For frontend-only version, we just record the selections
+        // All processing will be done by the backend
+        print("Quick decision selections recorded: \(selectedIndices)")
+        
+        // Store selections in ViewModel for backend submission
+        // This can be added to the payload when submitting to backend
     }
     
     private func resetTimer() {

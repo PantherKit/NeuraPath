@@ -1,6 +1,8 @@
 //
 //  VocationalTestViewModel.swift
-//  NeuraPath - Simplified for Frontend-Only Architecture
+//  NeuraPath
+//
+//  Simplified for Frontend-Only Architecture
 //
 
 import Foundation
@@ -66,7 +68,6 @@ final class VocationalTestViewModel: ObservableObject {
     init(apiService: APIService) {
         self.apiService = apiService
         loadMissions()
-        loadDemoData()
     }
     
     /// Legacy init for backward compatibility
@@ -87,7 +88,14 @@ final class VocationalTestViewModel: ObservableObject {
                 try await Task.sleep(nanoseconds: 500_000_000)
                 
                 await MainActor.run {
-                    self.missions = Mission.sampleMissions.shuffled().prefix(5).map { $0 }
+                    self.missions = Mission.sampleMissions
+                    self.missions.shuffle()
+                    
+                    // Limit to 5 missions for quick test
+                    if self.missions.count > 5 {
+                        self.missions = Array(self.missions.prefix(5))
+                    }
+                    
                     self.isLoading = false
                 }
             } catch {
@@ -149,12 +157,12 @@ final class VocationalTestViewModel: ObservableObject {
                     self.apiResponse = response
                     self.testCompleted = true
                     self.isLoading = false
-            
-            print("✅ Test completed successfully")
+                    
+                    print("✅ Test completed successfully")
                     print("📊 Received \(response.careerRecommendations.count) career recommendations")
                 }
-            
-        } catch {
+                
+            } catch {
                 await MainActor.run {
                     self.errorMessage = "Failed to submit test: \(error.localizedDescription)"
                     self.isLoading = false
@@ -207,23 +215,5 @@ final class VocationalTestViewModel: ObservableObject {
             "responses": responses,
             "timestamp": Date().timeIntervalSince1970
         ]
-    }
-    
-    // MARK: - Demo Data Integration
-    func loadDemoData() {
-        // Set demo API response
-        self.apiResponse = DemoData.sampleAPIResponse
-        
-        // Mark as completed (no processing needed, just UI state)
-        print("✅ Demo data loaded successfully")
-    }
-    
-    // MARK: - Compatibility Methods for Views
-    var hasResults: Bool {
-        return apiResponse != nil
-    }
-    
-    var topCareerRecommendations: [APICareerRecommendation] {
-        return apiResponse?.careerRecommendations ?? []
     }
 } 

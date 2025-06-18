@@ -5,7 +5,7 @@ struct ResultsView: View {
     @ObservedObject var viewModel: VocationalTestViewModel
     @State private var apiResponse: APIResponse?
     @State private var showFullDetails = false
-    @State private var selectedCareer: CareerRecommendation?
+    @State private var selectedCareer: APICareerRecommendation?
     @State private var animateBackground = false
     @State private var animateTitle = false
     @State private var animateCards = false
@@ -283,7 +283,7 @@ struct ResultsView: View {
         }
     }
     
-    private func careerRecommendationsView(_ careers: [CareerRecommendation]) -> some View {
+    private func careerRecommendationsView(_ careers: [APICareerRecommendation]) -> some View {
         VStack(spacing: 15) {
             // Título de la sección
             sectionHeader(title: "Carreras Recomendadas", icon: "graduationcap.fill")
@@ -303,7 +303,7 @@ struct ResultsView: View {
         )
     }
     
-    private func careerCard(_ career: CareerRecommendation) -> some View {
+    private func careerCard(_ career: APICareerRecommendation) -> some View {
         // Verificar si hay análisis disponible o podemos generarlo
         let hasAnalysis = career.careerAnalysis != nil || 
                          (apiResponse?.canGenerateAnalysisFor(careerName: career.nombre) ?? false)
@@ -397,7 +397,7 @@ struct ResultsView: View {
         }
     }
     
-    private func careerDetailView(_ career: CareerRecommendation) -> some View {
+    private func careerDetailView(_ career: APICareerRecommendation) -> some View {
         // Generar análisis para esta carrera si no existe
         let generatedAnalysis = career.careerAnalysis ?? apiResponse?.generateCareerAnalysis(for: career.nombre)
         
@@ -1165,26 +1165,21 @@ struct ResultsView: View {
         )
     }
     
-    // Solicitar análisis detallado explícitamente
+    // Simplified analysis request - now handled by backend
     private func requestDetailedAnalysis() {
         isLoadingAnalysis = true
         
-        ResponseService.shared.getDetailedAnalysis { result in
-            DispatchQueue.main.async {
-                isLoadingAnalysis = false
-                
-                switch result {
-                case .success(_):
-                    // Recargar los datos de la API
-                    apiResponse = ResponseService.shared.loadAPIResponse()
-                    
-                    // Mostrar un mensaje de éxito
-                    print("Análisis detallado cargado correctamente")
-                    
-                case .failure(let error):
-                    // Mostrar un mensaje de error
-                    print("Error obteniendo análisis detallado: \(error.localizedDescription)")
-                }
+        // Simulate analysis loading
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.isLoadingAnalysis = false
+            
+            // Try to reload from stored response
+            self.apiResponse = ResponseService.shared.loadAPIResponse()
+            
+            if self.apiResponse != nil {
+                print("✅ Analysis loaded from stored response")
+            } else {
+                print("⚠️ No stored analysis found - use completeTest() to get backend analysis")
             }
         }
     }

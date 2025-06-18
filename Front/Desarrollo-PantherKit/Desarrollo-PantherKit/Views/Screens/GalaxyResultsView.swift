@@ -1,8 +1,6 @@
 //
 //  GalaxyResultsView.swift
-//  Desarrollo-PantherKit
-//
-//  Created on 5/12/25.
+//  NeuraPath - Simplified Demo Version
 //
 
 import SwiftUI
@@ -10,75 +8,49 @@ import SwiftUI
 struct GalaxyResultsView: View {
     @ObservedObject var viewModel: VocationalTestViewModel
     @State private var isAnimating = false
-    @State private var selectedField: EngineeringField?
     @State private var showFieldDetails = false
+    @State private var selectedField: EngineeringField? = nil
     
-    private let starSizes: [CGFloat] = [30, 40, 50, 60, 70, 80]
+    // Demo data
+    private let demoFields = DemoData.demoFields
+    private let starSizes: [CGFloat] = [60, 50, 45, 40, 35]
     
     var body: some View {
-        ZStack {
-            // Space background
-            Color.black
-                .ignoresSafeArea()
-            
-            // Stars background
-            ForEach(0..<100) { _ in
-                Circle()
-                    .fill(Color.white.opacity(Double.random(in: 0.1...0.5)))
-                    .frame(width: Double.random(in: 1...3))
-                    .position(
-                        x: Double.random(in: 0...UIScreen.main.bounds.width),
-                        y: Double.random(in: 0...UIScreen.main.bounds.height)
-                    )
-            }
-            
-            // Nebula effects
-            ForEach(0..<5) { i in
-                Circle()
-                    .fill(
-                        [Color.purple, Color.blue, Color.cyan, Color.indigo, Color.pink][i % 5]
-                            .opacity(0.1)
-                    )
-                    .frame(width: Double.random(in: 100...300))
-                    .position(
-                        x: Double.random(in: 0...UIScreen.main.bounds.width),
-                        y: Double.random(in: 0...UIScreen.main.bounds.height)
-                    )
-                    .blur(radius: 30)
-            }
-            
-            VStack {
+        ScrollView {
+            VStack(spacing: 20) {
                 // Header
-                Text("Tu Mapa Estelar STEM")
-                    .font(.system(size: AppTheme.Typography.largeTitle, weight: .bold))
-                    .foregroundColor(.white)
-                    .padding(.top, AppTheme.Layout.spacingL)
+                VStack(spacing: 10) {
+                    Text("🌟 Tu Galaxia STEM 🌟")
+                        .font(.system(size: 32, weight: .bold))
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                    
+                    Text("Explora tus afinidades profesionales")
+                        .font(.system(size: 18))
+                        .foregroundColor(.white.opacity(0.8))
+                }
+                .padding(.bottom, 20)
                 
-                Text("Cada estrella representa tu afinidad con una carrera")
-                    .font(.system(size: AppTheme.Typography.subheadline))
-                    .foregroundColor(.gray)
-                    .padding(.bottom, AppTheme.Layout.spacingL)
-                
-                // Galaxy view
+                // Galaxy view with demo data
                 ZStack {
                     // Central star (primary field)
                     StarView(
-                        field: viewModel.testResult?.primaryField ?? .mechatronics,
+                        field: DemoData.primaryField,
                         size: 100,
                         score: 1.0,
                         position: .center,
                         isAnimating: isAnimating
                     )
                     .onTapGesture {
-                        selectedField = viewModel.testResult?.primaryField ?? .mechatronics
+                        selectedField = DemoData.primaryField
                         showFieldDetails = true
                     }
                     
                     // Orbiting stars (other fields)
-                    ForEach(Array(viewModel.fieldScores.keys.filter { $0 != viewModel.primaryField }.enumerated()), id: \.element) { index, field in
-                        let score = viewModel.normalizedScore(for: field)
+                    ForEach(Array(demoFields.filter { $0 != DemoData.primaryField }.enumerated()), id: \.element) { index, field in
+                        let score = DemoData.normalizedScore(for: field)
                         let size = starSizes[min(index, starSizes.count - 1)]
-                        let angle = Double(index) * (360.0 / Double(viewModel.fieldScores.count - 1))
+                        let angle = Double(index) * (360.0 / Double(demoFields.count - 1))
                         let distance = 150.0 + Double(index) * 20.0
                         
                         StarView(
@@ -97,46 +69,47 @@ struct GalaxyResultsView: View {
                 .frame(maxWidth: .infinity, maxHeight: 400)
                 .padding()
                 
-                // Legend
-                VStack(alignment: .leading, spacing: AppTheme.Layout.spacingM) {
+                // Legend with demo data
+                VStack(alignment: .leading, spacing: 15) {
                     Text("Tus mejores coincidencias:")
-                        .font(.system(size: AppTheme.Typography.headline, weight: .bold))
+                        .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.white)
                     
                     // Top 3 fields
-                    ForEach(viewModel.topFields.prefix(3), id: \.self) { field in
+                    ForEach(DemoData.topFields.prefix(3), id: \.self) { field in
                         HStack {
                             Circle()
                                 .fill(field.color)
                                 .frame(width: 15, height: 15)
                             
                             Text(field.rawValue)
-                                .font(.system(size: AppTheme.Typography.body))
+                                .font(.system(size: 16))
                                 .foregroundColor(.white)
                             
                             Spacer()
                             
-                            Text("\(Int(viewModel.normalizedScore(for: field) * 100))%")
-                                .font(.system(size: AppTheme.Typography.body, weight: .bold))
+                            Text("\(Int(DemoData.normalizedScore(for: field) * 100))%")
+                                .font(.system(size: 16, weight: .bold))
                                 .foregroundColor(field.color)
                         }
                     }
                 }
                 .padding()
                 .background(Color.black.opacity(0.5))
-                .cornerRadius(AppTheme.Layout.cornerRadiusM)
+                .cornerRadius(15)
                 .padding()
                 
-                VStack(spacing: AppTheme.Layout.spacingM) {
+                // Action buttons
+                VStack(spacing: 15) {
                     // Share button
                     Button(action: {
-                        // Share functionality would go here
+                        // Share functionality
                     }) {
                         HStack {
                             Image(systemName: "square.and.arrow.up")
                             Text("Compartir mis resultados")
                         }
-                        .font(.system(size: AppTheme.Typography.body, weight: .semibold))
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.white)
                         .padding()
                         .background(
@@ -146,22 +119,22 @@ struct GalaxyResultsView: View {
                                 endPoint: .trailing
                             )
                         )
-                        .cornerRadius(AppTheme.Layout.cornerRadiusM)
+                        .cornerRadius(15)
                         .shadow(color: Color.purple.opacity(0.5), radius: 10, x: 0, y: 5)
                     }
                     
                     // Return to home button
                     Button(action: {
-                        // Return to MainTabView
+                        // Return to MainAppView
                         if let window = UIApplication.shared.windows.first {
-                            window.rootViewController = UIHostingController(rootView: MainTabView())
+                            window.rootViewController = UIHostingController(rootView: MainAppView())
                         }
                     }) {
                         HStack {
                             Image(systemName: "house.fill")
                             Text("Volver al inicio")
                         }
-                        .font(.system(size: AppTheme.Typography.body, weight: .semibold))
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.white)
                         .padding()
                         .background(
@@ -171,11 +144,11 @@ struct GalaxyResultsView: View {
                                 endPoint: .trailing
                             )
                         )
-                        .cornerRadius(AppTheme.Layout.cornerRadiusM)
+                        .cornerRadius(15)
                         .shadow(color: Color.blue.opacity(0.5), radius: 10, x: 0, y: 5)
                     }
                 }
-                .padding(.bottom, AppTheme.Layout.spacingL)
+                .padding(.bottom, 20)
             }
             .onAppear {
                 withAnimation(.easeInOut(duration: 2.0)) {
@@ -191,7 +164,7 @@ struct GalaxyResultsView: View {
                         showFieldDetails = false
                     }
                 
-                VStack(spacing: AppTheme.Layout.spacingL) {
+                VStack(spacing: 20) {
                     // Close button
                     HStack {
                         Spacer()
@@ -219,79 +192,54 @@ struct GalaxyResultsView: View {
                     
                     // Field name
                     Text(field.rawValue)
-                        .font(.system(size: AppTheme.Typography.title1, weight: .bold))
+                        .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.white)
                     
                     // Match percentage
-                    Text("Coincidencia: \(Int(viewModel.normalizedScore(for: field) * 100))%")
-                        .font(.system(size: AppTheme.Typography.title3))
+                    Text("Coincidencia: \(Int(DemoData.normalizedScore(for: field) * 100))%")
+                        .font(.system(size: 18))
                         .foregroundColor(field.color)
                     
                     // Description
                     Text(field.description)
-                        .font(.system(size: AppTheme.Typography.body))
+                        .font(.system(size: 16))
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                     
                     // Examples
-                    VStack(alignment: .leading, spacing: AppTheme.Layout.spacingS) {
+                    VStack(alignment: .leading, spacing: 10) {
                         Text("Ejemplos del mundo real:")
-                            .font(.system(size: AppTheme.Typography.headline, weight: .semibold))
+                            .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.white)
                         
                         Text(field.realWorldExample)
-                            .font(.system(size: AppTheme.Typography.body))
+                            .font(.system(size: 15))
                             .foregroundColor(.gray)
-                    }
-                    .padding(.horizontal)
-                    
-                    // Personality traits
-                    VStack(alignment: .leading, spacing: AppTheme.Layout.spacingS) {
-                        Text("Rasgos de personalidad compatibles:")
-                            .font(.system(size: AppTheme.Typography.headline, weight: .semibold))
-                            .foregroundColor(.white)
-                        
-                        HStack {
-                            ForEach([viewModel.primaryTrait, viewModel.secondaryTrait], id: \.self) { trait in
-                                HStack {
-                                    Image(systemName: trait.icon)
-                                        .foregroundColor(.yellow)
-                                    
-                                    Text(trait.rawValue)
-                                        .foregroundColor(.white)
-                                }
-                                .padding(.horizontal, AppTheme.Layout.spacingM)
-                                .padding(.vertical, AppTheme.Layout.spacingS)
-                                .background(Color.yellow.opacity(0.2))
-                                .cornerRadius(AppTheme.Layout.cornerRadiusM)
-                                
-                                if trait != viewModel.secondaryTrait {
-                                    Spacer()
-                                }
-                            }
-                        }
-                        .padding(.horizontal)
                     }
                     .padding(.horizontal)
                     
                     Spacer()
                 }
                 .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: AppTheme.Layout.cornerRadiusL)
-                        .fill(Color(UIColor.systemGray6))
-                        .opacity(0.95)
-                )
+                .background(Color.black)
+                .cornerRadius(20)
                 .padding()
-                .transition(.opacity)
-                .zIndex(2)
             }
         }
-        .navigationBarHidden(true)
-        .toolbar(.hidden, for: .tabBar)
-        .ignoresSafeArea(.all, edges: .bottom)
+        .background(
+            LinearGradient(
+                gradient: Gradient(colors: [Color.black, Color.purple.opacity(0.3)]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
+        .ignoresSafeArea()
     }
+}
+
+#Preview {
+    GalaxyResultsView(viewModel: VocationalTestViewModel())
 }
 
 // MARK: - Star View
@@ -343,11 +291,5 @@ extension View {
             let y = 200 + sin(radians) * distance
             return self.position(x: x, y: y)
         }
-    }
-}
-
-struct GalaxyResultsView_Previews: PreviewProvider {
-    static var previews: some View {
-        GalaxyResultsView(viewModel: VocationalTestViewModel())
     }
 }

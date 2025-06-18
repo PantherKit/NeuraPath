@@ -7,10 +7,71 @@
 
 import SwiftUI
 
+// MARK: - APICareerRecommendation UI Extensions
+extension APICareerRecommendation {
+    var color: Color {
+        // Generar color basado en el hash del nombre
+        let hash = nombre.hash
+        let colors: [Color] = [.purple, .blue, .green, .orange, .pink, .cyan, .indigo, .mint]
+        return colors[abs(hash) % colors.count]
+    }
+    
+    var icon: String {
+        // Iconos basados en el nombre de la carrera
+        let careerName = nombre.lowercased()
+        if careerName.contains("medicina") || careerName.contains("médica") {
+            return "stethoscope"
+        } else if careerName.contains("ingeniería") || careerName.contains("ingenieria") {
+            return "gear"
+        } else if careerName.contains("psicología") || careerName.contains("psicologia") {
+            return "brain.head.profile"
+        } else if careerName.contains("derecho") {
+            return "scale.3d"
+        } else if careerName.contains("administración") || careerName.contains("negocios") {
+            return "briefcase"
+        } else if careerName.contains("comunicación") || careerName.contains("comunicacion") {
+            return "bubble.left.and.bubble.right"
+        } else if careerName.contains("educación") || careerName.contains("educacion") {
+            return "graduationcap"
+        } else if careerName.contains("arte") || careerName.contains("diseño") {
+            return "paintbrush"
+        } else if careerName.contains("computación") || careerName.contains("sistemas") {
+            return "laptopcomputer"
+        } else {
+            return "star"
+        }
+    }
+    
+    var description: String {
+        return careerAnalysis?.whyRecommended ?? 
+               "Una carrera que se alinea perfectamente con tu perfil y te permitirá desarrollar tu potencial al máximo."
+    }
+    
+    var duration: String {
+        // Duración típica basada en el tipo de carrera
+        let careerName = nombre.lowercased()
+        if careerName.contains("medicina") {
+            return "6-7 años"
+        } else if careerName.contains("ingeniería") {
+            return "5 años"
+        } else if careerName.contains("derecho") {
+            return "5 años"
+        } else if careerName.contains("psicología") {
+            return "5 años"
+        } else {
+            return "4-5 años"
+        }
+    }
+    
+    // Compatibility properties
+    var name: String { nombre }
+    var university: String { universidad }
+}
+
 // MARK: - Career Carousel View
 struct CareerCarouselView: View {
     // Properties
-    let careers: [UniversityCareer]
+    let careers: [APICareerRecommendation]
     @EnvironmentObject var viewModel: VocationalTestViewModel
     @State private var currentIndex: Int = 0
     @State private var autoScrolling: Bool = true
@@ -102,7 +163,7 @@ struct CareerCarouselView: View {
 
 // MARK: - Card Subcomponents
 struct CareerCardHeaderView: View {
-    let career: UniversityCareer
+    let career: APICareerRecommendation
     
     // Constants with explicit types
     private let iconSize: CGFloat = 50.0
@@ -197,7 +258,7 @@ struct CareerCardFooterView: View {
 
 // MARK: - Career Card View
 struct CareerCardView: View {
-    let career: UniversityCareer
+    let career: APICareerRecommendation
     
     // Constants with explicit types
     private let cornerRadius: CGFloat = 16.0
@@ -266,7 +327,7 @@ struct CareerCarouselView_Previews: PreviewProvider {
         let viewModel = VocationalTestViewModel()
         return ZStack {
             Color.black.ignoresSafeArea()
-            CareerCarouselView(careers: UniversityCareer.sampleCareers)
+            CareerCarouselView(careers: [])
                 .environmentObject(viewModel)
         }
     }
