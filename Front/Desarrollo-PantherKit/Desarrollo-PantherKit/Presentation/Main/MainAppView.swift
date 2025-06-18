@@ -177,7 +177,7 @@ struct ResultsFlowView: View {
                     EmptyView()
                     
                 case .results:
-                    ResultsView(viewModel: coordinator.viewModel)
+                    GalaxyResultsView(viewModel: coordinator.viewModel)
                     
                 case .careerDetails:
                     // TODO: Implementar vista de detalles de carrera
