@@ -1,1 +1,1 @@
-# PantherKitHack2025
+# NeuraPath oficial repo
