@@ -6,11 +6,48 @@ from app.api.api import api_router
 from app.core.config import settings
 from app.db.init_db import init
 
+# Metadatos para los tags de Swagger
+tags_metadata = [
+    {
+        "name": "health",
+        "description": "🟢 **Health Check** - Verificar estado de la API",
+    },
+    {
+        "name": "questions",
+        "description": "❓ **Cuestionarios** - Obtener preguntas MBTI e Inteligencias Múltiples",
+    },
+    {
+        "name": "recommendations",
+        "description": "🎯 **Recomendaciones** - Procesar respuestas y generar recomendaciones de carreras",
+    },
+    {
+        "name": "neural_recommendations",
+        "description": "🧠 **Red Neuronal** - Recomendaciones usando modelos CNN entrenados",
+    },
+    {
+        "name": "minimal_recommendations",
+        "description": "⚡ **Modelo Minimal** - Recomendaciones rápidas usando Random Forest",
+    },
+]
+
 # Crear la aplicación FastAPI
 app = FastAPI(
     title=settings.API_TITLE,
     description=settings.API_DESCRIPTION,
-    version=settings.API_VERSION
+    version=settings.API_VERSION,
+    docs_url="/docs",  # Swagger UI URL
+    redoc_url="/redoc",  # ReDoc URL
+    openapi_url="/openapi.json",  # OpenAPI schema URL
+    openapi_tags=tags_metadata,
+    contact={
+        "name": "NeuraPath Team",
+        "url": "https://github.com/yourusername/neurapath",
+        "email": "contact@neurapath.com",
+    },
+    license_info={
+        "name": "MIT",
+        "url": "https://opensource.org/licenses/MIT",
+    },
 )
 
 # Configurar CORS

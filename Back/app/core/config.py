@@ -9,8 +9,27 @@ if env_path.exists():
 
 class Settings:
     # Información de la aplicación
-    API_TITLE: str = "STEM Career Recommendation API"
-    API_DESCRIPTION: str = "API for recommending STEM careers based on personality and multiple intelligences"
+    API_TITLE: str = "NeuraPath - STEM Career Recommendation API"
+    API_DESCRIPTION: str = """
+    🧠 **NeuraPath** - API inteligente para recomendaciones de carreras STEM
+
+    Esta API utiliza análisis de personalidad MBTI, evaluación de Inteligencias Múltiples y Machine Learning 
+    para recomendar carreras STEM personalizadas.
+
+    ## Características principales:
+    - 🔍 **Cuestionarios MBTI** (Myers-Briggs Type Indicator)
+    - 🎯 **Evaluación de Inteligencias Múltiples** (Howard Gardner)
+    - 🤖 **Modelos de ML/Neural Networks** para recomendaciones
+    - 📊 **Dataset RIASEC** para análisis profesional
+    - 💾 **Persistencia en PostgreSQL**
+
+    ## Flujo de uso:
+    1. Obtener preguntas (`/api/questions/`)
+    2. Procesar respuestas (`/api/recommendations/`)  
+    3. Recibir recomendaciones personalizadas de carreras STEM
+
+    **Desarrollado para ayudar a estudiantes a encontrar su vocación STEM ideal.**
+    """
     API_VERSION: str = "1.0.0"
     
     # Configuración de la base de datos
