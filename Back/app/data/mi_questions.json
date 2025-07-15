@@ -1,130 +1,290 @@
 [
   {
-    "id": 1,
-    "question": "¿Qué actividad disfrutas más?",
-    "options": [
-      {"text": "Escribir historias o ensayos", "intelligence_type": "Lin", "score": 1.0},
-      {"text": "Resolver problemas matemáticos", "intelligence_type": "LogMath", "score": 1.0}
-    ]
+    "id": "ling_1",
+    "intelligence": "Linguistic",
+    "statement": "I enjoy reading books, stories, or articles in my free time.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
   },
   {
-    "id": 2,
-    "question": "¿Qué tipo de explicación prefieres?",
-    "options": [
-      {"text": "Detallada con ejemplos visuales", "intelligence_type": "Spa", "score": 1.0},
-      {"text": "Lógica con pasos secuenciales", "intelligence_type": "LogMath", "score": 1.0}
-    ]
+    "id": "ling_2",
+    "intelligence": "Linguistic",
+    "statement": "I express myself easily through writing or journaling.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
   },
   {
-    "id": 3,
-    "question": "¿Cómo prefieres aprender algo nuevo?",
-    "options": [
-      {"text": "Experimentándolo físicamente", "intelligence_type": "BodKin", "score": 1.0},
-      {"text": "Leyendo y analizando información", "intelligence_type": "Lin", "score": 1.0}
-    ]
+    "id": "ling_3",
+    "intelligence": "Linguistic",
+    "statement": "I'm good at explaining things clearly to others using words.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
   },
   {
-    "id": 4,
-    "question": "En tu tiempo libre, prefieres:",
-    "options": [
-      {"text": "Escuchar o crear música", "intelligence_type": "Mus", "score": 1.0},
-      {"text": "Actividades sociales con amigos", "intelligence_type": "Inter", "score": 1.0}
-    ]
+    "id": "log_1",
+    "intelligence": "Logical-Mathematical",
+    "statement": "I enjoy figuring out how things work or solving tricky problems.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
   },
   {
-    "id": 5,
-    "question": "¿Qué habilidad valoras más en ti mismo?",
-    "options": [
-      {"text": "Entender tus propias emociones y motivaciones", "intelligence_type": "Intra", "score": 1.0},
-      {"text": "Entender y conectar con otras personas", "intelligence_type": "Inter", "score": 1.0}
-    ]
+    "id": "log_2",
+    "intelligence": "Logical-Mathematical",
+    "statement": "I like playing strategy games that make me think logically.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
   },
   {
-    "id": 6,
-    "question": "Te gustaría trabajar en un proyecto sobre:",
-    "options": [
-      {"text": "Conservación de animales o plantas", "intelligence_type": "Nat", "score": 1.0},
-      {"text": "Diseño de estructuras o espacios", "intelligence_type": "Spa", "score": 1.0}
-    ]
+    "id": "log_3",
+    "intelligence": "Logical-Mathematical",
+    "statement": "I notice patterns and sequences in things around me.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
   },
   {
-    "id": 7,
-    "question": "Si tuvieras que enseñar algo, preferirías:",
-    "options": [
-      {"text": "Explicar conceptos con palabras precisas", "intelligence_type": "Lin", "score": 1.0},
-      {"text": "Guiar a través de actividades prácticas", "intelligence_type": "BodKin", "score": 1.0}
-    ]
+    "id": "spat_1",
+    "intelligence": "Spatial",
+    "statement": "I enjoy drawing, sketching, or visualizing things in my mind.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
   },
   {
-    "id": 8,
-    "question": "¿Qué tipo de desafío disfrutas más?",
-    "options": [
-      {"text": "Problemas que requieren análisis lógico", "intelligence_type": "LogMath", "score": 1.0},
-      {"text": "Componer o interpretar música", "intelligence_type": "Mus", "score": 1.0}
-    ]
+    "id": "spat_2",
+    "intelligence": "Spatial",
+    "statement": "I can imagine how an object would look if rotated or flipped.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
   },
   {
-    "id": 9,
-    "question": "¿Qué te resulta más fácil recordar?",
-    "options": [
-      {"text": "Rostros y lugares", "intelligence_type": "Spa", "score": 1.0},
-      {"text": "Nombres y fechas", "intelligence_type": "Lin", "score": 1.0}
-    ]
+    "id": "spat_3",
+    "intelligence": "Spatial",
+    "statement": "I like working on puzzles or building things with my hands.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
   },
   {
-    "id": 10,
-    "question": "¿Cómo prefieres resolver un conflicto?",
-    "options": [
-      {"text": "Mediando entre las partes involucradas", "intelligence_type": "Inter", "score": 1.0},
-      {"text": "Reflexionando sobre tus emociones y las de otros", "intelligence_type": "Intra", "score": 1.0}
-    ]
+    "id": "body_1",
+    "intelligence": "Bodily-Kinesthetic",
+    "statement": "I learn best when I can move around or physically interact with materials.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
   },
   {
-    "id": 11,
-    "question": "¿Qué información notas primero en un ambiente nuevo?",
-    "options": [
-      {"text": "Elementos naturales como plantas o animales", "intelligence_type": "Nat", "score": 1.0},
-      {"text": "Patrones sonoros o música de fondo", "intelligence_type": "Mus", "score": 1.0}
-    ]
+    "id": "body_2",
+    "intelligence": "Bodily-Kinesthetic",
+    "statement": "I enjoy doing hands-on activities like crafts, sports, or building things.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
   },
   {
-    "id": 12,
-    "question": "¿Qué tipo de actividad física prefieres?",
-    "options": [
-      {"text": "Deportes o danza que requieren coordinación", "intelligence_type": "BodKin", "score": 1.0},
-      {"text": "Actividades en la naturaleza", "intelligence_type": "Nat", "score": 1.0}
-    ]
+    "id": "body_3",
+    "intelligence": "Bodily-Kinesthetic",
+    "statement": "I find it hard to sit still for a long time.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
   },
   {
-    "id": 13,
-    "question": "Al estudiar un tema complejo, prefieres:",
-    "options": [
-      {"text": "Discutirlo en grupo para escuchar diferentes perspectivas", "intelligence_type": "Inter", "score": 1.0},
-      {"text": "Reflexionar a solas para entender tus propias ideas", "intelligence_type": "Intra", "score": 1.0}
-    ]
+    "id": "mus_1",
+    "intelligence": "Musical",
+    "statement": "I often have a tune or song stuck in my head.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
   },
   {
-    "id": 14,
-    "question": "¿Qué tipo de representación te ayuda más a entender?",
-    "options": [
-      {"text": "Diagramas, mapas o representaciones visuales", "intelligence_type": "Spa", "score": 1.0},
-      {"text": "Explicaciones rítmicas o musicales", "intelligence_type": "Mus", "score": 1.0}
-    ]
+    "id": "mus_2",
+    "intelligence": "Musical",
+    "statement": "I notice rhythms and beats in music quickly.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
   },
   {
-    "id": 15,
-    "question": "En un proyecto de ciencias, preferirías estudiar:",
-    "options": [
-      {"text": "Ecosistemas o comportamiento animal", "intelligence_type": "Nat", "score": 1.0},
-      {"text": "Fórmulas químicas o ecuaciones", "intelligence_type": "LogMath", "score": 1.0}
-    ]
+    "id": "mus_3",
+    "intelligence": "Musical",
+    "statement": "I enjoy making music, singing, or tapping along to beats.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
   },
   {
-    "id": 16,
-    "question": "Al comunicar ideas importantes, prefieres:",
-    "options": [
-      {"text": "Expresarlo con metáforas y explicaciones verbales", "intelligence_type": "Lin", "score": 1.0},
-      {"text": "Usar gestos y expresiones corporales", "intelligence_type": "BodKin", "score": 1.0}
-    ]
+    "id": "inter_1",
+    "intelligence": "Interpersonal",
+    "statement": "I understand how others are feeling, even if they don't say it.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
+  },
+  {
+    "id": "inter_2",
+    "intelligence": "Interpersonal",
+    "statement": "I enjoy working in teams or helping others solve problems.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
+  },
+  {
+    "id": "inter_3",
+    "intelligence": "Interpersonal",
+    "statement": "I feel comfortable talking with different types of people.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
+  },
+  {
+    "id": "intra_1",
+    "intelligence": "Intrapersonal",
+    "statement": "I spend time thinking about my goals and how I feel.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
+  },
+  {
+    "id": "intra_2",
+    "intelligence": "Intrapersonal",
+    "statement": "I know what motivates me to do better.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
+  },
+  {
+    "id": "intra_3",
+    "intelligence": "Intrapersonal",
+    "statement": "I like to reflect on my experiences and what I learn from them.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
+  },
+  {
+    "id": "nat_1",
+    "intelligence": "Naturalistic",
+    "statement": "I feel calm and happy when I'm in nature.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
+  },
+  {
+    "id": "nat_2",
+    "intelligence": "Naturalistic",
+    "statement": "I like learning about animals, plants, or the environment.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
+  },
+  {
+    "id": "nat_3",
+    "intelligence": "Naturalistic",
+    "statement": "I enjoy caring for plants, pets, or small creatures.",
+    "scale": {
+      "1": "Strongly Disagree",
+      "2": "Disagree",
+      "3": "Neutral",
+      "4": "Agree",
+      "5": "Strongly Agree"
+    }
   }
 ] 
