@@ -88,3 +88,6 @@ Icon?
 .Trashes
 *.tmproj
 Back/pantherkit-71bc599e1b9e.json
+
+venv/
+venv310/

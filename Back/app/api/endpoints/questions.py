@@ -372,6 +372,23 @@ async def process_complete_flow(
             detail=f"Error en el procesamiento completo: {str(e)}"
         )
 
+@router.get("/srlas")
+async def get_srlas_questions():
+    """
+    Get all SRLAS (RIASEC) questions
+    """
+    try:
+        data_path = Path(os.path.dirname(os.path.abspath(__file__))) / "../.." / "data" / "sr_questions.json"
+        if not data_path.exists():
+            raise HTTPException(status_code=404, detail="SRLAS questions file not found")
+        with open(data_path, "r", encoding="utf-8") as f:
+            questions = json.load(f)
+        return {"srlas_questions": questions}
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Error loading SRLAS questions: {str(e)}")
+
 @router.get("/health")
 async def health_check():
     """

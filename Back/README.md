@@ -95,6 +95,7 @@ La documentación interactiva de la API estará disponible en:
 - GET `/api/questions/mbti` - Obtener todas las preguntas MBTI
 - GET `/api/questions/multiple-intelligence` - Obtener todas las preguntas de Inteligencias Múltiples
 - GET `/api/questions/careers` - Obtener todas las carreras disponibles
+- GET `/api/questions/srlas` - Obtener todas las preguntas SRLAS (RIASEC). Este endpoint devuelve el cuestionario de intereses vocacionales basado en el modelo RIASEC (Realista, Investigador, Artístico, Social, Emprendedor, Convencional), utilizado para orientar a los usuarios sobre sus preferencias y afinidades profesionales.
 
 ### Recomendaciones
 - POST `/api/recommendations/mbti` - Procesar respuestas MBTI
@@ -134,6 +135,49 @@ response = requests.post(
 
 mbti_result = response.json()
 print(f"Tu tipo MBTI es: {mbti_result['MBTI_code']}")
+```
+
+### Obtener preguntas SRLAS (RIASEC)
+
+Este endpoint permite obtener el cuestionario completo de SRLAS (RIASEC), que evalúa los intereses vocacionales del usuario según el modelo de Holland. Es útil para mostrar el test en aplicaciones web, móviles o para análisis de orientación profesional.
+
+- **Método:** GET
+- **URL:** `http://localhost:8000/api/questions/srlas` (ajusta el puerto si es necesario)
+- **Respuesta exitosa:**
+
+```json
+{
+  "srlas_questions": [
+    {
+      "id": 1,
+      "question": "¿Te gusta trabajar con herramientas y maquinaria?",
+      "category": "Realista"
+    },
+    {
+      "id": 2,
+      "question": "¿Disfrutas resolver problemas matemáticos o científicos?",
+      "category": "Investigador"
+    }
+    // ... más preguntas ...
+  ]
+}
+```
+
+#### Ejemplo de uso en Python
+
+```python
+import requests
+
+response = requests.get("http://localhost:8000/api/questions/srlas")
+# O usa el puerto que corresponda, por ejemplo 8001
+# response = requests.get("http://localhost:8001/api/questions/srlas")
+
+if response.status_code == 200:
+    srlas_questions = response.json()["srlas_questions"]
+    for q in srlas_questions:
+        print(f"[{q['category']}] {q['question']}")
+else:
+    print("Error al obtener el cuestionario SRLAS")
 ```
 
 ## Estructura del proyecto
