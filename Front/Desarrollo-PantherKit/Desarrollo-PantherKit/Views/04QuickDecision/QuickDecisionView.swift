@@ -517,9 +517,9 @@ struct QuickDecisionView: View {
             .cornerRadius(20)
             .overlay(
                 RoundedRectangle(cornerRadius: 20)
-                    .stroke(selectedOption == index ? Color.white : AppTheme.Colors.cosmicCyan, lineWidth: 2)
+                    .stroke(selectedOption == index ? Color.white : AppTheme.Colors.cosmicCyan.opacity(0.6), lineWidth: 1.5)
             )
-            .shadow(color: selectedOption == index ? AppTheme.Colors.cosmicCyan.opacity(0.6) : .clear, radius: 15, x: 0, y: 8)
+            .shadow(color: selectedOption == index ? AppTheme.Colors.cosmicCyan.opacity(0.6) : Color.white.opacity(0.1), radius: 15, x: 0, y: 8)
             .scaleEffect(selectedOption == index ? 1.05 : 1.0)
         }
         .disabled(showFeedback || gameCompleted)
@@ -542,11 +542,26 @@ struct QuickDecisionView: View {
             } else {
                 RoundedRectangle(cornerRadius: 20)
                     .fill(.ultraThinMaterial)
-                    .opacity(0.8)
+                    .opacity(0.4)
                     .background {
                         RoundedRectangle(cornerRadius: 20)
                             .fill(.thinMaterial)
-                            .opacity(0.6)
+                            .opacity(0.3)
+                    }
+                    .overlay {
+                        // Efecto de brillo sutil
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.15),
+                                        Color.white.opacity(0.05),
+                                        Color.clear
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
                     }
             }
         }
