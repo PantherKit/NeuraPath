@@ -2,7 +2,7 @@ import SwiftUI
 
 struct QuickDecisionView: View {
     @ObservedObject var viewModel: VocationalTestViewModel
-    @State private var timeRemaining: Double = 5.0
+    @State private var timeRemaining: Double = 20.0 // Aumentado de 5 a 20 segundos
     @State private var timer: Timer?
     @State private var currentQuestion = 0
     @State private var selectedOption: Int?
@@ -203,8 +203,9 @@ struct QuickDecisionView: View {
     private var headerSection: some View {
         HStack {
             Text("Decisión Rápida")
-                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .font(.custom("ZonaPro-Bold", size: 28))
                 .foregroundColor(.white)
+                .shadow(color: AppTheme.Colors.cosmicCyan.opacity(0.6), radius: 8, x: 0, y: 2)
             
             Spacer()
             
@@ -216,15 +217,15 @@ struct QuickDecisionView: View {
                     .foregroundColor(accentColor)
                 
                 Circle()
-                    .trim(from: 0.0, to: CGFloat(timeRemaining / 5.0))
+                    .trim(from: 0.0, to: CGFloat(timeRemaining / 20.0))
                     .stroke(style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
-                    .foregroundColor(timeRemaining > 2 ? accentColor : warningColor)
+                    .foregroundColor(timeRemaining > 5 ? accentColor : (timeRemaining > 2 ? Color.orange : warningColor))
                     .rotationEffect(Angle(degrees: 270.0))
                     .animation(.linear, value: timeRemaining)
                 
                 Text("\(Int(timeRemaining))")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(timeRemaining > 2 ? accentColor : warningColor)
+                    .font(.custom("ZonaPro-Bold", size: 16))
+                    .foregroundColor(timeRemaining > 5 ? accentColor : (timeRemaining > 2 ? Color.orange : warningColor))
             }
             .frame(width: 40, height: 40)
         }
@@ -466,14 +467,18 @@ struct QuickDecisionView: View {
     private var questionSection: some View {
         VStack(spacing: 10) {
             Text("Pregunta \(currentQuestion + 1)/8")
-                .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundColor(.white.opacity(0.8))
+                .font(.custom("ZonaPro-Light", size: 16))
+                .foregroundColor(AppTheme.Colors.cosmicCyan.opacity(0.8))
+                .tracking(1)
             
             Text(questions[currentQuestion])
-                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .font(.custom("ZonaPro-Bold", size: 24))
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
+                .lineSpacing(4)
+                .tracking(0.5)
                 .padding(.horizontal, 20)
+                .shadow(color: AppTheme.Colors.cosmicCyan.opacity(0.3), radius: 10, x: 0, y: 2)
                 .scaleEffect(isAnimating ? 1.02 : 1.0)
                 .animation(
                     .easeInOut(duration: 1.5).repeatForever(autoreverses: true),
@@ -501,19 +506,21 @@ struct QuickDecisionView: View {
                     .foregroundColor(selectedOption == index ? .white : accentColor)
                 
                 Text(options[currentQuestion][index])
-                    .font(.system(size: 18, weight: .semibold, design: .rounded))
+                    .font(.custom("ZonaPro-SemiBold", size: 18))
                     .foregroundColor(selectedOption == index ? .white : .white)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .tracking(0.3)
             }
             .padding()
             .frame(height: 60)
             .background(optionBackground(isSelected: selectedOption == index))
-            .cornerRadius(15)
+            .cornerRadius(20)
             .overlay(
-                RoundedRectangle(cornerRadius: 15)
-                    .stroke(selectedOption == index ? Color.white : accentColor, lineWidth: 2)
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(selectedOption == index ? Color.white : AppTheme.Colors.cosmicCyan, lineWidth: 2)
             )
-            .shadow(color: selectedOption == index ? accentColor.opacity(0.5) : .clear, radius: 10, x: 0, y: 5)
+            .shadow(color: selectedOption == index ? AppTheme.Colors.cosmicCyan.opacity(0.6) : .clear, radius: 15, x: 0, y: 8)
+            .scaleEffect(selectedOption == index ? 1.05 : 1.0)
         }
         .disabled(showFeedback || gameCompleted)
         .scaleEffect(selectedOption == index ? 1.03 : 1.0)
@@ -524,12 +531,23 @@ struct QuickDecisionView: View {
         Group {
             if isSelected {
                 LinearGradient(
-                    gradient: Gradient(colors: [accentColor, secondaryColor]),
-                    startPoint: .leading,
-                    endPoint: .trailing
+                    gradient: Gradient(colors: [
+                        AppTheme.Colors.cosmicCyan,
+                        AppTheme.Colors.cosmicBlue,
+                        AppTheme.Colors.cosmicPurple
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
                 )
             } else {
-                Color.white.opacity(0.1)
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(.ultraThinMaterial)
+                    .opacity(0.8)
+                    .background {
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(.thinMaterial)
+                            .opacity(0.6)
+                    }
             }
         }
     }
@@ -556,15 +574,18 @@ struct QuickDecisionView: View {
             VStack(spacing: 30) {
                 // Título
                 Text("¡Misión Cumplida!")
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .font(.custom("ZonaPro-Bold", size: 36))
                     .foregroundColor(.white)
-                    .shadow(color: .blue.opacity(0.6), radius: 5)
+                    .shadow(color: AppTheme.Colors.cosmicCyan.opacity(0.8), radius: 10, x: 0, y: 4)
+                    .tracking(1)
                 
                 // Mensaje
                 Text("Hemos recopilado información valiosa para conocer tus habilidades y perfil.")
-                    .font(.system(size: 18))
+                    .font(.custom("ZonaPro-Light", size: 18))
                     .foregroundColor(.white.opacity(0.9))
                     .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                    .tracking(0.3)
                     .padding(.horizontal, 20)
                 
                 // Imagen
@@ -583,13 +604,22 @@ struct QuickDecisionView: View {
                     }
                 }) {
                     Text("Continuar")
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(.custom("ZonaPro-Bold", size: 20))
                         .foregroundColor(.white)
                         .padding(.horizontal, 40)
                         .padding(.vertical, 15)
-                        .background(Color.blue)
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    AppTheme.Colors.cosmicCyan,
+                                    AppTheme.Colors.cosmicBlue
+                                ]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
                         .cornerRadius(30)
-                        .shadow(color: .blue.opacity(0.6), radius: 8)
+                        .shadow(color: AppTheme.Colors.cosmicCyan.opacity(0.6), radius: 12, x: 0, y: 6)
                         .overlay(
                             RoundedRectangle(cornerRadius: 30)
                                 .stroke(Color.white.opacity(0.3), lineWidth: 2)
@@ -635,7 +665,7 @@ struct QuickDecisionView: View {
     }
     
     private func startTimer() {
-        timeRemaining = 5.0
+        timeRemaining = 20.0 // Aumentado de 5 a 20 segundos
         timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
             if timeRemaining > 0 {
                 timeRemaining -= 0.1
