@@ -102,11 +102,6 @@ struct DeckView: View {
                 }
             }
         }
-        .sheet(isPresented: $showDetails) {
-            if let card = selectedCard {
-                CardDetailView(card: card)
-            }
-        }
         .onAppear {
             startMagazineAnimation()
             print("DeckView appeared with \(mbtiQuestions.count) MBTI questions")

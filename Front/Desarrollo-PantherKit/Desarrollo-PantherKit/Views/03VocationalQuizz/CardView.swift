@@ -19,7 +19,7 @@ struct QuestionGlassCard: View {
     @State private var isGone = false
     @State private var cardGlow = false
     @State private var shimmerOffset: CGFloat = -200
-    @State private var iconPulse = false
+    @State private var titleGlow = false
     
     private let swipeThreshold: CGFloat = 100
     private let maxRotation: Double = 15
@@ -111,169 +111,132 @@ struct QuestionGlassCard: View {
                 .shadow(color: Color.black.opacity(0.3), radius: 25, x: 0, y: 12)
                 .shadow(color: AppTheme.Colors.cosmicBlue.opacity(0.15), radius: 35, x: 0, y: 18)
             
-            // Card content
+            // Magazine-style editorial content
             VStack(spacing: 0) {
-                // Hero image section with cosmic overlay
-                ZStack(alignment: .topTrailing) {
-                    // Cosmic gradient background
-                    LinearGradient(
-                        colors: [
-                            AppTheme.Colors.cosmicCyan.opacity(0.3),
-                            AppTheme.Colors.cosmicBlue.opacity(0.2),
-                            AppTheme.Colors.cosmicPurple.opacity(0.1)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .frame(height: 220)
-                    .clipShape(
-                        RoundedCorner(radius: 28, corners: [.topLeft, .topRight])
-                    )
-                    
-                    // Cosmic pattern overlay
-                    ZStack {
-                        ForEach(0..<8, id: \.self) { i in
-                            Circle()
-                                .fill(
-                                    RadialGradient(
-                                        colors: [
-                                            AppTheme.Colors.cosmicCyan.opacity(0.1),
-                                            Color.clear
-                                        ],
-                                        center: .center,
-                                        startRadius: 0,
-                                        endRadius: 30
-                                    )
-                                )
-                                .frame(width: 60, height: 60)
-                                .position(
-                                    x: CGFloat.random(in: 20...300),
-                                    y: CGFloat.random(in: 20...200)
-                                )
-                                .scaleEffect(iconPulse ? 1.2 : 0.8)
-                                .animation(
-                                    .easeInOut(duration: Double.random(in: 2...4))
-                                    .repeatForever(autoreverses: true)
-                                    .delay(Double.random(in: 0...2)),
-                                    value: iconPulse
-                                )
-                        }
-                    }
-                    
-                    // Info button with glassmorphism
-                    Button(action: onShowDetails) {
-                        ZStack {
-                            Circle()
-                                .fill(.ultraThinMaterial)
-                                .frame(width: 44, height: 44)
-                                .overlay(
-                                    Circle()
-                                        .stroke(
-                                            LinearGradient(
-                                                colors: [
-                                                    Color.white.opacity(0.3),
-                                                    Color.white.opacity(0.1)
-                                                ],
-                                                startPoint: .topLeading,
-                                                endPoint: .bottomTrailing
-                                            ),
-                                            lineWidth: 1
+                // Editorial header section
+                VStack(spacing: 20) {
+                    // Category badge
+                    HStack {
+                        Text("STEM CAREER")
+                            .font(.custom("ZonaPro-Bold", size: 10))
+                            .fontWeight(.bold)
+                            .foregroundColor(AppTheme.Colors.cosmicCyan)
+                            .tracking(2)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background {
+                                Capsule()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [
+                                                AppTheme.Colors.cosmicCyan.opacity(0.2),
+                                                AppTheme.Colors.cosmicBlue.opacity(0.1)
+                                            ],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
                                         )
-                                )
-                            
-                            Image(systemName: "info.circle.fill")
-                                .font(.system(size: 20, weight: .medium))
-                                .foregroundColor(AppTheme.Colors.cosmicCyan)
-                                .shadow(color: AppTheme.Colors.cosmicCyan.opacity(0.6), radius: 4, x: 0, y: 0)
-                        }
+                                    )
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(
+                                                AppTheme.Colors.cosmicCyan.opacity(0.3),
+                                                lineWidth: 1
+                                            )
+                                    )
+                            }
+                        
+                        Spacer()
+                        
+                        // Issue number (simulated)
+                        Text("ISSUE #\(Int.random(in: 1...99))")
+                            .font(.custom("ZonaPro-Light", size: 10))
+                            .fontWeight(.light)
+                            .foregroundColor(.white.opacity(0.5))
+                            .tracking(1)
                     }
-                    .padding(20)
-                }
-                
-                // Editorial content section
-                VStack(alignment: .leading, spacing: 20) {
-                    // Title with editorial typography
+                    
+                    // Main headline with editorial typography
                     Text(card.title)
                         .font(.custom("ZonaPro-Bold", size: 28))
                         .fontWeight(.heavy)
                         .foregroundColor(.white)
-                        .lineSpacing(2)
-                        .tracking(0.5)
-                        .shadow(color: AppTheme.Colors.cosmicCyan.opacity(0.3), radius: 8, x: 0, y: 2)
-                    
-                    // Subtitle
-                    Text(card.subtitle)
-                        .font(.custom("ZonaPro-Light", size: 18))
-                        .fontWeight(.light)
-                        .foregroundColor(.white.opacity(0.85))
+                        .multilineTextAlignment(.leading)
                         .lineSpacing(4)
-                        .tracking(0.3)
-                    
-                    // Divider with cosmic gradient
-                    Rectangle()
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    AppTheme.Colors.cosmicCyan.opacity(0.4),
-                                    AppTheme.Colors.cosmicBlue.opacity(0.2),
-                                    Color.clear
-                                ],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
+                        .tracking(0.5)
+                        .shadow(color: AppTheme.Colors.cosmicCyan.opacity(0.3), radius: 10, x: 0, y: 2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(.horizontal, 28)
+                .padding(.top, 28)
+                
+                // Editorial divider
+                Rectangle()
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                AppTheme.Colors.cosmicCyan.opacity(0.4),
+                                AppTheme.Colors.cosmicBlue.opacity(0.2),
+                                Color.clear
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
                         )
-                        .frame(height: 1)
-                    
-                    // Details with cosmic icons
-                    VStack(spacing: 16) {
-                        ForEach(card.details.prefix(2), id: \.title) { detail in
-                            HStack(alignment: .top, spacing: 16) {
-                                // Cosmic icon background
-                                ZStack {
-                                    Circle()
-                                        .fill(
-                                            RadialGradient(
-                                                colors: [
-                                                    AppTheme.Colors.cosmicCyan.opacity(0.2),
-                                                    AppTheme.Colors.cosmicBlue.opacity(0.1),
-                                                    Color.clear
-                                                ],
-                                                center: .center,
-                                                startRadius: 0,
-                                                endRadius: 20
-                                            )
+                    )
+                    .frame(height: 1)
+                    .padding(.horizontal, 28)
+                    .padding(.vertical, 20)
+                
+                // Key insights section (scientific journal style)
+                VStack(spacing: 24) {
+                    ForEach(card.details.prefix(3), id: \.title) { detail in
+                        HStack(alignment: .top, spacing: 20) {
+                            // Scientific icon with cosmic background
+                            ZStack {
+                                Circle()
+                                    .fill(
+                                        RadialGradient(
+                                            colors: [
+                                                AppTheme.Colors.cosmicCyan.opacity(0.25),
+                                                AppTheme.Colors.cosmicBlue.opacity(0.15),
+                                                Color.clear
+                                            ],
+                                            center: .center,
+                                            startRadius: 0,
+                                            endRadius: 25
                                         )
-                                        .frame(width: 40, height: 40)
-                                    
-                                    Image(systemName: detail.icon)
-                                        .font(.system(size: 18, weight: .medium))
-                                        .foregroundColor(AppTheme.Colors.cosmicCyan)
-                                        .shadow(color: AppTheme.Colors.cosmicCyan.opacity(0.6), radius: 4, x: 0, y: 0)
-                                }
+                                    )
+                                    .frame(width: 50, height: 50)
                                 
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text(detail.title)
-                                        .font(.custom("ZonaPro-SemiBold", size: 16))
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(.white)
-                                        .tracking(0.3)
-                                    
-                                    Text(detail.description)
-                                        .font(.custom("ZonaPro-Light", size: 14))
-                                        .fontWeight(.light)
-                                        .foregroundColor(.white.opacity(0.75))
-                                        .lineSpacing(2)
-                                        .tracking(0.2)
-                                }
-                                
-                                Spacer()
+                                Image(systemName: detail.icon)
+                                    .font(.system(size: 20, weight: .medium))
+                                    .foregroundColor(AppTheme.Colors.cosmicCyan)
+                                    .shadow(color: AppTheme.Colors.cosmicCyan.opacity(0.6), radius: 6, x: 0, y: 0)
                             }
+                            
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(detail.description)
+                                    .font(.custom("ZonaPro-Bold", size: 18))
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.white)
+                                    .tracking(0.3)
+                                
+                                Text(detail.title)
+                                    .font(.custom("ZonaPro-Light", size: 15))
+                                    .fontWeight(.light)
+                                    .foregroundColor(.white.opacity(0.75))
+                                    .lineSpacing(4)
+                                    .tracking(0.2)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            
+                            Spacer()
                         }
                     }
                 }
-                .padding(24)
+                .padding(.horizontal, 28)
                 
                 Spacer()
+                
             }
             
             // Swipe feedback indicators
@@ -358,9 +321,9 @@ struct QuestionGlassCard: View {
                 shimmerOffset = UIScreen.main.bounds.width + 200
             }
             
-            // Start icon pulse animation
-            withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true).delay(0.5)) {
-                iconPulse = true
+            // Start title glow animation
+            withAnimation(.easeInOut(duration: 3.0).repeatForever(autoreverses: true).delay(1.0)) {
+                titleGlow = true
             }
             
             // Pequeña probabilidad de mostrar un toast al aparecer la tarjeta
@@ -370,154 +333,6 @@ struct QuestionGlassCard: View {
                         toastManager.showRandomToast()
                     }
                 }
-            }
-        }
-    }
-}
-
-struct CardDetailView: View {
-    let card: STEMCard
-    @Environment(\.presentationMode) var presentationMode
-    
-    var body: some View {
-        ZStack {
-            // Cosmic background
-            MagazineCosmicBackground()
-            
-            ScrollView {
-                VStack(spacing: 0) {
-                    // Hero image section
-                    ZStack {
-                        LinearGradient(
-                            colors: [
-                                AppTheme.Colors.cosmicCyan.opacity(0.4),
-                                AppTheme.Colors.cosmicBlue.opacity(0.3),
-                                AppTheme.Colors.cosmicPurple.opacity(0.2)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                        .frame(height: 280)
-                        
-                        VStack {
-                            Spacer()
-                            Text(card.title)
-                                .font(.custom("ZonaPro-Bold", size: 36))
-                                .fontWeight(.heavy)
-                                .foregroundColor(.white)
-                                .multilineTextAlignment(.center)
-                                .lineSpacing(2)
-                                .tracking(0.5)
-                                .shadow(color: AppTheme.Colors.cosmicCyan.opacity(0.4), radius: 15, x: 0, y: 5)
-                                .padding(24)
-                                .background {
-                                    RoundedRectangle(cornerRadius: 20)
-                                        .fill(.ultraThinMaterial)
-                                        .opacity(0.8)
-                                }
-                        }
-                    }
-                    
-                    // Content section
-                    VStack(alignment: .leading, spacing: 24) {
-                        Text(card.subtitle)
-                            .font(.custom("ZonaPro-Light", size: 20))
-                            .fontWeight(.light)
-                            .foregroundColor(.white.opacity(0.9))
-                            .lineSpacing(4)
-                            .tracking(0.3)
-                            .padding(.top, 24)
-                        
-                        ForEach(card.details, id: \.title) { detail in
-                            VStack(alignment: .leading, spacing: 12) {
-                                HStack(spacing: 16) {
-                                    // Cosmic icon
-                                    ZStack {
-                                        Circle()
-                                            .fill(
-                                                RadialGradient(
-                                                    colors: [
-                                                        AppTheme.Colors.cosmicCyan.opacity(0.2),
-                                                        AppTheme.Colors.cosmicBlue.opacity(0.1),
-                                                        Color.clear
-                                                    ],
-                                                    center: .center,
-                                                    startRadius: 0,
-                                                    endRadius: 25
-                                                )
-                                            )
-                                            .frame(width: 50, height: 50)
-                                        
-                                        Image(systemName: detail.icon)
-                                            .font(.system(size: 22, weight: .medium))
-                                            .foregroundColor(AppTheme.Colors.cosmicCyan)
-                                            .shadow(color: AppTheme.Colors.cosmicCyan.opacity(0.6), radius: 6, x: 0, y: 0)
-                                    }
-                                    
-                                    Text(detail.title)
-                                        .font(.custom("ZonaPro-Bold", size: 20))
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.white)
-                                        .tracking(0.3)
-                                }
-                                
-                                Text(detail.description)
-                                    .font(.custom("ZonaPro-Light", size: 16))
-                                    .fontWeight(.light)
-                                    .foregroundColor(.white.opacity(0.75))
-                                    .lineSpacing(4)
-                                    .tracking(0.2)
-                                    .padding(.leading, 66)
-                            }
-                        }
-                        
-                        // Cosmic action button
-                        MagazineCosmicButton(
-                            title: "Interested in this area",
-                            action: {
-                                presentationMode.wrappedValue.dismiss()
-                            }
-                        )
-                        .padding(.top, 32)
-                    }
-                    .padding(24)
-                }
-            }
-            
-            // Close button
-            VStack {
-                HStack {
-                    Spacer()
-                    Button(action: {
-                        presentationMode.wrappedValue.dismiss()
-                    }) {
-                        ZStack {
-                            Circle()
-                                .fill(.ultraThinMaterial)
-                                .frame(width: 50, height: 50)
-                                .overlay(
-                                    Circle()
-                                        .stroke(
-                                            LinearGradient(
-                                                colors: [
-                                                    Color.white.opacity(0.3),
-                                                    Color.white.opacity(0.1)
-                                                ],
-                                                startPoint: .topLeading,
-                                                endPoint: .bottomTrailing
-                                            ),
-                                            lineWidth: 1
-                                        )
-                                )
-                            
-                            Image(systemName: "xmark")
-                                .font(.system(size: 20, weight: .medium))
-                                .foregroundColor(.white.opacity(0.8))
-                        }
-                    }
-                    .padding(20)
-                }
-                Spacer()
             }
         }
     }

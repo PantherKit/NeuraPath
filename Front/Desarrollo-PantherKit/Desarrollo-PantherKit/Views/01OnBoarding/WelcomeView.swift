@@ -25,6 +25,7 @@ struct WelcomeView: View {
                     .padding(.top, 100)
             }
             
+            
             // Main content with magazine layout
             ScrollView {
                 VStack(spacing: 0) {
