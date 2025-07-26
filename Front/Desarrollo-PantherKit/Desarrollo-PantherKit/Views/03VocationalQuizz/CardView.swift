@@ -239,38 +239,69 @@ struct QuestionGlassCard: View {
                 
             }
             
-            // Swipe feedback indicators
+            // Enhanced swipe feedback indicators
             if isDragging {
                 VStack {
                     if dragOffset.width > 0 {
-                        VStack(spacing: 12) {
-                            Image(systemName: "arrow.right.circle.fill")
-                                .font(.system(size: 80, weight: .medium))
-                                .foregroundColor(AppTheme.Colors.cosmicCyan)
-                                .shadow(color: AppTheme.Colors.cosmicCyan.opacity(0.6), radius: 15, x: 0, y: 0)
+                        VStack(spacing: 16) {
+                            // Enhanced icon with glow effect
+                            ZStack {
+                                // Outer glow
+                                Image(systemName: "arrow.right.circle.fill")
+                                    .font(.system(size: 90, weight: .medium))
+                                    .foregroundColor(AppTheme.Colors.cosmicCyan.opacity(0.3))
+                                    .blur(radius: 8)
+                                    .scaleEffect(1.2)
+                                
+                                // Main icon
+                                Image(systemName: "arrow.right.circle.fill")
+                                    .font(.system(size: 80, weight: .medium))
+                                    .foregroundColor(AppTheme.Colors.cosmicCyan)
+                                    .shadow(color: AppTheme.Colors.cosmicCyan.opacity(0.8), radius: 20, x: 0, y: 0)
+                            }
                             
+                            // Enhanced text with glow
                             Text("Interested")
-                                .font(.custom("ZonaPro-Bold", size: 18))
+                                .font(.custom("ZonaPro-Bold", size: 22))
                                 .fontWeight(.bold)
                                 .foregroundColor(AppTheme.Colors.cosmicCyan)
+                                .shadow(color: AppTheme.Colors.cosmicCyan.opacity(0.6), radius: 8, x: 0, y: 2)
+                                .scaleEffect(1.1)
                         }
                         .opacity(Double(min(dragOffset.width / swipeThreshold, 1)))
+                        .scaleEffect(0.8 + Double(min(dragOffset.width / swipeThreshold, 1)) * 0.4)
                     } else if dragOffset.width < 0 {
-                        VStack(spacing: 12) {
-                            Image(systemName: "arrow.left.circle.fill")
-                                .font(.system(size: 80, weight: .medium))
-                                .foregroundColor(AppTheme.Colors.cosmicPurple)
-                                .shadow(color: AppTheme.Colors.cosmicPurple.opacity(0.6), radius: 15, x: 0, y: 0)
+                        VStack(spacing: 16) {
+                            // Enhanced icon with glow effect
+                            ZStack {
+                                // Outer glow
+                                Image(systemName: "arrow.left.circle.fill")
+                                    .font(.system(size: 90, weight: .medium))
+                                    .foregroundColor(AppTheme.Colors.cosmicPurple.opacity(0.3))
+                                    .blur(radius: 8)
+                                    .scaleEffect(1.2)
+                                
+                                // Main icon
+                                Image(systemName: "arrow.left.circle.fill")
+                                    .font(.system(size: 80, weight: .medium))
+                                    .foregroundColor(AppTheme.Colors.cosmicPurple)
+                                    .shadow(color: AppTheme.Colors.cosmicPurple.opacity(0.8), radius: 20, x: 0, y: 0)
+                            }
                             
+                            // Enhanced text with glow
                             Text("Not for me")
-                                .font(.custom("ZonaPro-Bold", size: 18))
+                                .font(.custom("ZonaPro-Bold", size: 22))
                                 .fontWeight(.bold)
                                 .foregroundColor(AppTheme.Colors.cosmicPurple)
+                                .shadow(color: AppTheme.Colors.cosmicPurple.opacity(0.6), radius: 8, x: 0, y: 2)
+                                .scaleEffect(1.1)
                         }
                         .opacity(Double(min(-dragOffset.width / swipeThreshold, 1)))
+                        .scaleEffect(0.8 + Double(min(-dragOffset.width / swipeThreshold, 1)) * 0.4)
                     }
                 }
                 .transition(.scale.combined(with: .opacity))
+                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: dragOffset.width)
             }
         }
         .rotationEffect(.degrees(rotationAngle))
@@ -279,6 +310,7 @@ struct QuestionGlassCard: View {
         .scaleEffect(isActive ? 1.0 : 0.9)
         .offset(y: isActive ? 0 : 20)
         .animation(.spring(response: 0.5, dampingFraction: 0.7), value: isActive)
+        .animation(.interactiveSpring(response: 0.4, dampingFraction: 0.8), value: dragOffset)
         .gesture(
             DragGesture(minimumDistance: 5)
                 .onChanged { value in
@@ -291,11 +323,20 @@ struct QuestionGlassCard: View {
                 }
                 .onEnded { value in
                     if isActive && abs(value.translation.width) > swipeThreshold {
-                        withAnimation(.spring()) {
+                        let direction: CGFloat = value.translation.width > 0 ? 1 : -1
+                        
+                        // Enhanced animation sequence with better timing
+                        withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                             isDragging = false
-                            let direction: CGFloat = value.translation.width > 0 ? 1 : -1
-                            dragOffset = CGSize(width: direction * 500, height: 0)
-                            isGone = true
+                            dragOffset = CGSize(width: direction * 300, height: 0) // Reduced distance for better visibility
+                        }
+                        
+                        // Show feedback for longer duration
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                            withAnimation(.easeInOut(duration: 0.6)) {
+                                dragOffset = CGSize(width: direction * 800, height: 0)
+                                isGone = true
+                            }
                             
                             // Chance to show a motivational toast when swiping a card
                             let showToastChance = Bool.random()
@@ -303,7 +344,7 @@ struct QuestionGlassCard: View {
                                 toastManager.showRandomToast()
                             }
                             
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                                 onSwipedAway()
                             }
                         }
