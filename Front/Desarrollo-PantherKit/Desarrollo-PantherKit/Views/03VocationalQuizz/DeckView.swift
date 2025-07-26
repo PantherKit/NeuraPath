@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 
 struct DeckView: View {
     var onComplete: () -> Void
@@ -23,9 +24,14 @@ struct DeckView: View {
     @State private var feedbackText = ""
     @State private var feedbackColor = Color.green
     
-    // Colores del tema
-    private let accentColor = Color(red: 0.25, green: 0.72, blue: 0.85)
-    private let secondaryColor = Color(red: 0.2, green: 0.6, blue: 1.0)
+    // Enhanced animation states
+    @State private var showContent = false
+    @State private var showHeader = false
+    @State private var showCards = false
+    @State private var sparkleAnimation = false
+    @State private var showConstellation = false
+    @State private var progressGlow = false
+    
     private let swipeThreshold: CGFloat = 100
     private let maxRotation: Double = 15
     
@@ -35,43 +41,65 @@ struct DeckView: View {
     
     var body: some View {
         ZStack {
-            // Fondo espacial
-            spaceBackground
+            // Magazine-style cosmic background
+            MagazineCosmicBackground()
             
-            VStack {
-                // Header con progreso
-                if mbtiMode {
-                    mbtiProgressHeader
-                } else {
-                    progressHeader
-                }
-                
-                Spacer()
-                
-                // Stack de cards
-                if mbtiMode {
-                    mbtiCardView
-                } else {
-                    cardStackView
-                }
-                
-                Spacer()
-                
+            // Dynamic Constellation in upper area
+            if showConstellation {
+                DynamicConstellation()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .padding(.top, 60)
             }
             
-            // Feedback overlay para MBTI
+            // Main content with magazine layout
+            VStack(spacing: 0) {
+                // Editorial header section
+                VocationalQuizHeader(
+                    currentIndex: activeIndex,
+                    totalCount: mbtiMode ? mbtiQuestions.count : cards.count,
+                    mbtiMode: mbtiMode,
+                    progressGlow: $progressGlow
+                )
+                .opacity(showHeader ? 1.0 : 0)
+                .offset(y: showHeader ? 0 : -40)
+                
+                Spacer()
+                
+                // Magazine-style card stack
+                if mbtiMode {
+                    mbtiCardView
+                        .opacity(showCards ? 1.0 : 0)
+                        .offset(y: showCards ? 0 : 50)
+                } else {
+                    cardStackView
+                        .opacity(showCards ? 1.0 : 0)
+                        .offset(y: showCards ? 0 : 50)
+                }
+                
+                Spacer()
+                
+                // Swipe instructions
+                if mbtiMode {
+                    mbtiSwipeInstructions
+                        .opacity(showContent ? 1.0 : 0)
+                        .offset(y: showContent ? 0 : 30)
+                }
+            }
+            .padding(.horizontal, 24)
+            
+            // Feedback overlay for MBTI
             if showFeedback {
-                Color.black.opacity(0.7)
-                    .ignoresSafeArea()
-                    .overlay(
-                        Text(feedbackText)
-                            .font(.title)
-                            .fontWeight(.bold)
-                            .foregroundColor(feedbackColor)
-                            .padding()
-                            .background(.ultraThinMaterial)
-                            .cornerRadius(15)
-                    )
+                CosmicFeedbackOverlay(
+                    text: feedbackText,
+                    color: feedbackColor
+                )
+            }
+            
+            // Floating sparkles
+            if sparkleAnimation {
+                ForEach(0..<15, id: \.self) { i in
+                    SparkleParticle(index: i)
+                }
             }
         }
         .sheet(isPresented: $showDetails) {
@@ -80,79 +108,16 @@ struct DeckView: View {
             }
         }
         .onAppear {
+            startMagazineAnimation()
             print("DeckView appeared with \(mbtiQuestions.count) MBTI questions")
         }
     }
     
-    // MARK: - Componentes Comunes
-    
-    private var spaceBackground: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
-            
-            // Estrellas
-            ForEach(0..<100) { _ in
-                Circle()
-                    .fill(Color.white)
-                    .frame(width: CGFloat.random(in: 1...3))
-                    .opacity(Double.random(in: 0.1...0.8))
-                    .position(
-                        x: CGFloat.random(in: 0..<UIScreen.main.bounds.width),
-                        y: CGFloat.random(in: 0..<UIScreen.main.bounds.height)
-                    )
-            }
-            
-            // Nébulas
-            ForEach(0..<3) { i in
-                let colors: [Color] = [
-                    Color(red: 0.5, green: 0.2, blue: 0.8),
-                    Color(red: 0.1, green: 0.4, blue: 0.9),
-                    Color(red: 0.3, green: 0.8, blue: 0.9)
-                ]
-                
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            gradient: Gradient(colors: [
-                                colors[i % colors.count].opacity(0.2),
-                                colors[i % colors.count].opacity(0)
-                            ]),
-                            center: .center,
-                            startRadius: 0,
-                            endRadius: 200
-                        )
-                    )
-                    .frame(width: 300, height: 300)
-                    .position(
-                        x: CGFloat.random(in: 0..<UIScreen.main.bounds.width),
-                        y: CGFloat.random(in: 0..<UIScreen.main.bounds.height)
-                    )
-                    .blur(radius: 60)
-            }
-        }
-    }
-    
-    // MARK: - Componentes STEM
-    
-    private var progressHeader: some View {
-        HStack {
-            Text("Explora Carreras STEM")
-                .font(.system(size: 22, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
-            
-            Spacer()
-            
-            Text("\(activeIndex + 1)/\(cards.count)")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.white.opacity(0.7))
-        }
-        .padding()
-    }
-    
+    // MARK: - Magazine-style Card Stack View
     private var cardStackView: some View {
         ZStack {
             ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
-                CardView(
+                QuestionGlassCard(
                     card: card,
                     isActive: index == activeIndex,
                     onSwipedAway: handleSwipe,
@@ -161,34 +126,16 @@ struct DeckView: View {
                 .zIndex(Double(cards.count - index))
             }
         }
-        .frame(width: 320, height: 450)
+        .frame(width: 340, height: 480)
     }
     
-    
-    // MARK: - Componentes MBTI
-    
-    private var mbtiProgressHeader: some View {
-        HStack {
-            Text("Test de Personalidad MBTI")
-                .font(.system(size: 22, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
-            
-            Spacer()
-            
-            Text("\(activeIndex + 1)/\(mbtiQuestions.count)")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.white.opacity(0.7))
-        }
-        .padding()
-    }
-    
+    // MARK: - MBTI Card View
     private var mbtiCardView: some View {
-        // Convert MBTI question to STEMCard for consistent UI
         let stemCard = mbtiQuestions[activeIndex].toSTEMCard()
         
         return ZStack {
-            // Use CardView with the converted STEMCard
-            CardView(
+            // Use QuestionGlassCard with the converted STEMCard
+            QuestionGlassCard(
                 card: stemCard,
                 isActive: true,
                 onSwipedAway: { /* handled by gesture */ },
@@ -204,12 +151,16 @@ struct DeckView: View {
                         .foregroundColor(.green)
                     
                     Text("Opción A")
-                        .font(.headline)
+                        .font(.custom("ZonaPro-Bold", size: 16))
+                        .fontWeight(.bold)
                         .foregroundColor(.green)
                 }
                 .padding()
-                .background(.ultraThinMaterial)
-                .cornerRadius(15)
+                .background {
+                    RoundedRectangle(cornerRadius: 15)
+                        .fill(.ultraThinMaterial)
+                        .opacity(0.8)
+                }
                 .opacity(dragOffset.width > 0 ? Double(min(dragOffset.width / swipeThreshold, 1)) : 0)
                 .position(x: UIScreen.main.bounds.width * 0.75, y: 100)
                 
@@ -220,17 +171,21 @@ struct DeckView: View {
                         .foregroundColor(.blue)
                     
                     Text("Opción B")
-                        .font(.headline)
+                        .font(.custom("ZonaPro-Bold", size: 16))
+                        .fontWeight(.bold)
                         .foregroundColor(.blue)
                 }
                 .padding()
-                .background(.ultraThinMaterial)
-                .cornerRadius(15)
+                .background {
+                    RoundedRectangle(cornerRadius: 15)
+                        .fill(.ultraThinMaterial)
+                        .opacity(0.8)
+                }
                 .opacity(dragOffset.width < 0 ? Double(min(-dragOffset.width / swipeThreshold, 1)) : 0)
                 .position(x: UIScreen.main.bounds.width * 0.25, y: 100)
             }
         }
-        .frame(width: UIScreen.main.bounds.width - 40, height: 500)
+        .frame(width: UIScreen.main.bounds.width - 48, height: 520)
         .rotationEffect(.degrees(rotationAngle))
         .offset(dragOffset)
         .gesture(
@@ -247,28 +202,62 @@ struct DeckView: View {
     }
     
     private var mbtiSwipeInstructions: some View {
-        HStack(spacing: 50) {
-            VStack {
+        HStack(spacing: 60) {
+            VStack(spacing: 8) {
                 Image(systemName: "arrow.left")
-                    .font(.system(size: 24))
+                    .font(.system(size: 24, weight: .medium))
                 Text("Opción B")
-                    .font(.caption)
+                    .font(.custom("ZonaPro-Light", size: 14))
+                    .fontWeight(.medium)
             }
             .foregroundColor(.blue)
             
-            VStack {
+            VStack(spacing: 8) {
                 Image(systemName: "arrow.right")
-                    .font(.system(size: 24))
+                    .font(.system(size: 24, weight: .medium))
                 Text("Opción A")
-                    .font(.caption)
+                    .font(.custom("ZonaPro-Light", size: 14))
+                    .fontWeight(.medium)
             }
             .foregroundColor(.green)
         }
-        .padding(.bottom, 30)
+        .padding(.bottom, 40)
     }
     
-    // MARK: - Funciones
+    // MARK: - Animation Functions
+    private func startMagazineAnimation() {
+        // Elegant entrance sequence
+        withAnimation(.easeOut(duration: 1.2).delay(0.3)) {
+            showContent = true
+        }
+        
+        withAnimation(.spring(response: 0.8, dampingFraction: 0.8).delay(0.6)) {
+            showHeader = true
+        }
+        
+        withAnimation(.spring(response: 1.0, dampingFraction: 0.7).delay(1.0)) {
+            showCards = true
+        }
+        
+        // Sparkles appear after main content
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            sparkleAnimation = true
+        }
+        
+        // Constellation appears elegantly
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+            withAnimation(.easeOut(duration: 1.5)) {
+                showConstellation = true
+            }
+        }
+        
+        // Progress glow animation
+        withAnimation(.easeInOut(duration: 3.0).repeatForever(autoreverses: true).delay(2.0)) {
+            progressGlow = true
+        }
+    }
     
+    // MARK: - Handler Functions
     private func handleSwipe() {
         if activeIndex < cards.count - 1 {
             withAnimation(.spring()) {
@@ -282,7 +271,6 @@ struct DeckView: View {
     private func swipeCard(accepted: Bool) {
         guard activeIndex < cards.count else { return }
         
-        // Aquí podrías registrar la selección del usuario
         if accepted {
             print("Aceptado: \(cards[activeIndex].title)")
         }
@@ -305,84 +293,304 @@ struct DeckView: View {
         }
     }
     
-  private func handleMBTISwipe(_ value: DragGesture.Value) {
-    print("Handling MBTI swipe, current index: \(activeIndex)/\(mbtiQuestions.count)")
-    
-    if abs(value.translation.width) > swipeThreshold {
-        // Determine which option was selected
-        let selectedRight = value.translation.width > 0
+    private func handleMBTISwipe(_ value: DragGesture.Value) {
+        print("Handling MBTI swipe, current index: \(activeIndex)/\(mbtiQuestions.count)")
         
-        // Verificar que el índice sea válido
-        guard activeIndex < mbtiQuestions.count else {
-            print("Error: activeIndex (\(activeIndex)) out of bounds for mbtiQuestions.count (\(mbtiQuestions.count))")
-            return
-        }
-        
-        let currentQuestion = mbtiQuestions[activeIndex]
-        
-        // Record the selected MBTI type
-        let selectedType = selectedRight ? currentQuestion.optionA.type : currentQuestion.optionB.type
-        mbtiResults[selectedType, default: 0] += 1
-        
-        // Note: We now just track the selection, processing is done by backend
-        print("MBTI trait selection recorded: \(selectedType)")
-        
-        print("Selected \(selectedRight ? "Option A" : "Option B") for question \(activeIndex + 1)")
-        
-        // Show feedback
-        showFeedback = true
-        feedbackText = selectedRight ? "Opción A seleccionada" : "Opción B seleccionada"
-        feedbackColor = selectedRight ? .green : .blue
-        
-        // Animate card away
-        withAnimation(.spring()) {
-            dragOffset = CGSize(
-                width: selectedRight ? 1000 : -1000,
-                height: 0
-            )
-        }
-        
-        // Store the next index to move to
-        let nextIndex = activeIndex + 1
-        let isComplete = nextIndex >= mbtiQuestions.count
-        
-        print("Next index will be: \(nextIndex), isComplete: \(isComplete)")
-        
-        // Reducir el retraso para una respuesta más rápida y asegurar que se ejecute
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            // Reset drag offset first
-            self.dragOffset = .zero
+        if abs(value.translation.width) > swipeThreshold {
+            let selectedRight = value.translation.width > 0
             
-            // Hide feedback
+            guard activeIndex < mbtiQuestions.count else {
+                print("Error: activeIndex (\(activeIndex)) out of bounds for mbtiQuestions.count (\(mbtiQuestions.count))")
+                return
+            }
+            
+            let currentQuestion = mbtiQuestions[activeIndex]
+            let selectedType = selectedRight ? currentQuestion.optionA.type : currentQuestion.optionB.type
+            mbtiResults[selectedType, default: 0] += 1
+            
+            print("MBTI trait selection recorded: \(selectedType)")
+            print("Selected \(selectedRight ? "Option A" : "Option B") for question \(activeIndex + 1)")
+            
+            // Show feedback
+            showFeedback = true
+            feedbackText = selectedRight ? "Opción A seleccionada" : "Opción B seleccionada"
+            feedbackColor = selectedRight ? .green : .blue
+            
+            // Animate card away
             withAnimation(.spring()) {
-                self.showFeedback = false
+                dragOffset = CGSize(
+                    width: selectedRight ? 1000 : -1000,
+                    height: 0
+                )
             }
             
-            // Check if there are more questions
-            if !isComplete {
-                print("Moving to next question: \(nextIndex + 1)/\(self.mbtiQuestions.count)")
-                // Actualizar el índice inmediatamente
-                withAnimation(.easeInOut) {
-                    self.activeIndex = nextIndex
+            let nextIndex = activeIndex + 1
+            let isComplete = nextIndex >= mbtiQuestions.count
+            
+            print("Next index will be: \(nextIndex), isComplete: \(isComplete)")
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                self.dragOffset = .zero
+                
+                withAnimation(.spring()) {
+                    self.showFeedback = false
                 }
-                print("Active index updated to: \(self.activeIndex)")
-            } else {
-                // Test complete
-                print("MBTI test complete, calling completion handler")
-                // Asegurarse de que el callback se ejecute
-                if let onComplete = self.onMBTIComplete {
-                    onComplete(self.mbtiResults)
+                
+                if !isComplete {
+                    print("Moving to next question: \(nextIndex + 1)/\(self.mbtiQuestions.count)")
+                    withAnimation(.easeInOut) {
+                        self.activeIndex = nextIndex
+                    }
+                    print("Active index updated to: \(self.activeIndex)")
                 } else {
-                    print("Warning: onMBTIComplete is nil")
+                    print("MBTI test complete, calling completion handler")
+                    if let onComplete = self.onMBTIComplete {
+                        onComplete(self.mbtiResults)
+                    } else {
+                        print("Warning: onMBTIComplete is nil")
+                    }
                 }
             }
-        }
-    } else {
-        // Not enough to trigger a selection, reset position
-        withAnimation(.spring()) {
-            dragOffset = .zero
+        } else {
+            withAnimation(.spring()) {
+                dragOffset = .zero
+            }
         }
     }
 }
 
+// MARK: - Vocational Quiz Header
+struct VocationalQuizHeader: View {
+    let currentIndex: Int
+    let totalCount: Int
+    let mbtiMode: Bool
+    @Binding var progressGlow: Bool
+    
+    private var progressPercentage: Double {
+        Double(currentIndex + 1) / Double(totalCount)
+    }
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            // Main title with editorial typography
+            VStack(spacing: 16) {
+                Text(mbtiMode ? "Discover Your\nPersonality Type" : "Explore STEM\nCareer Paths")
+                    .font(.custom("ZonaPro-Bold", size: 36))
+                    .fontWeight(.heavy)
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
+                    .tracking(0.5)
+                    .shadow(color: AppTheme.Colors.cosmicCyan.opacity(0.3), radius: 15, x: 0, y: 5)
+                
+                // Elegant subtitle
+                Text(mbtiMode ? "Understanding your MBTI preferences\nhelps us match you with the perfect STEM career" : "Swipe through career options to discover\nwhat resonates with your interests")
+                    .font(.custom("ZonaPro-Light", size: 16))
+                    .fontWeight(.light)
+                    .foregroundColor(.white.opacity(0.75))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                    .tracking(0.5)
+            }
+            
+            // Magazine-style progress section
+            VStack(spacing: 16) {
+                // Progress metrics
+                HStack {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Progress")
+                            .font(.custom("ZonaPro-Light", size: 12))
+                            .fontWeight(.regular)
+                            .foregroundColor(.white.opacity(0.65))
+                            .tracking(0.5)
+                        
+                        Text("\(currentIndex + 1) of \(totalCount)")
+                            .font(.custom("ZonaPro-Bold", size: 20))
+                            .fontWeight(.heavy)
+                            .foregroundColor(.white)
+                            .tracking(-1)
+                    }
+                    
+                    Spacer()
+                    
+                    VStack(alignment: .trailing, spacing: 6) {
+                        Text("Completion")
+                            .font(.custom("ZonaPro-Light", size: 12))
+                            .fontWeight(.regular)
+                            .foregroundColor(.white.opacity(0.65))
+                            .tracking(0.5)
+                        
+                        Text("\(Int(progressPercentage * 100))%")
+                            .font(.custom("ZonaPro-Bold", size: 24))
+                            .fontWeight(.heavy)
+                            .foregroundColor(.white)
+                            .tracking(-1)
+                    }
+                }
+                
+                // Cosmic progress bar
+                ProgressCosmicBar(progress: progressPercentage, progressGlow: $progressGlow)
+            }
+        }
+        .padding(32)
+        .background {
+            // Authentic glass morphism
+            ZStack {
+                // Base glass layer
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(.ultraThinMaterial)
+                    .opacity(0.6)
+                
+                // Secondary glass layer for depth
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(.thinMaterial)
+                    .opacity(0.3)
+                
+                // Glass tint with cosmic colors
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                AppTheme.Colors.cosmicCyan.opacity(0.06),
+                                AppTheme.Colors.cosmicBlue.opacity(0.03),
+                                Color.clear,
+                                AppTheme.Colors.cosmicPurple.opacity(0.02)
+                            ],
+                            center: .topLeading,
+                            startRadius: 0,
+                            endRadius: 300
+                        )
+                    )
+                
+                // Natural light reflection
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(0.15),
+                                Color.white.opacity(0.06),
+                                Color.clear,
+                                Color.clear,
+                                Color.white.opacity(0.04)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                
+                // Sophisticated border
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(0.2),
+                                Color.white.opacity(0.05)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 0.8
+                    )
+            }
+            .shadow(color: Color.black.opacity(0.3), radius: 25, x: 0, y: 12)
+            .shadow(color: AppTheme.Colors.cosmicBlue.opacity(0.15), radius: 35, x: 0, y: 18)
+        }
+    }
+}
+
+// MARK: - Progress Cosmic Bar
+struct ProgressCosmicBar: View {
+    let progress: Double
+    @Binding var progressGlow: Bool
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            // Progress bar background
+            RoundedRectangle(cornerRadius: 12)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.1),
+                            Color.white.opacity(0.05)
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .frame(height: 8)
+                .overlay(
+                    // Progress fill
+                    HStack {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        AppTheme.Colors.cosmicCyan.opacity(0.8),
+                                        AppTheme.Colors.cosmicBlue.opacity(0.6)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .frame(width: UIScreen.main.bounds.width * 0.6 * progress)
+                            .scaleEffect(x: progress, anchor: .leading)
+                            .shadow(
+                                color: progressGlow ? 
+                                AppTheme.Colors.cosmicCyan.opacity(0.6) : 
+                                AppTheme.Colors.cosmicCyan.opacity(0.3),
+                                radius: progressGlow ? 8 : 4, x: 0, y: 0
+                            )
+                        
+                        Spacer()
+                    }
+                )
+                .overlay(
+                    // Glass overlay
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(.ultraThinMaterial)
+                        .opacity(0.3)
+                )
+        }
+    }
+}
+
+// MARK: - Cosmic Feedback Overlay
+struct CosmicFeedbackOverlay: View {
+    let text: String
+    let color: Color
+    
+    var body: some View {
+        Color.black.opacity(0.7)
+            .ignoresSafeArea()
+            .overlay(
+                VStack(spacing: 16) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 48, weight: .medium))
+                        .foregroundColor(color)
+                        .shadow(color: color.opacity(0.6), radius: 10, x: 0, y: 0)
+                    
+                    Text(text)
+                        .font(.custom("ZonaPro-Bold", size: 20))
+                        .fontWeight(.bold)
+                        .foregroundColor(color)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(32)
+                .background {
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(.ultraThinMaterial)
+                        .opacity(0.9)
+                        .shadow(color: Color.black.opacity(0.3), radius: 20, x: 0, y: 10)
+                }
+            )
+    }
+}
+
+// MARK: - Preview
+#Preview {
+    DeckView(
+        onComplete: {},
+        viewModel: VocationalTestViewModel()
+    )
+    .preferredColorScheme(.dark)
 }

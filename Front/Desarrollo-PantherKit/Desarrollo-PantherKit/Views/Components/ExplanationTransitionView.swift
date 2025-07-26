@@ -167,8 +167,9 @@ struct ExplanationTransitionView: View {
         }
         .padding(.vertical, 24)
         .background(
-            VisualEffectBlur(blurStyle: .systemUltraThinMaterialDark)
-                .cornerRadius(20)
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.ultraThinMaterial)
+                .opacity(0.7)
                 .shadow(color: Color.white.opacity(0.1), radius: 10, x: 0, y: 5)
         )
     }
