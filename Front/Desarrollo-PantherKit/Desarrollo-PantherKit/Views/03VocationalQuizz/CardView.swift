@@ -34,12 +34,12 @@ struct QuestionGlassCard: View {
             // Authentic glass morphism card background
             RoundedRectangle(cornerRadius: 28)
                 .fill(.ultraThinMaterial)
-                .opacity(0.7)
+                .opacity(0.9)
                 .background {
                     // Secondary glass layer for depth
                     RoundedRectangle(cornerRadius: 28)
                         .fill(.thinMaterial)
-                        .opacity(0.3)
+                        .opacity(0.6)
                 }
                 .overlay {
                     // Glass tint with cosmic colors
@@ -47,10 +47,10 @@ struct QuestionGlassCard: View {
                         .fill(
                             RadialGradient(
                                 colors: [
-                                    AppTheme.Colors.cosmicCyan.opacity(0.08),
-                                    AppTheme.Colors.cosmicBlue.opacity(0.04),
+                                    AppTheme.Colors.cosmicCyan.opacity(0.15),
+                                    AppTheme.Colors.cosmicBlue.opacity(0.08),
                                     Color.clear,
-                                    AppTheme.Colors.cosmicPurple.opacity(0.02)
+                                    AppTheme.Colors.cosmicPurple.opacity(0.05)
                                 ],
                                 center: .topLeading,
                                 startRadius: 0,
@@ -63,11 +63,11 @@ struct QuestionGlassCard: View {
                         .fill(
                             LinearGradient(
                                 colors: [
-                                    Color.white.opacity(0.15),
-                                    Color.white.opacity(0.06),
+                                    Color.white.opacity(0.25),
+                                    Color.white.opacity(0.12),
                                     Color.clear,
                                     Color.clear,
-                                    Color.white.opacity(0.04)
+                                    Color.white.opacity(0.08)
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
@@ -93,8 +93,8 @@ struct QuestionGlassCard: View {
                         .fill(
                             EllipticalGradient(
                                 colors: [
-                                    Color.white.opacity(0.2),
-                                    Color.white.opacity(0.08),
+                                    Color.white.opacity(0.3),
+                                    Color.white.opacity(0.15),
                                     Color.clear
                                 ],
                                 center: UnitPoint(
@@ -106,7 +106,7 @@ struct QuestionGlassCard: View {
                             )
                         )
                         .mask(RoundedRectangle(cornerRadius: 28))
-                        .opacity(0.4)
+                        .opacity(0.6)
                 }
                 .shadow(color: Color.black.opacity(0.3), radius: 25, x: 0, y: 12)
                 .shadow(color: AppTheme.Colors.cosmicBlue.opacity(0.15), radius: 35, x: 0, y: 18)
