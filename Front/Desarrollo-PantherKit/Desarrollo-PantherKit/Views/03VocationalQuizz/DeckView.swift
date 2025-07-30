@@ -41,8 +41,8 @@ struct DeckView: View {
     
     var body: some View {
         ZStack {
-            // Magazine-style cosmic background
-            MagazineCosmicBackground()
+            // Background
+            Color.black.ignoresSafeArea()
             
             // Dynamic Constellation in upper area
             if showConstellation {

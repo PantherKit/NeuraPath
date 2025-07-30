@@ -34,13 +34,8 @@ struct ResultsView: View {
             backgroundGradient
                 .ignoresSafeArea()
             
-            // Estrellas animadas
-            AnimatedStarField(
-                numberOfStars: 150,
-                starBrightness: 0.7,
-                starSpeed: 0.5
-            )
-            .opacity(animateBackground ? 1 : 0)
+            WelcomeCosmicBackground()
+                .opacity(animateBackground ? 1 : 0)
             
             // Nebulosas decorativas
             ForEach(0..<3) { i in

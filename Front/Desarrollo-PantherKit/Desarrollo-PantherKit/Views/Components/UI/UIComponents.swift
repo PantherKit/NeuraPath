@@ -268,7 +268,7 @@ struct RocketGameComponents {
 
 // MARK: - Space Background
 struct SpaceBackground: View {
-    let showStars: Bool
+
     let showNebulas: Bool
     let accentColor: Color
     
@@ -276,10 +276,7 @@ struct SpaceBackground: View {
         ZStack {
             Color.black.ignoresSafeArea()
             
-            // Estrellas
-            if showStars {
-                StarField()
-            }
+            WelcomeCosmicBackground()
             
             // Nébulas - versión mejorada
             if showNebulas {
@@ -325,7 +322,6 @@ struct SpaceBackground: View {
         )
         
         SpaceBackground(
-            showStars: true,
             showNebulas: true,
             accentColor: AppTheme.Colors.cosmicCyan
         )

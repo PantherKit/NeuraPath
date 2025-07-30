@@ -129,7 +129,7 @@ extension View {
     
     func cosmicBackground(intensity: Double = 1.0) -> some View {
         self.background(
-            CosmicBackground()
+            WelcomeCosmicBackground()
         )
     }
     

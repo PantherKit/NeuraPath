@@ -19,7 +19,7 @@ struct ExplanationTransitionView: View {
     @State private var textOpacity = 0.0
     @State private var buttonOpacity = 0.0
     @State private var showNebulas = false
-    @State private var showStars = false
+
     @State private var particlesScale = 0.5
     @State private var isTextAnimating = false
     
@@ -64,10 +64,7 @@ struct ExplanationTransitionView: View {
         ZStack {
             Color.black.ignoresSafeArea()
             
-            // Estrellas
-            if showStars {
-                StarField()
-            }
+            WelcomeCosmicBackground()
             
             // Nebulosas
             if showNebulas {
@@ -213,7 +210,7 @@ struct ExplanationTransitionView: View {
     
     private func startAnimations() {
         withAnimation(.easeInOut(duration: 1.0)) {
-            showStars = true
+
             showNebulas = true
             particlesScale = 1.0
             textOpacity = 1.0

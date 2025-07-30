@@ -39,13 +39,8 @@ struct GalaxyResultsView: View {
             )
             .ignoresSafeArea()
             
-            // Campo de estrellas animado
-            AnimatedStarField(
-                numberOfStars: 200,
-                starBrightness: 0.8,
-                starSpeed: 0.3
-            )
-            .opacity(animateBackground ? 1 : 0)
+            WelcomeCosmicBackground()
+                .opacity(animateBackground ? 1 : 0)
             
             // Nebulosas decorativas
             ForEach(0..<4) { i in

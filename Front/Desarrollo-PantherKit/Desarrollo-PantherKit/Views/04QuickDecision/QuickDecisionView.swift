@@ -17,7 +17,7 @@ struct QuickDecisionView: View {
     @State private var rocketHoverOffset: CGFloat = 0.0
     @State private var rocketTrailOpacity: Double = 0.0
     @State private var showNebulas = false
-    @State private var showStars = false
+
     @State private var planetGlowIntensity: [Double] = Array(repeating: 0.0, count: 8)
     @State private var finalDestinationOpacity: Double = 0.0
     @State private var finalDestinationScale: CGFloat = 0.3
@@ -141,7 +141,12 @@ struct QuickDecisionView: View {
             
             // Asegurarse de que el avatar esté seleccionado
             if viewModel.selectedAvatar == nil {
-                viewModel.selectedAvatar = Avatar.allAvatars.first
+                // Crear un avatar por defecto si es necesario
+                viewModel.selectedAvatar = Avatar(
+                    id: UUID(),
+                    name: "Default",
+                    imageName: "person.circle.fill"
+                )
             }
             
             // Iniciar animación de brillo del primer planeta
@@ -161,12 +166,7 @@ struct QuickDecisionView: View {
     
     private var spaceBackground: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
-            
-            // Estrellas
-            if showStars {
-                StarField()
-            }
+            WelcomeCosmicBackground()
             
             // Nébulas - versión mejorada
             if showNebulas {
@@ -583,8 +583,7 @@ struct QuickDecisionView: View {
     @ViewBuilder
     private func CompletionView() -> some View {
         ZStack {
-            AnimatedStarField(numberOfStars: 200, starBrightness: 1, starSpeed: 0.7)
-                .edgesIgnoringSafeArea(.all)
+            WelcomeCosmicBackground()
             
             VStack(spacing: 30) {
                 // Título
@@ -660,7 +659,6 @@ struct QuickDecisionView: View {
     
     private func startAnimations() {
         withAnimation(.easeInOut(duration: 1.0)) {
-            showStars = true
             showNebulas = true
             isAnimating = true
             showRocketParticles = true
@@ -728,7 +726,7 @@ struct QuickDecisionView: View {
                 } else {
                     // Terminar la fase de preguntas e iniciar la animación del cohete
                     withAnimation {
-                        showStars = true
+            
                         withAnimation(.easeInOut(duration: 2.0)) {
                             pathProgress = 0.3
                         }
