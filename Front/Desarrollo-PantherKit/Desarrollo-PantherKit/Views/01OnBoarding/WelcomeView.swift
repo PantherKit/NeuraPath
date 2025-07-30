@@ -18,85 +18,16 @@ struct WelcomeView: View {
             // Magazine-style cosmic background
             WelcomeCosmicBackground()
             
-            // Dynamic Constellation in upper area
-            if showConstellation {
-                DynamicConstellation()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                    .padding(.top, 100)
-            }
-            
-            
             // Main content with magazine layout
             ScrollView {
                 VStack(spacing: 0) {
                     Spacer()
-                        .frame(height: UIScreen.main.bounds.height * 0.4) // Responsive - hero starts at bottom third
+                        .frame(height: UIScreen.main.bounds.height * 0.6) // Responsive - hero starts at bottom third
                     
                     // Hero section with elegant spacing
                     VStack(spacing: 32) {
                     // Refined logo with sophisticated glow
                     VStack(spacing: 40) {
-                        // Logo with multiple concentric rings
-                        HStack {
-                            ZStack {
-                                // Outer glow ring
-                                Circle()
-                                    .stroke(
-                                        AngularGradient(
-                                            colors: [
-                                                AppTheme.Colors.cosmicCyan.opacity(0.8),
-                                                AppTheme.Colors.cosmicBlue.opacity(0.6),
-                                                AppTheme.Colors.cosmicPurple.opacity(0.4),
-                                                AppTheme.Colors.cosmicCyan.opacity(0.8)
-                                            ],
-                                            center: .center
-                                        ),
-                                        lineWidth: 2
-                                    )
-                                    .frame(width: 120, height: 120)
-                                    .scaleEffect(logoGlow ? 1.08 : 1.0)
-                                    .opacity(logoGlow ? 0.9 : 0.6)
-                                
-                                // Inner ring
-                                Circle()
-                                    .stroke(
-                                        LinearGradient(
-                                            colors: [
-                                                Color.white.opacity(0.4),
-                                                Color.white.opacity(0.1)
-                                            ],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        ),
-                                        lineWidth: 1
-                                    )
-                                    .frame(width: 85, height: 85)
-                                    .scaleEffect(logoGlow ? 0.95 : 1.0)
-                                
-                                // Brain emoji with holographic effect
-                                ZStack {
-                                    // Holographic layers
-                                    Text("🧠")
-                                        .font(.system(size: 55))
-                                        .offset(x: -1, y: -1)
-                                        .foregroundColor(.red.opacity(0.3))
-                                    
-                                    Text("🧠")
-                                        .font(.system(size: 55))
-                                        .offset(x: 1, y: 1)
-                                        .foregroundColor(.cyan.opacity(0.3))
-                                    
-                                    Text("🧠")
-                                        .font(.system(size: 55))
-                                        .scaleEffect(showContent ? 1.0 : 0.5)
-                                }
-                                .shadow(color: AppTheme.Colors.cosmicCyan.opacity(0.5), radius: 20, x: 0, y: 0)
-                            }
-                            
-                            Spacer()
-                        }
-                        .padding(.leading, 36)
-                        
                         // Magazine-style title
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Neura\nPath")
@@ -119,7 +50,7 @@ struct WelcomeView: View {
                         .padding(.leading, 36)
                     }
                     .opacity(showContent ? 1.0 : 0)
-                    .offset(y: showContent ? 0 : -30)
+                    .offset(y: showContent ? 0 : -20)
                     
                     // Magazine-style metrics section
                     VStack(spacing: 24) {

@@ -1,51 +1,36 @@
 import SwiftUI
 import SplineRuntime
 
-// MARK: - Magazine Cosmic Background
-struct WelcomeCosmicBackground: View {
-        @State private var refreshKey = 0
-    @State private var lastRefreshTime = Date()
-    
+// MARK: - Base Cosmic Background Implementation
+struct BasicCosmicBackground: View {
     var body: some View {
         ZStack {
             // Background
             Color.black.ignoresSafeArea()
             
             // Spline Scene - with refresh mechanism
+            //let url = Bundle.main.url(forResource: "CosmicScene", withExtension: "splineswift")!
             let url = URL(string: "https://build.spline.design/LNarwXdiaAPhbs1naRTC/scene.splineswift")!
             
+            // Use sceneIndex for compatibility with all Spline SDK versions
             SplineView(sceneFileURL: url)
                 .ignoresSafeArea(.all)
-                .id(refreshKey) // Force refresh when key changes
-            
         }
-        .onAppear {
-            // Auto-refresh on appear
-            refreshScene()
-        }
-    }
-    
-    // MARK: - Refresh Methods
-    private func refreshScene() {
-        // Increment refresh key to force view recreation
-        refreshKey += 1
-        lastRefreshTime = Date()
-        
-        // Clear any potential caches
-        clearCaches()
-        
-    }
-    
-    private func clearCaches() {
-        // Clear URL cache
-        URLCache.shared.removeAllCachedResponses()
-        
-        // Clear Spline-specific caches if possible
-        // Note: This depends on what the Spline SDK exposes
     }
 }
-
-// MARK: - Preview
-#Preview {
-    WelcomeCosmicBackground()
-} 
+struct WelcomeCosmicBackground: View {
+    var body: some View {
+        ZStack {
+            // Background
+            Color.black.ignoresSafeArea()
+            
+            // Spline Scene - with refresh mechanism
+            //let url = Bundle.main.url(forResource: "CosmicScene", withExtension: "splineswift")!
+            let url = URL(string: "https://build.spline.design/ANf4mf6cm2p8XkXO5Wjb/scene.splineswift")!
+            
+            // Use sceneIndex for compatibility with all Spline SDK versions
+            SplineView(sceneFileURL: url)
+                .ignoresSafeArea(.all)
+        }
+    }
+}
