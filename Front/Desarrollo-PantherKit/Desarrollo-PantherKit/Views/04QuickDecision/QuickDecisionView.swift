@@ -583,7 +583,7 @@ struct QuickDecisionView: View {
     @ViewBuilder
     private func CompletionView() -> some View {
         ZStack {
-            AnimatedStarField(numberOfStars: 200, starSpeed: 0.7)
+            AnimatedStarField(numberOfStars: 200, starBrightness: 1, starSpeed: 0.7)
                 .edgesIgnoringSafeArea(.all)
             
             VStack(spacing: 30) {
