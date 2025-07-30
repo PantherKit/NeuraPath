@@ -6,86 +6,84 @@
 //
 
 import SwiftUI
+import SplineRuntime
 
 // MARK: - Cosmic Background
 struct CosmicBackground: View {
-    let showNebulas: Bool
-    let showStars: Bool
-    let intensity: Double
-    
-    @State private var nebulaAnimation = false
-    
-    init(
-        showNebulas: Bool = true,
-        showStars: Bool = true,
-        intensity: Double = 1.0
-    ) {
-        self.showNebulas = showNebulas
-        self.showStars = showStars
-        self.intensity = intensity
-    }
+    @State private var refreshKey = 0
+    @State private var lastRefreshTime = Date()
     
     var body: some View {
         ZStack {
-            // Base space gradient
-            AppTheme.CosmicEffects.spaceGradient
-                .ignoresSafeArea()
+            // Background
+            Color.black.ignoresSafeArea()
             
-            // Animated star field
-            if showStars {
-                StarField()
-                    .opacity(intensity)
-            }
+            // Spline Scene - with refresh mechanism
+            let url = URL(string: "https://build.spline.design/LNarwXdiaAPhbs1naRTC/scene.splineswift")!
             
-            // Floating nebulas
-            if showNebulas {
-                ForEach(0..<4, id: \.self) { i in
-                    Circle()
-                        .fill(nebulaGradient(for: i))
-                        .frame(width: 300 + CGFloat(i * 50), height: 300 + CGFloat(i * 50))
-                        .position(nebulaPosition(for: i))
-                        .blur(radius: 60 + CGFloat(i * 20))
-                        .opacity(intensity * 0.7)
-                        .scaleEffect(nebulaAnimation ? 1.1 : 0.9)
-                        .animation(
-                            Animation.easeInOut(duration: Double(4 + i))
-                                .repeatForever(autoreverses: true)
-                                .delay(Double(i) * 0.5),
-                            value: nebulaAnimation
-                        )
+            SplineView(sceneFileURL: url)
+                .ignoresSafeArea(.all)
+                .id(refreshKey) // Force refresh when key changes
+            
+            // Overlay Controls
+            VStack {
+                Spacer()
+                
+                HStack {
+                    Button("Actualizar") {
+                        refreshScene()
+                    }
+                    .buttonStyle(CosmicButtonStyle())
+                    
+                    Spacer()
+                    
+                    Button("Reiniciar") {
+                        // Simple restart by recreating the view
+                        print("Restart button pressed")
+                        refreshScene()
+                    }
+                    .buttonStyle(CosmicButtonStyle())
+                    
+                    Spacer()
+                    
+                    Button("Volver") {
+                        // Navigation back
+                        print("Back button pressed")
+                    }
+                    .buttonStyle(CosmicButtonStyle())
                 }
+                .padding()
+                
+                // Last refresh indicator
+                Text("Última actualización: \(lastRefreshTime, style: .time)")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                    .padding(.bottom, 8)
             }
         }
         .onAppear {
-            nebulaAnimation = true
+            // Auto-refresh on appear
+            refreshScene()
         }
     }
     
-    private func nebulaGradient(for index: Int) -> RadialGradient {
-        let colors: [[Color]] = [
-            [AppTheme.Colors.cosmicCyan, AppTheme.Colors.cosmicBlue],
-            [AppTheme.Colors.cosmicPurple, AppTheme.Colors.cosmicPink],
-            [AppTheme.Colors.cosmicBlue, AppTheme.Colors.cosmicIndigo],
-            [AppTheme.Colors.cosmicPink, AppTheme.Colors.cosmicCyan]
-        ]
+    // MARK: - Refresh Methods
+    private func refreshScene() {
+        // Increment refresh key to force view recreation
+        refreshKey += 1
+        lastRefreshTime = Date()
         
-        let colorPair = colors[index % colors.count]
-        return RadialGradient(
-            colors: [colorPair[0].opacity(0.3), colorPair[1].opacity(0.1), Color.clear],
-            center: .center,
-            startRadius: 0,
-            endRadius: 200
-        )
+        // Clear any potential caches
+        clearCaches()
+        
     }
     
-    private func nebulaPosition(for index: Int) -> CGPoint {
-        let positions: [CGPoint] = [
-            CGPoint(x: UIScreen.main.bounds.width * 0.2, y: UIScreen.main.bounds.height * 0.3),
-            CGPoint(x: UIScreen.main.bounds.width * 0.8, y: UIScreen.main.bounds.height * 0.7),
-            CGPoint(x: UIScreen.main.bounds.width * 0.7, y: UIScreen.main.bounds.height * 0.2),
-            CGPoint(x: UIScreen.main.bounds.width * 0.3, y: UIScreen.main.bounds.height * 0.8)
-        ]
-        return positions[index % positions.count]
+    private func clearCaches() {
+        // Clear URL cache
+        URLCache.shared.removeAllCachedResponses()
+        
+        // Clear Spline-specific caches if possible
+        // Note: This depends on what the Spline SDK exposes
     }
 }
 
@@ -195,7 +193,7 @@ struct CosmicModal<Content: View>: View {
         if isPresented {
             ZStack {
                 // Backdrop
-                CosmicBackground(intensity: 0.3)
+                CosmicBackground()
                     .ignoresSafeArea()
                     .onTapGesture {
                         withAnimation(AppTheme.Animation.cosmicSpring) {

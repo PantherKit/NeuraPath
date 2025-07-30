@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AF8F94F12E39A3B60051C040 /* SplineRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = AF8F94F02E39A3B60051C040 /* SplineRuntime */; };
 		AFD9C25F2DD2C31F0050F097 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = AFD9C25E2DD2C31F0050F097 /* Lottie */; };
 /* End PBXBuildFile section */
 
@@ -40,6 +41,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AF8F94F12E39A3B60051C040 /* SplineRuntime in Frameworks */,
 				AFD9C25F2DD2C31F0050F097 /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -84,6 +86,7 @@
 			name = "Desarrollo-PantherKit";
 			packageProductDependencies = (
 				AFD9C25E2DD2C31F0050F097 /* Lottie */,
+				AF8F94F02E39A3B60051C040 /* SplineRuntime */,
 			);
 			productName = "Desarrollo-PantherKit";
 			productReference = 8695FD5C2DD16CFB0075491D /* Desarrollo-PantherKit.app */;
@@ -115,6 +118,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				AFD9C25D2DD2C31F0050F097 /* XCRemoteSwiftPackageReference "lottie-ios" */,
+				AF8F94EF2E39A3B60051C040 /* XCRemoteSwiftPackageReference "spline-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8695FD5D2DD16CFB0075491D /* Products */;
@@ -367,6 +371,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		AF8F94EF2E39A3B60051C040 /* XCRemoteSwiftPackageReference "spline-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/splinetool/spline-ios";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		AFD9C25D2DD2C31F0050F097 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/airbnb/lottie-ios.git";
@@ -378,6 +390,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		AF8F94F02E39A3B60051C040 /* SplineRuntime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AF8F94EF2E39A3B60051C040 /* XCRemoteSwiftPackageReference "spline-ios" */;
+			productName = SplineRuntime;
+		};
 		AFD9C25E2DD2C31F0050F097 /* Lottie */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = AFD9C25D2DD2C31F0050F097 /* XCRemoteSwiftPackageReference "lottie-ios" */;
