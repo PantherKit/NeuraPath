@@ -457,59 +457,113 @@ struct SpaceQuestionCard: View {
     private let maxRotation: Double = 15
     
     var body: some View {
-        VStack(spacing: 20) {
-            // Header with icon and title
-            VStack(spacing: 16) {
-                // Icon
-                Image(systemName: card.imageName)
-                    .font(.system(size: 32, weight: .medium, design: .default))
-                    .foregroundColor(AppTheme.Colors.spaceElectricBlue)
-                    .frame(width: 64, height: 64)
-                    .background(
-                        Circle()
-                            .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.4))
-                            .overlay(
-                                Circle()
-                                    .stroke(AppTheme.Colors.spaceElectricBlue.opacity(0.3), lineWidth: 1)
-                            )
-                    )
+        ZStack {
+            // Main card content
+            VStack(spacing: 20) {
+                // Header with icon and title
+                VStack(spacing: 16) {
+                    // Icon
+                    Image(systemName: card.imageName)
+                        .font(.system(size: 32, weight: .medium, design: .default))
+                        .foregroundColor(AppTheme.Colors.spaceElectricBlue)
+                        .frame(width: 64, height: 64)
+                        .background(
+                            Circle()
+                                .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.4))
+                                .overlay(
+                                    Circle()
+                                        .stroke(AppTheme.Colors.spaceElectricBlue.opacity(0.3), lineWidth: 1)
+                                )
+                        )
+                    
+                    // Title
+                    Text(card.title)
+                        .font(AppTheme.Space.spaceTitle(20))
+                        .fontWeight(.heavy)
+                        .foregroundColor(AppTheme.Colors.spacePureWhite)
+                        .tracking(1)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(4)
+                    
+                    // Subtitle
+                    Text(card.subtitle)
+                        .font(AppTheme.Space.spaceBody(14))
+                        .foregroundColor(AppTheme.Colors.spaceGray)
+                        .tracking(0.3)
+                }
                 
-                // Title
-                Text(card.title)
-                    .font(AppTheme.Space.spaceTitle(20))
-                    .fontWeight(.heavy)
-                    .foregroundColor(AppTheme.Colors.spacePureWhite)
-                    .tracking(1)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(4)
-                
-                // Subtitle
-                Text(card.subtitle)
-                    .font(AppTheme.Space.spaceBody(14))
-                    .foregroundColor(AppTheme.Colors.spaceGray)
-                    .tracking(0.3)
-            }
-            
-            // Options
-            VStack(spacing: 12) {
-                ForEach(card.details, id: \.title) { detail in
-                    SpaceOptionButton(
-                        icon: detail.icon,
-                        title: detail.title,
-                        description: detail.description
-                    )
+                // Options
+                VStack(spacing: 12) {
+                    ForEach(card.details, id: \.title) { detail in
+                        SpaceOptionButton(
+                            icon: detail.icon,
+                            title: detail.title,
+                            description: detail.description
+                        )
+                    }
                 }
             }
-        }
-        .padding(24)
-        .background(
-            RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
-                .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.85))
-                .overlay(
+            .padding(24)
+            .background(
+                RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
+                    .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.85))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
+                            .stroke(AppTheme.Colors.spacePureWhite.opacity(0.2), lineWidth: 1)
+                    )
+            )
+            
+            // Swipe indicators overlay
+            Group {
+                // Right swipe indicator (Opción A)
+                VStack(spacing: 12) {
+                    Image(systemName: "arrow.right.circle.fill")
+                        .font(.system(size: 72, weight: .medium, design: .default))
+                        .foregroundColor(AppTheme.Colors.spaceElectricBlue)
+                    
+                    Text("Opción A")
+                        .font(AppTheme.Space.spaceCaption(16))
+                        .fontWeight(.semibold)
+                        .foregroundColor(AppTheme.Colors.spaceElectricBlue)
+                        .tracking(0.5)
+                }
+                .padding(24)
+                .background(
                     RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
-                        .stroke(AppTheme.Colors.spacePureWhite.opacity(0.2), lineWidth: 1)
+                        .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.9))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
+                                .stroke(AppTheme.Colors.spaceElectricBlue.opacity(0.5), lineWidth: 2)
+                        )
                 )
-        )
+                .opacity(dragOffset.width > 0 ? Double(min(dragOffset.width / swipeThreshold, 1)) : 0)
+                .position(x: 170, y: 240)
+                
+                // Left swipe indicator (Opción B)
+                VStack(spacing: 12) {
+                    Image(systemName: "arrow.left.circle.fill")
+                        .font(.system(size: 72, weight: .medium, design: .default))
+                        .foregroundColor(AppTheme.Colors.spaceAlertRed)
+                    
+                    Text("Opción B")
+                        .font(AppTheme.Space.spaceCaption(16))
+                        .fontWeight(.semibold)
+                        .foregroundColor(AppTheme.Colors.spaceAlertRed)
+                        .tracking(0.5)
+                }
+                .padding(24)
+                .background(
+                    RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
+                        .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.9))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
+                                .stroke(AppTheme.Colors.spaceAlertRed.opacity(0.5), lineWidth: 2)
+                        )
+                )
+                .opacity(dragOffset.width < 0 ? Double(min(-dragOffset.width / swipeThreshold, 1)) : 0)
+                .position(x: 170, y: 240)
+            }
+        }
         .rotationEffect(.degrees(rotationAngle))
         .offset(dragOffset)
         .gesture(
