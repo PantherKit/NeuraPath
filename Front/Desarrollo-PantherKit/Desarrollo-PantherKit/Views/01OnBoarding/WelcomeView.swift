@@ -14,6 +14,8 @@ struct WelcomeView: View {
     var body: some View {
         ZStack {
             // Background will be handled by user (blue planet)
+            WelcomeCosmicBackground()
+            
             
             // Main content
             VStack(spacing: 0) {

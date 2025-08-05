@@ -15,6 +15,7 @@ struct AvatarSelectionView: View {
     var body: some View {
         ZStack {
             // Background will be handled by user
+            BasicCosmicBackground()
             
             // Main content
             VStack(spacing: 0) {
