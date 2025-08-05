@@ -31,6 +31,17 @@ struct AppTheme {
         static let cosmicPink = Color(red: 0.8, green: 0.3, blue: 0.6)    // #CC4D99
         static let cosmicIndigo = Color(red: 0.3, green: 0.4, blue: 0.9)  // #4D66E6
         
+        // Space Theme Colors - Futuristic Interface
+        static let spaceDeepBlack = Color(red: 0.02, green: 0.02, blue: 0.05)
+        static let spaceNavy = Color(red: 0.05, green: 0.08, blue: 0.15)
+        static let spaceIndigo = Color(red: 0.1, green: 0.1, blue: 0.3)
+        static let spaceElectricBlue = Color(red: 0.2, green: 0.6, blue: 1.0)
+        static let spaceGlitchBlue = Color(red: 0.3, green: 0.7, blue: 1.0)
+        static let spaceAlertRed = Color(red: 0.9, green: 0.2, blue: 0.2)
+        static let spacePureWhite = Color.white
+        static let spaceGray = Color(red: 0.7, green: 0.7, blue: 0.7)
+        static let spaceLightGray = Color(red: 0.9, green: 0.9, blue: 0.9)
+        
         // Glass Colors
         static let glassLight = Color.white.opacity(0.1)
         static let glassMedium = Color.white.opacity(0.05)
@@ -44,7 +55,6 @@ struct AppTheme {
         
         // Space Background Colors
         static let spaceBlack = Color.black
-        static let spaceNavy = Color(red: 0.05, green: 0.1, blue: 0.2)
         static let spaceMidnight = Color(red: 0.1, green: 0.1, blue: 0.3)
         
         // Background colors
@@ -71,6 +81,67 @@ struct AppTheme {
         static let defaultSuccess = Color.green
         static let defaultWarning = Color.yellow
         static let defaultError = Color.red
+    }
+    
+    // MARK: - Space Theme
+    struct Space {
+        // Space Gradients
+        static let deepSpaceGradient = LinearGradient(
+            colors: [Colors.spaceDeepBlack, Colors.spaceNavy, Colors.spaceIndigo],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        
+        static let spaceHorizonGradient = LinearGradient(
+            colors: [Colors.spaceDeepBlack, Colors.spaceNavy, Colors.spaceElectricBlue.opacity(0.3)],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        
+        static let glitchGradient = LinearGradient(
+            colors: [Colors.spaceAlertRed.opacity(0.8), Colors.spaceGlitchBlue.opacity(0.8)],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        
+        // Space Effects
+        static let digitalNoise = Color.white.opacity(0.02)
+        static let scanLines = Color.white.opacity(0.01)
+        
+        // Space Typography
+        static func spaceTitle(_ size: CGFloat = 34) -> Font {
+            .system(size: size, weight: .heavy, design: .default)
+        }
+        
+        static func spaceMetric(_ size: CGFloat = 48) -> Font {
+            .system(size: size, weight: .black, design: .default)
+        }
+        
+        static func spaceLabel(_ size: CGFloat = 14) -> Font {
+            .system(size: size, weight: .medium, design: .default)
+        }
+        
+        static func spaceBody(_ size: CGFloat = 16) -> Font {
+            .system(size: size, weight: .regular, design: .default)
+        }
+        
+        // Additional Sans-serif variants for more flexibility
+        static func spaceHeadline(_ size: CGFloat = 20) -> Font {
+            .system(size: size, weight: .semibold, design: .default)
+        }
+        
+        static func spaceCaption(_ size: CGFloat = 12) -> Font {
+            .system(size: size, weight: .medium, design: .default)
+        }
+        
+        static func spaceLargeMetric(_ size: CGFloat = 64) -> Font {
+            .system(size: size, weight: .black, design: .default)
+        }
+        
+        // Space Components
+        static let buttonBorderWidth: CGFloat = 1.0
+        static let panelCornerRadius: CGFloat = 8.0
+        static let metricCornerRadius: CGFloat = 12.0
     }
     
     // MARK: - Glassmorphism System
@@ -273,5 +344,9 @@ struct AppTheme {
         static let gentleFloat = SwiftUI.Animation.easeInOut(duration: 3.0).repeatForever(autoreverses: true)
         static let cosmicSpring = SwiftUI.Animation.spring(response: 0.6, dampingFraction: 0.7)
         static let buttonPress = SwiftUI.Animation.spring(response: 0.3, dampingFraction: 0.6)
+        
+        // Space Animations
+        static let glitchFlicker = SwiftUI.Animation.easeInOut(duration: 0.1).repeatForever(autoreverses: true)
+        static let scanLine = SwiftUI.Animation.linear(duration: 2.0).repeatForever(autoreverses: false)
     }
 }

@@ -5,109 +5,134 @@ struct AvatarSelectionView: View {
     @ObservedObject var viewModel: VocationalTestViewModel
     let onContinue: () -> Void
     
-    // Enhanced animation states
+    // Animation states
     @State private var showContent = false
     @State private var showHeader = false
-    @State private var showAvatars = false
+    @State private var showGrid = false
     @State private var showButton = false
-    @State private var sparkleAnimation = false
-    @State private var showConstellation = false
-    @State private var selectedAvatarGlow = false
+    @State private var glitchEffect = false
     
     var body: some View {
         ZStack {
-            // Magazine-style cosmic background
-            WelcomeCosmicBackground()
+            // Background will be handled by user
             
-            // Dynamic Constellation in upper area
-            if showConstellation {
-                DynamicConstellation()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                    .padding(.top, 80)
-            }
-            
-            // Main content with magazine layout
-            ScrollView {
-                VStack(spacing: 0) {
-                    Spacer()
-                        .frame(height: UIScreen.main.bounds.height * 0.25) // Responsive spacing
+            // Main content
+            VStack(spacing: 0) {
+                // Top navigation header
+                SpaceNavigationHeader(
+                    number: "02",
+                    title: "MISSION CREW",
+                    subtitle: "Select your avatar"
+                )
+                .opacity(showContent ? 1.0 : 0)
+                .offset(y: showContent ? 0 : -20)
+                
+                Spacer()
+                
+                // Main content area
+                VStack(spacing: 40) {
+                    // Title section
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Choose Your")
+                            .font(AppTheme.Space.spaceTitle(48))
+                            .fontWeight(.black)
+                            .foregroundColor(AppTheme.Colors.spacePureWhite)
+                            .tracking(3)
+                        
+                        Text("Explorer Avatar")
+                            .font(AppTheme.Space.spaceTitle(48))
+                            .fontWeight(.black)
+                            .foregroundColor(AppTheme.Colors.spacePureWhite)
+                            .tracking(3)
+                        
+                        Text("Select the avatar that represents your journey")
+                            .font(AppTheme.Space.spaceBody(16))
+                            .foregroundColor(AppTheme.Colors.spaceGray)
+                            .tracking(0.5)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 24)
+                    .opacity(showHeader ? 1.0 : 0)
+                    .offset(y: showHeader ? 0 : -30)
                     
-                    // Editorial header section
-                    AvatarSelectionHeader()
-                        .opacity(showHeader ? 1.0 : 0)
-                        .offset(y: showHeader ? 0 : -40)
+                    // Avatar grid
+                    SpaceAvatarGrid(viewModel: viewModel)
+                        .opacity(showGrid ? 1.0 : 0)
+                        .offset(y: showGrid ? 0 : 30)
                     
-                    Spacer()
-                        .frame(height: 40)
-                    
-                    // Magazine-style avatar grid
-                    AvatarSelectionGrid(
-                        viewModel: viewModel,
-                        selectedAvatarGlow: $selectedAvatarGlow
-                    )
-                    .opacity(showAvatars ? 1.0 : 0)
-                    .offset(y: showAvatars ? 0 : 50)
-                    
-                    Spacer()
-                        .frame(height: 60)
-                    
-                    // Premium CTA button
-                    MagazineCosmicButton(
-                        title: "Continue Journey",
-                        action: onContinue
-                    )
+                    // Continue button
+                    Button(action: onContinue) {
+                        HStack(spacing: 12) {
+                            Text("CONTINUE MISSION")
+                                .font(AppTheme.Space.spaceCaption(14))
+                                .fontWeight(.semibold)
+                                .foregroundColor(AppTheme.Colors.spacePureWhite)
+                                .tracking(1)
+                            
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 16, weight: .semibold, design: .default))
+                                .foregroundColor(AppTheme.Colors.spacePureWhite)
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
+                                .fill(
+                                    viewModel.selectedAvatar != nil ? 
+                                    AppTheme.Colors.spaceElectricBlue.opacity(0.2) : 
+                                    AppTheme.Colors.spaceGray.opacity(0.1)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
+                                        .stroke(
+                                            viewModel.selectedAvatar != nil ? 
+                                            AppTheme.Colors.spaceElectricBlue : 
+                                            AppTheme.Colors.spaceGray,
+                                            lineWidth: 2
+                                        )
+                                )
+                        )
+                    }
+                    .buttonStyle(SpaceButtonStyle())
                     .disabled(viewModel.selectedAvatar == nil)
-                    .opacity(viewModel.selectedAvatar == nil ? 0.6 : 1.0)
                     .opacity(showButton ? 1.0 : 0)
-                    .offset(y: showButton ? 0 : 30)
-                    
-                    Spacer()
-                        .frame(height: 80)
+                    .offset(y: showButton ? 0 : 20)
                 }
-            }
-            .scrollIndicators(.hidden)
-            
-            // Floating sparkles
-            if sparkleAnimation {
-                ForEach(0..<12, id: \.self) { i in
-                    SparkleParticle(index: i)
-                }
+                .padding(.bottom, 60)
+                
+                Spacer()
             }
         }
         .ignoresSafeArea()
         .onAppear {
-            startMagazineAnimation()
+            startSpaceAnimation()
         }
     }
     
-    private func startMagazineAnimation() {
-        // Elegant entrance sequence
+    private func startSpaceAnimation() {
+        // Main content entrance
         withAnimation(.easeOut(duration: 1.2).delay(0.3)) {
             showContent = true
         }
         
-        withAnimation(.spring(response: 0.8, dampingFraction: 0.8).delay(0.6)) {
+        // Header entrance
+        withAnimation(.easeOut(duration: 1.0).delay(0.8)) {
             showHeader = true
         }
         
-        withAnimation(.spring(response: 1.0, dampingFraction: 0.7).delay(1.0)) {
-            showAvatars = true
+        // Grid entrance
+        withAnimation(.easeOut(duration: 1.0).delay(1.2)) {
+            showGrid = true
         }
         
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(1.5)) {
+        // Button entrance
+        withAnimation(.easeOut(duration: 1.0).delay(1.6)) {
             showButton = true
         }
         
-        // Sparkles appear after main content
+        // Glitch effect
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            sparkleAnimation = true
-        }
-        
-        // Constellation appears elegantly
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-            withAnimation(.easeOut(duration: 1.5)) {
-                showConstellation = true
-            }
+            glitchEffect = true
         }
     }
 }
