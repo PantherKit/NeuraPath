@@ -13,7 +13,7 @@ struct BasicCosmicBackground: View {
             let url = URL(string: "https://build.spline.design/LNarwXdiaAPhbs1naRTC/scene.splineswift")!
             
             // Use sceneIndex for compatibility with all Spline SDK versions
-            SplineView(sceneFileURL: url)
+            SplineView<SplineContent?>(sceneFileURL: url)
                 .ignoresSafeArea(.all)
         }
     }
@@ -29,7 +29,7 @@ struct WelcomeCosmicBackground: View {
             let url = URL(string: "https://build.spline.design/ANf4mf6cm2p8XkXO5Wjb/scene.splineswift")!
             
             // Use sceneIndex for compatibility with all Spline SDK versions
-            SplineView(sceneFileURL: url)
+            SplineView<SplineContent?>(sceneFileURL: url)
                 .ignoresSafeArea(.all)
         }
     }
@@ -46,7 +46,7 @@ struct InteractiveCosmicBackground: View {
             let url = URL(string: "https://build.spline.design/OvoAmmmgrn7PSFf7px-O/scene.splineswift")!
             
             // Use sceneIndex for compatibility with all Spline SDK versions
-            SplineView(sceneFileURL: url)
+            SplineView<SplineContent?>(sceneFileURL: url)
                 .ignoresSafeArea(.all)
         }
     }
