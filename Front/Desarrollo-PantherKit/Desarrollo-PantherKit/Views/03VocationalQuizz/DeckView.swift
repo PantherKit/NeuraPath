@@ -24,95 +24,86 @@ struct DeckView: View {
     @State private var feedbackText = ""
     @State private var feedbackColor = Color.green
     
-    // Enhanced animation states
+    // Animation states
     @State private var showContent = false
     @State private var showHeader = false
     @State private var showCards = false
-    @State private var sparkleAnimation = false
-    @State private var showConstellation = false
+    @State private var showProgress = false
     @State private var progressGlow = false
     
     private let swipeThreshold: CGFloat = 100
-    private let maxRotation: Double = 15
-    
-    var rotationAngle: Double {
-        Double(dragOffset.width / swipeThreshold) * maxRotation
-    }
     
     var body: some View {
         ZStack {
-            // Background
-            Color.black.ignoresSafeArea()
+            // Background will be handled by user
             
-            // Dynamic Constellation in upper area
-            if showConstellation {
-                DynamicConstellation()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                    .padding(.top, 60)
-            }
-            
-            // Main content with magazine layout
+            // Main content
             VStack(spacing: 0) {
-                // Editorial header section
-                VocationalQuizHeader(
-                    currentIndex: activeIndex,
-                    totalCount: mbtiMode ? mbtiQuestions.count : cards.count,
-                    mbtiMode: mbtiMode,
-                    progressGlow: $progressGlow
+                // Top navigation header
+                SpaceNavigationHeader(
+                    number: "03",
+                    title: "MISSION CONTROL",
+                    subtitle: "Answer questions"
                 )
-                .opacity(showHeader ? 1.0 : 0)
-                .offset(y: showHeader ? 0 : -40)
+                .opacity(showContent ? 1.0 : 0)
+                .offset(y: showContent ? 0 : -20)
                 
                 Spacer()
                 
-                // Magazine-style card stack
+                // Progress indicator
+                SpaceProgressIndicator(
+                    currentIndex: activeIndex,
+                    totalCount: mbtiMode ? mbtiQuestions.count : cards.count,
+                    progressGlow: $progressGlow
+                )
+                .padding(.horizontal, 24)
+                .opacity(showProgress ? 1.0 : 0)
+                .offset(y: showProgress ? 0 : -20)
+                
+                Spacer()
+                
+                // Question cards
                 if mbtiMode {
                     mbtiCardView
                         .opacity(showCards ? 1.0 : 0)
-                        .offset(y: showCards ? 0 : 50)
+                        .offset(y: showCards ? 0 : 30)
                 } else {
                     cardStackView
                         .opacity(showCards ? 1.0 : 0)
-                        .offset(y: showCards ? 0 : 50)
+                        .offset(y: showCards ? 0 : 30)
                 }
                 
                 Spacer()
                 
                 // Swipe instructions
                 if mbtiMode {
-                    mbtiSwipeInstructions
+                    spaceSwipeInstructions
                         .opacity(showContent ? 1.0 : 0)
-                        .offset(y: showContent ? 0 : 30)
+                        .offset(y: showContent ? 0 : 20)
                 }
             }
-            .padding(.horizontal, 24)
+            .padding(.bottom, 40)
             
             // Feedback overlay for MBTI
             if showFeedback {
-                CosmicFeedbackOverlay(
+                SpaceFeedbackOverlay(
                     text: feedbackText,
                     color: feedbackColor
                 )
             }
-            
-            // Floating sparkles
-            if sparkleAnimation {
-                ForEach(0..<15, id: \.self) { i in
-                    SparkleParticle(index: i)
-                }
-            }
         }
+        .ignoresSafeArea()
         .onAppear {
-            startMagazineAnimation()
+            startSpaceAnimation()
             print("DeckView appeared with \(mbtiQuestions.count) MBTI questions")
         }
     }
     
-    // MARK: - Magazine-style Card Stack View
+    // MARK: - Space-style Card Stack View
     private var cardStackView: some View {
         ZStack {
             ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
-                QuestionGlassCard(
+                SpaceQuestionCard(
                     card: card,
                     isActive: index == activeIndex,
                     onSwipedAway: handleSwipe,
@@ -129,60 +120,21 @@ struct DeckView: View {
         let stemCard = mbtiQuestions[activeIndex].toSTEMCard()
         
         return ZStack {
-            // Use QuestionGlassCard with the converted STEMCard
-            QuestionGlassCard(
+            // Use SpaceQuestionCard with the converted STEMCard
+            SpaceQuestionCard(
                 card: stemCard,
                 isActive: true,
                 onSwipedAway: { /* handled by gesture */ },
                 onShowDetails: { /* no details for MBTI cards */ }
             )
             
-            // Swipe indicators
-            Group {
-                // Right swipe indicator
-                VStack {
-                    Image(systemName: "arrow.right.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.green)
-                    
-                    Text("Opción A")
-                        .font(.custom("ZonaPro-Bold", size: 16))
-                        .fontWeight(.bold)
-                        .foregroundColor(.green)
-                }
-                .padding()
-                .background {
-                    RoundedRectangle(cornerRadius: 15)
-                        .fill(.ultraThinMaterial)
-                        .opacity(0.8)
-                }
-                .opacity(dragOffset.width > 0 ? Double(min(dragOffset.width / swipeThreshold, 1)) : 0)
-                .position(x: UIScreen.main.bounds.width * 0.75, y: 100)
-                
-                // Left swipe indicator
-                VStack {
-                    Image(systemName: "arrow.left.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.blue)
-                    
-                    Text("Opción B")
-                        .font(.custom("ZonaPro-Bold", size: 16))
-                        .fontWeight(.bold)
-                        .foregroundColor(.blue)
-                }
-                .padding()
-                .background {
-                    RoundedRectangle(cornerRadius: 15)
-                        .fill(.ultraThinMaterial)
-                        .opacity(0.8)
-                }
-                .opacity(dragOffset.width < 0 ? Double(min(-dragOffset.width / swipeThreshold, 1)) : 0)
-                .position(x: UIScreen.main.bounds.width * 0.25, y: 100)
-            }
+            // Space swipe indicators
+            SpaceSwipeIndicators(
+                dragOffset: dragOffset,
+                swipeThreshold: swipeThreshold
+            )
         }
         .frame(width: UIScreen.main.bounds.width - 48, height: 520)
-        .rotationEffect(.degrees(rotationAngle))
-        .offset(dragOffset)
         .gesture(
             DragGesture(minimumDistance: 5)
                 .onChanged { value in
@@ -196,54 +148,49 @@ struct DeckView: View {
         )
     }
     
-    private var mbtiSwipeInstructions: some View {
+    private var spaceSwipeInstructions: some View {
         HStack(spacing: 60) {
             VStack(spacing: 8) {
                 Image(systemName: "arrow.left")
-                    .font(.system(size: 24, weight: .medium))
+                    .font(.system(size: 24, weight: .medium, design: .default))
                 Text("Opción B")
-                    .font(.custom("ZonaPro-Light", size: 14))
+                    .font(AppTheme.Space.spaceCaption(12))
                     .fontWeight(.medium)
             }
-            .foregroundColor(.blue)
+            .foregroundColor(AppTheme.Colors.spaceAlertRed)
             
             VStack(spacing: 8) {
                 Image(systemName: "arrow.right")
-                    .font(.system(size: 24, weight: .medium))
+                    .font(.system(size: 24, weight: .medium, design: .default))
                 Text("Opción A")
-                    .font(.custom("ZonaPro-Light", size: 14))
+                    .font(AppTheme.Space.spaceCaption(12))
                     .fontWeight(.medium)
             }
-            .foregroundColor(.green)
+            .foregroundColor(AppTheme.Colors.spaceElectricBlue)
         }
         .padding(.bottom, 40)
     }
     
     // MARK: - Animation Functions
-    private func startMagazineAnimation() {
-        // Elegant entrance sequence
+    private func startSpaceAnimation() {
+        // Main content entrance
         withAnimation(.easeOut(duration: 1.2).delay(0.3)) {
             showContent = true
         }
         
-        withAnimation(.spring(response: 0.8, dampingFraction: 0.8).delay(0.6)) {
+        // Header entrance
+        withAnimation(.easeOut(duration: 1.0).delay(0.6)) {
             showHeader = true
         }
         
-        withAnimation(.spring(response: 1.0, dampingFraction: 0.7).delay(1.0)) {
+        // Progress entrance
+        withAnimation(.easeOut(duration: 1.0).delay(0.9)) {
+            showProgress = true
+        }
+        
+        // Cards entrance
+        withAnimation(.easeOut(duration: 1.0).delay(1.2)) {
             showCards = true
-        }
-        
-        // Sparkles appear after main content
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            sparkleAnimation = true
-        }
-        
-        // Constellation appears elegantly
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-            withAnimation(.easeOut(duration: 1.5)) {
-                showConstellation = true
-            }
         }
         
         // Progress glow animation
@@ -309,7 +256,7 @@ struct DeckView: View {
             // Show feedback
             showFeedback = true
             feedbackText = selectedRight ? "Opción A seleccionada" : "Opción B seleccionada"
-            feedbackColor = selectedRight ? .green : .blue
+            feedbackColor = selectedRight ? AppTheme.Colors.spaceElectricBlue : AppTheme.Colors.spaceAlertRed
             
             // Animate card away
             withAnimation(.spring()) {

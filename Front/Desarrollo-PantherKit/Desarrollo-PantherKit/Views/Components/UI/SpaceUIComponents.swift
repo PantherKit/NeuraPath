@@ -147,10 +147,10 @@ struct SpaceInfoPanel: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
-                .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.4))
+                .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.8))
                 .overlay(
                     RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
-                        .stroke(AppTheme.Colors.spacePureWhite.opacity(0.1), lineWidth: 1)
+                        .stroke(AppTheme.Colors.spacePureWhite.opacity(0.2), lineWidth: 1)
                 )
         )
     }
@@ -339,11 +339,11 @@ struct SpaceAvatarCard: View {
             .padding(12)
             .background(
                 RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
-                    .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.4))
+                    .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.75))
                     .overlay(
                         RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
                             .stroke(
-                                isSelected ? AppTheme.Colors.spaceElectricBlue.opacity(0.5) : AppTheme.Colors.spacePureWhite.opacity(0.1),
+                                isSelected ? AppTheme.Colors.spaceElectricBlue.opacity(0.6) : AppTheme.Colors.spacePureWhite.opacity(0.2),
                                 lineWidth: 1
                             )
                     )
@@ -440,6 +440,310 @@ struct SpaceNavigationHeader: View {
         }
         .padding(.horizontal, 20)
         .padding(.top, 60)
+    }
+}
+
+// MARK: - Space Question Card
+struct SpaceQuestionCard: View {
+    let card: STEMCard
+    let isActive: Bool
+    let onSwipedAway: () -> Void
+    let onShowDetails: () -> Void
+    
+    @State private var dragOffset = CGSize.zero
+    @State private var rotationAngle: Double = 0
+    
+    private let swipeThreshold: CGFloat = 100
+    private let maxRotation: Double = 15
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            // Header with icon and title
+            VStack(spacing: 16) {
+                // Icon
+                Image(systemName: card.imageName)
+                    .font(.system(size: 32, weight: .medium, design: .default))
+                    .foregroundColor(AppTheme.Colors.spaceElectricBlue)
+                    .frame(width: 64, height: 64)
+                    .background(
+                        Circle()
+                            .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.4))
+                            .overlay(
+                                Circle()
+                                    .stroke(AppTheme.Colors.spaceElectricBlue.opacity(0.3), lineWidth: 1)
+                            )
+                    )
+                
+                // Title
+                Text(card.title)
+                    .font(AppTheme.Space.spaceTitle(20))
+                    .fontWeight(.heavy)
+                    .foregroundColor(AppTheme.Colors.spacePureWhite)
+                    .tracking(1)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                
+                // Subtitle
+                Text(card.subtitle)
+                    .font(AppTheme.Space.spaceBody(14))
+                    .foregroundColor(AppTheme.Colors.spaceGray)
+                    .tracking(0.3)
+            }
+            
+            // Options
+            VStack(spacing: 12) {
+                ForEach(card.details, id: \.title) { detail in
+                    SpaceOptionButton(
+                        icon: detail.icon,
+                        title: detail.title,
+                        description: detail.description
+                    )
+                }
+            }
+        }
+        .padding(24)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
+                .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.85))
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
+                        .stroke(AppTheme.Colors.spacePureWhite.opacity(0.2), lineWidth: 1)
+                )
+        )
+        .rotationEffect(.degrees(rotationAngle))
+        .offset(dragOffset)
+        .gesture(
+            DragGesture(minimumDistance: 5)
+                .onChanged { value in
+                    withAnimation(.interactiveSpring()) {
+                        dragOffset = value.translation
+                        rotationAngle = Double(value.translation.width / swipeThreshold) * maxRotation
+                    }
+                }
+                .onEnded { value in
+                    handleSwipe(value)
+                }
+        )
+        .opacity(isActive ? 1.0 : 0.7)
+        .scaleEffect(isActive ? 1.0 : 0.95)
+    }
+    
+    private func handleSwipe(_ value: DragGesture.Value) {
+        if abs(value.translation.width) > swipeThreshold {
+            // Swipe completed
+            withAnimation(.spring()) {
+                dragOffset = CGSize(
+                    width: value.translation.width > 0 ? 1000 : -1000,
+                    height: 0
+                )
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                onSwipedAway()
+            }
+        } else {
+            // Return to center
+            withAnimation(.spring()) {
+                dragOffset = .zero
+                rotationAngle = 0
+            }
+        }
+    }
+}
+
+// MARK: - Space Option Button
+struct SpaceOptionButton: View {
+    let icon: String
+    let title: String
+    let description: String
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            // Icon
+            Image(systemName: icon)
+                .font(.system(size: 20, weight: .medium, design: .default))
+                .foregroundColor(AppTheme.Colors.spaceElectricBlue)
+                .frame(width: 40, height: 40)
+                .background(
+                    Circle()
+                        .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.6))
+                        .overlay(
+                            Circle()
+                                .stroke(AppTheme.Colors.spaceElectricBlue.opacity(0.3), lineWidth: 1)
+                        )
+                )
+            
+            // Content
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(AppTheme.Space.spaceCaption(12))
+                    .fontWeight(.semibold)
+                    .foregroundColor(AppTheme.Colors.spacePureWhite)
+                    .tracking(0.5)
+                
+                Text(description)
+                    .font(AppTheme.Space.spaceBody(14))
+                    .foregroundColor(AppTheme.Colors.spaceGray)
+                    .tracking(0.2)
+            }
+            
+            Spacer()
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
+                .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.7))
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
+                        .stroke(AppTheme.Colors.spacePureWhite.opacity(0.15), lineWidth: 1)
+                )
+        )
+    }
+}
+
+// MARK: - Space Progress Indicator
+struct SpaceProgressIndicator: View {
+    let currentIndex: Int
+    let totalCount: Int
+    @Binding var progressGlow: Bool
+    
+    private var progress: Double {
+        guard totalCount > 0 else { return 0 }
+        return Double(currentIndex) / Double(totalCount)
+    }
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            // Progress text
+            HStack {
+                Text("\(currentIndex + 1)")
+                    .font(AppTheme.Space.spaceMetric(24))
+                    .fontWeight(.black)
+                    .foregroundColor(AppTheme.Colors.spacePureWhite)
+                    .tracking(-1)
+                
+                Text("/")
+                    .font(AppTheme.Space.spaceBody(16))
+                    .foregroundColor(AppTheme.Colors.spaceGray)
+                
+                Text("\(totalCount)")
+                    .font(AppTheme.Space.spaceBody(16))
+                    .foregroundColor(AppTheme.Colors.spaceGray)
+            }
+            
+            // Progress bar
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    // Background
+                    Rectangle()
+                        .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.6))
+                        .frame(height: 4)
+                        .overlay(
+                            Rectangle()
+                                .stroke(AppTheme.Colors.spacePureWhite.opacity(0.2), lineWidth: 1)
+                        )
+                    
+                    // Progress
+                    Rectangle()
+                        .fill(AppTheme.Space.glitchGradient)
+                        .frame(width: geometry.size.width * progress, height: 4)
+                        .opacity(progressGlow ? 1.0 : 0.8)
+                        .animation(
+                            AppTheme.Animation.glitchFlicker,
+                            value: progressGlow
+                        )
+                }
+            }
+            .frame(height: 4)
+        }
+    }
+}
+
+// MARK: - Space Swipe Indicators
+struct SpaceSwipeIndicators: View {
+    let dragOffset: CGSize
+    let swipeThreshold: CGFloat
+    
+    var body: some View {
+        Group {
+            // Right swipe indicator (Option A)
+            VStack(spacing: 8) {
+                Image(systemName: "arrow.right.circle.fill")
+                    .font(.system(size: 48, weight: .medium, design: .default))
+                    .foregroundColor(AppTheme.Colors.spaceElectricBlue)
+                
+                Text("Opción A")
+                    .font(AppTheme.Space.spaceCaption(12))
+                    .fontWeight(.semibold)
+                    .foregroundColor(AppTheme.Colors.spaceElectricBlue)
+                    .tracking(0.5)
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
+                    .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.6))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
+                            .stroke(AppTheme.Colors.spaceElectricBlue.opacity(0.3), lineWidth: 1)
+                    )
+            )
+            .opacity(dragOffset.width > 0 ? Double(min(dragOffset.width / swipeThreshold, 1)) : 0)
+            .position(x: UIScreen.main.bounds.width * 0.75, y: 100)
+            
+            // Left swipe indicator (Option B)
+            VStack(spacing: 8) {
+                Image(systemName: "arrow.left.circle.fill")
+                    .font(.system(size: 48, weight: .medium, design: .default))
+                    .foregroundColor(AppTheme.Colors.spaceAlertRed)
+                
+                Text("Opción B")
+                    .font(AppTheme.Space.spaceCaption(12))
+                    .fontWeight(.semibold)
+                    .foregroundColor(AppTheme.Colors.spaceAlertRed)
+                    .tracking(0.5)
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
+                    .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.6))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
+                            .stroke(AppTheme.Colors.spaceAlertRed.opacity(0.3), lineWidth: 1)
+                    )
+            )
+            .opacity(dragOffset.width < 0 ? Double(min(-dragOffset.width / swipeThreshold, 1)) : 0)
+            .position(x: UIScreen.main.bounds.width * 0.25, y: 100)
+        }
+    }
+}
+
+// MARK: - Space Feedback Overlay
+struct SpaceFeedbackOverlay: View {
+    let text: String
+    let color: Color
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 32, weight: .medium, design: .default))
+                .foregroundColor(color)
+            
+            Text(text)
+                .font(AppTheme.Space.spaceCaption(14))
+                .fontWeight(.semibold)
+                .foregroundColor(AppTheme.Colors.spacePureWhite)
+                .tracking(0.5)
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
+                .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.8))
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
+                        .stroke(color.opacity(0.5), lineWidth: 2)
+                )
+        )
+        .transition(.scale.combined(with: .opacity))
     }
 }
 
