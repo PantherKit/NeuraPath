@@ -4,16 +4,17 @@ from pathlib import Path
 import os
 import logging
 from typing import List, Dict, Optional
-from sqlalchemy.orm import Session
-
-from app.db.session import get_db
+# from sqlalchemy.orm import Session  # Removido con migración a MongoDB
+# from app.db.session import get_db     # Removido con migración a MongoDB
 from app.services.llm_service import LLMService
 from app.services.llm_api_service import LLMApiService
 from app.services.neural_service import NeuralCareerService
 from app.services.llm_profile_interpreter import LLMProfileInterpreter
-from app.schemas.personality import QuestionResponse, UserResponseCreate, LLMResponse, MBTIResult, MIResult
+# from app.models.riasec_model import RIASECProcessor  # Removido - ahora es SRLAS
+from app.models.srlas_model import SRLASProcessor
+from app.schemas.personality import QuestionResponse, UserResponseCreate, LLMResponse, MBTIResult, MIResult, CompleteGameResponse
 
-from app.db.models import UserResponse
+# from app.db.models import UserResponse  # Modelo SQLAlchemy removido
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
@@ -23,6 +24,7 @@ router = APIRouter()
 llm_service = LLMService()
 llm_api_service = LLMApiService()
 neural_service = NeuralCareerService()
+srlas_processor = SRLASProcessor()
 
 @router.get("/mbti")
 async def get_mbti_questions():
@@ -216,7 +218,7 @@ async def process_combined_questions(questions_responses: List[Dict[str, str]]):
 @router.post("/process-complete")
 async def process_complete_flow(
     questions_responses: List[QuestionResponse],
-    db: Session = Depends(get_db),
+    # db: Session = Depends(get_db),  # Removido con migración a MongoDB
     user_id: Optional[int] = None,
     session_id: Optional[str] = None,
     llm_provider: Optional[str] = Query("openai", description="Proveedor LLM a utilizar: openai, anthropic o mock"),
@@ -371,6 +373,29 @@ async def process_complete_flow(
             status_code=500,
             detail=f"Error en el procesamiento completo: {str(e)}"
         )
+
+@router.get("/riasec")
+async def get_riasec_questions():
+    """
+    Get all RIASEC (Holland Code) questions for career interests assessment
+    """
+    try:
+        # Path to the RIASEC questions data
+        data_path = Path(os.path.dirname(os.path.abspath(__file__))) / "../.." / "data" / "sr_questions.json"
+        
+        # Check if file exists
+        if not data_path.exists():
+            raise HTTPException(status_code=404, detail="RIASEC questions file not found")
+            
+        # Read the questions
+        with open(data_path, "r", encoding="utf-8") as f:
+            questions = json.load(f)
+            
+        return {"riasec_questions": questions}
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Error loading RIASEC questions: {str(e)}")
 
 @router.get("/health")
 async def health_check():

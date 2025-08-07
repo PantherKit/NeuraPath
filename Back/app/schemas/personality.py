@@ -91,7 +91,7 @@ class UserResponseDB(BaseModel):
     user_id: Optional[int] = None
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class MBTIWeightDetail(BaseModel):
     value: str  # "I fuerte", "N medio", etc.
@@ -117,7 +117,7 @@ class LLMResultDB(BaseModel):
     user_id: Optional[int] = None
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class LLMRequestPrompt(BaseModel):
     responses: List[QuestionResponse]
@@ -136,3 +136,60 @@ class SelfRegulationResponse(BaseModel):
 
 class SelfRegulationResult(BaseModel):
     SR_scores: Dict[str, float]  # Puntuaciones de autorregulación 
+
+# Schemas para respuestas RIASEC
+class RIASECQuestionResponse(BaseModel):
+    id: str  # e.g., "r_1", "i_2", "a_3"
+    dimension: str  # R, I, A, S, E, C
+    likert_score: int = Field(..., ge=1, le=5)  # Escala 1-5
+
+class RIASECResult(BaseModel):
+    RIASEC_scores: Dict[str, float]  # {"R": 0.8, "I": 0.6, ...}
+    holland_code: str  # Top 3 dimensions e.g., "IRA"
+    primary_dimension: str  # Highest scoring dimension
+
+# Schemas para el flujo completo actualizado (4 niveles)
+class CompleteGameResponse(BaseModel):
+    """Schema para las respuestas del juego completo con 4 niveles"""
+    mbti_responses: List[LikertQuestionResponse]
+    mi_responses: List[LikertQuestionResponse]  
+    riasec_responses: List[RIASECQuestionResponse]
+    user_id: Optional[int] = None
+    session_id: Optional[str] = None
+
+class GameLevelResult(BaseModel):
+    """Resultado de un nivel específico del juego"""
+    level_name: str  # "MBTI", "MI", "RIASEC", "CAREER_RECOMMENDATIONS"
+    level_number: int  # 1, 2, 3, 4
+    completed: bool
+    score: Optional[float] = None
+    result_data: Dict[str, Any]
+
+class CompleteGameResult(BaseModel):
+    """Resultado completo del juego con todos los niveles"""
+    game_id: str
+    user_id: Optional[int] = None
+    session_id: Optional[str] = None
+    
+    # Resultados de cada nivel
+    mbti_result: MBTIResult
+    mi_result: MIResult  
+    riasec_result: RIASECResult
+    
+    # Recomendaciones finales
+    career_recommendations: List[CareerMatch]
+    
+    # Análisis integrado
+    integrated_profile: Dict[str, Any]
+    career_analysis: Optional[str] = None
+    
+    # Metadatos del juego
+    total_score: float
+    completion_time: Optional[int] = None  # en segundos
+    game_completion_date: Optional[str] = None
+
+# Schema actualizado para recomendaciones de carrera con RIASEC
+class EnhancedCareerMatch(CareerMatch):
+    riasec_compatibility: float  # 0.0 - 1.0
+    stem_area: str  # e.g., "Computación y Tecnología"
+    riasec_profile: List[str]  # e.g., ["I", "C", "R"] 

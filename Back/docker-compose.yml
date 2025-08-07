@@ -1,48 +1,41 @@
-version: '3.8'
+
 
 services:
-  db:
-    image: postgres:14
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    env_file:
-      - ./.env
-    environment:
-      POSTGRES_USER: nlp
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: stem_careers
-
+  mongodb:
+    image: mongo:7.0
+    container_name: neurapath_mongodb
+    restart: unless-stopped
     ports:
-      - "5434:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U nlp -d stem_careers"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: neurapath
+    volumes:
+      - mongodb_data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - neurapath_network
 
   api:
     build: .
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-    volumes:
-      - .:/app
+    container_name: neurapath_api
+    restart: unless-stopped
     ports:
       - "8001:8000"
-    deploy:
-      resources:
-        limits:
-          memory: 4G
-        reservations:
-          memory: 2G
-    depends_on:
-      db:
-        condition: service_healthy
-    env_file:
-      - ./.env
     environment:
-      - POSTGRES_HOST=db
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-nlp}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-stem_careers}
-      - TF_CPP_MIN_LOG_LEVEL=2  # Reducir nivel de logs de TensorFlow
+      - MONGODB_URL=mongodb://admin:password123@mongodb:27017/neurapath?authSource=admin
+      - MONGODB_DB_NAME=neurapath
+    depends_on:
+      - mongodb
+    volumes:
+      - .:/app
+    networks:
+      - neurapath_network
 
 volumes:
-  postgres_data: 
+  mongodb_data:
+
+networks:
+  neurapath_network:
+    driver: bridge

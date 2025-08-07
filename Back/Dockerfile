@@ -1,34 +1,32 @@
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Instalar dependencias del sistema necesarias para psycopg2 y bibliotecas de ML
+# Paquetes del sistema mínimos
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    gcc \
-    libpq-dev \
-    g++ \
-    libgomp1 \
-    wget \
-    && apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    gcc g++ libgomp1 wget \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copiar archivos de requerimientos
 COPY requirements.txt .
 
-# Instalar dependencias - instalación simplificada
+# Instalar dependencias
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt && \
-    # Limpiar caché de pip después de instalar
-    pip cache purge && \
-    # Verificar que TensorFlow se instaló correctamente
-    python -c "import tensorflow as tf; print(tf.__version__)"
+    pip cache purge
 
 # Copiar el código de la aplicación
 COPY . .
 
-# Exponer el puerto que usa la aplicación
-EXPOSE 8000
+# Crear usuario no root para ejecutar la app
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser && \
+    chown -R appuser:appgroup /app
+USER appuser
 
-# Comando para ejecutar la aplicación
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"] 
+# Variables para Cloud Run
+ENV PORT=8080
+EXPOSE 8080
+
+# Comando para ejecutar la aplicación (Uvicorn)
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]

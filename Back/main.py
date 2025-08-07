@@ -1,10 +1,12 @@
+import os
+import json
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.api import api_router
 from app.core.config import settings
-from app.db.init_db import init
+from app.db.mongodb import init_db, close_db
 
 # Metadatos para los tags de Swagger
 tags_metadata = [
@@ -50,23 +52,43 @@ app = FastAPI(
     },
 )
 
-# Configurar CORS
+# Configurar CORS (permitir lista o string JSON)
+def _parse_list(value):
+    if isinstance(value, list):
+        return value
+    try:
+        return json.loads(value)
+    except Exception:
+        return ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=settings.CORS_CREDENTIALS,
-    allow_methods=settings.CORS_METHODS,
-    allow_headers=settings.CORS_HEADERS,
+    allow_origins=_parse_list(settings.CORS_ORIGINS),
+    allow_credentials=bool(settings.CORS_CREDENTIALS),
+    allow_methods=_parse_list(settings.CORS_METHODS),
+    allow_headers=_parse_list(settings.CORS_HEADERS),
 )
 
 # Incluir los routers
 app.include_router(api_router)
 
-# Evento de inicio
+# Eventos de inicio y cierre
 @app.on_event("startup")
 async def startup_event():
-    """Inicializar la base de datos al iniciar la aplicación"""
-    init()
+    """Inicializar MongoDB al iniciar la aplicación"""
+    print("🚀 Iniciando NeuraPath API...")
+    print("🍃 Inicializando MongoDB...")
+    await init_db()
+    print("✅ MongoDB inicializada")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cerrar conexión MongoDB al cerrar la aplicación"""
+    print("🔄 Cerrando NeuraPath API...")
+    await close_db()
+    print("✅ API cerrada correctamente")
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=settings.DEBUG) 
+    # Cloud Run provee PORT por entorno (default 8080)
+    port = int(os.getenv("PORT", "8080"))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=settings.DEBUG)

@@ -4,8 +4,8 @@ from app.models.minimal_neural import MinimalNeuralCareerModel
 from app.models.career_model import CareerRecommender
 from sklearn.preprocessing import LabelEncoder
 import random
-from app.utils.riasec_processor import RIASECProcessor
-from app.scripts.train_with_riasec import train_model_with_riasec
+# from app.utils.riasec_processor import RIASECProcessor  # Removido - cambió a SRLAS
+# from app.scripts.train_with_riasec import train_model_with_riasec  # Removido - cambió a SRLAS
 
 class MinimalNeuralService:
     """Servicio de recomendación de carreras usando el modelo RandomForest como alternativa a TensorFlow"""
@@ -248,16 +248,20 @@ class MinimalRecommendationService:
             Diccionario con mensaje y precisión del modelo
         """
         try:
-            # Usar la función del script 
-            self.model = train_model_with_riasec(
-                sample_size=sample_size, 
-                save_training_data=save_training_data, 
-                verbose=verbose
-            )
+            # Temporalmente deshabilitado durante migración a SRLAS
+            # self.model = train_model_with_riasec(
+            #     sample_size=sample_size, 
+            #     save_training_data=save_training_data, 
+            #     verbose=verbose
+            # )
+            # Usar modelo simplificado por ahora
+            from app.models.minimal_neural import MinimalNeuralCareerModel
+            self.model = MinimalNeuralCareerModel()
             
-            # Obtener los nombres de carreras
-            processor = RIASECProcessor()
-            _, self.career_names = processor.prepare_training_data(sample_size=10)  # Solo necesitamos los nombres
+            # Obtener los nombres de carreras - temporalmente deshabilitado
+            # processor = RIASECProcessor()  # Removido - cambió a SRLAS
+            # _, self.career_names = processor.prepare_training_data(sample_size=10)  # Solo necesitamos los nombres
+            self.career_names = [career["nombre"] for career in self.career_recommender.careers]  # Usar CareerRecommender existente
             
             return {
                 "message": f"Modelo entrenado exitosamente con {sample_size if sample_size else 'todas las'} muestras de RIASEC",

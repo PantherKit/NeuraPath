@@ -2,9 +2,9 @@ import json
 import uuid
 import logging
 from typing import List, Dict, Any, Optional
-from sqlalchemy.orm import Session
+# from sqlalchemy.orm import Session  # Removido con migración a MongoDB
 
-from app.db.models import UserResponse, LLMResult
+# from app.db.models import UserResponse, LLMResult  # Modelos SQLAlchemy removidos
 from app.schemas.personality import QuestionResponse, LLMResultCreate
 
 # Configurar logging
@@ -84,44 +84,7 @@ carreras son compatibles con su perfil y cómo podría aprovechar sus fortalezas
             "raw_response": llm_response
         }
     
-    def save_user_responses(self, db: Session, responses: List[QuestionResponse], 
-                           user_id: Optional[int] = None, session_id: Optional[str] = None) -> UserResponse:
-        """
-        Guarda las respuestas del usuario en la base de datos
-        
-        Args:
-            db: Sesión de base de datos
-            responses: Lista de respuestas del usuario
-            user_id: ID del usuario (opcional)
-            session_id: ID de sesión (opcional, se genera uno si no se proporciona)
-            
-        Returns:
-            Objeto UserResponse guardado en la base de datos
-        """
-        # Si no se proporciona session_id, generar uno
-        if not session_id:
-            session_id = str(uuid.uuid4())
-            logger.info(f"Generando nuevo session_id: {session_id}")
-        else:
-            logger.info(f"Usando session_id proporcionado: {session_id}")
-        
-        # Convertir las respuestas a formato JSON para la base de datos
-        responses_data = [resp.dict() for resp in responses]
-        logger.info(f"Guardando {len(responses_data)} respuestas en la base de datos")
-        
-        # Crear y guardar el objeto UserResponse
-        db_response = UserResponse(
-            user_id=user_id,
-            session_id=session_id,
-            responses_data=responses_data
-        )
-        
-        db.add(db_response)
-        db.commit()
-        db.refresh(db_response)
-        logger.info(f"Respuestas guardadas con ID: {db_response.id}")
-        
-        return db_response
+    # Método save_user_responses eliminado durante migración a MongoDB
     
     def generate_llm_prompt(self, responses: List[QuestionResponse]) -> str:
         """
@@ -173,42 +136,7 @@ Preguntas y respuestas del usuario:
         logger.info(f"Prompt generado con longitud: {len(prompt)} caracteres")
         return prompt
     
-    def save_llm_result(self, db: Session, user_response_id: int, 
-                       llm_result: LLMResultCreate, prompt_used: str,
-                       user_id: Optional[int] = None) -> LLMResult:
-        """
-        Guarda el resultado del LLM en la base de datos
-        
-        Args:
-            db: Sesión de base de datos
-            user_response_id: ID de las respuestas del usuario
-            llm_result: Resultado del LLM
-            prompt_used: Prompt utilizado para generar el resultado
-            user_id: ID del usuario (opcional)
-            
-        Returns:
-            Objeto LLMResult guardado en la base de datos
-        """
-        logger.info(f"Guardando resultado LLM para user_response_id: {user_response_id}")
-        
-        # Crear y guardar el objeto LLMResult
-        db_result = LLMResult(
-            user_id=user_id,
-            user_response_id=user_response_id,
-            mbti_result=llm_result.mbti_result,
-            mbti_vector=llm_result.mbti_vector,
-            mbti_weights=llm_result.mbti_weights,
-            mi_ranking=llm_result.mi_ranking,
-            full_result=llm_result.full_analysis if llm_result.full_analysis else {},
-            prompt_used=prompt_used
-        )
-        
-        db.add(db_result)
-        db.commit()
-        db.refresh(db_result)
-        logger.info(f"Resultado LLM guardado con ID: {db_result.id}")
-        
-        return db_result
+    # Método save_llm_result eliminado durante migración a MongoDB
     
     def process_llm_response(self, llm_response: str) -> LLMResultCreate:
         """

@@ -1,8 +1,8 @@
 [
   {
-    "id": "ei_1",
-    "dimension": "E/I",
-    "statement": "I feel energized when I collaborate with others on a shared goal.",
+    "id": "sr_1",
+    "dimension": "Self-Regulation",
+    "statement": "Before studying or starting a project, I think about what I want to achieve.",
     "scale": {
       "1": "Strongly disagree",
       "2": "Disagree",
@@ -12,9 +12,9 @@
     }
   },
   {
-    "id": "ei_2",
-    "dimension": "E/I",
-    "statement": "I enjoy being part of group discussions, even with unfamiliar people.",
+    "id": "sr_2",
+    "dimension": "Self-Regulation",
+    "statement": "If I get distracted while studying, I try to refocus.",
     "scale": {
       "1": "Strongly disagree",
       "2": "Disagree",
@@ -24,9 +24,9 @@
     }
   },
   {
-    "id": "ei_3",
-    "dimension": "E/I",
-    "statement": "Spending quiet time alone helps me recharge.",
+    "id": "sr_3",
+    "dimension": "Self-Regulation",
+    "statement": "When something is difficult, I try again instead of giving up.",
     "scale": {
       "1": "Strongly disagree",
       "2": "Disagree",
@@ -36,9 +36,9 @@
     }
   },
   {
-    "id": "ei_4",
-    "dimension": "E/I",
-    "statement": "In challenging situations, I prefer to think things through before talking to others.",
+    "id": "sr_4",
+    "dimension": "Self-Regulation",
+    "statement": "After finishing a task or test, I reflect on what I did well and what I could improve.",
     "scale": {
       "1": "Strongly disagree",
       "2": "Disagree",
@@ -48,9 +48,9 @@
     }
   },
   {
-    "id": "sn_1",
-    "dimension": "S/N",
-    "statement": "I tend to focus on specific details rather than the big picture.",
+    "id": "ls_1",
+    "dimension": "Learning Strategies",
+    "statement": "I break complex topics into smaller parts to understand them better.",
     "scale": {
       "1": "Strongly disagree",
       "2": "Disagree",
@@ -60,9 +60,9 @@
     }
   },
   {
-    "id": "sn_2",
-    "dimension": "S/N",
-    "statement": "I enjoy exploring new ideas, even if they are abstract or theoretical.",
+    "id": "ls_2",
+    "dimension": "Learning Strategies",
+    "statement": "I use different learning methods like videos, diagrams, or teaching others.",
     "scale": {
       "1": "Strongly disagree",
       "2": "Disagree",
@@ -72,9 +72,9 @@
     }
   },
   {
-    "id": "sn_3",
-    "dimension": "S/N",
-    "statement": "I trust proven methods over untested approaches.",
+    "id": "ls_3",
+    "dimension": "Learning Strategies",
+    "statement": "I review my notes or materials before tests or assignments.",
     "scale": {
       "1": "Strongly disagree",
       "2": "Disagree",
@@ -84,9 +84,9 @@
     }
   },
   {
-    "id": "sn_4",
-    "dimension": "S/N",
-    "statement": "I often think about possibilities that others may not notice right away.",
+    "id": "ls_4",
+    "dimension": "Learning Strategies",
+    "statement": "I plan my time when I know I have tests or big assignments coming up.",
     "scale": {
       "1": "Strongly disagree",
       "2": "Disagree",
@@ -96,9 +96,9 @@
     }
   },
   {
-    "id": "tf_1",
-    "dimension": "T/F",
-    "statement": "When making decisions, I prioritize logic over emotions.",
+    "id": "af_1",
+    "dimension": "Affective Strategies",
+    "statement": "When I feel overwhelmed by schoolwork, I take short breaks to calm myself.",
     "scale": {
       "1": "Strongly disagree",
       "2": "Disagree",
@@ -108,9 +108,9 @@
     }
   },
   {
-    "id": "tf_2",
-    "dimension": "T/F",
-    "statement": "I consider how others might feel before expressing my opinion.",
+    "id": "af_2",
+    "dimension": "Affective Strategies",
+    "statement": "I remind myself that I can succeed, even if the subject feels hard at first.",
     "scale": {
       "1": "Strongly disagree",
       "2": "Disagree",
@@ -120,9 +120,9 @@
     }
   },
   {
-    "id": "tf_3",
-    "dimension": "T/F",
-    "statement": "I value fairness more than keeping everyone happy.",
+    "id": "af_3",
+    "dimension": "Affective Strategies",
+    "statement": "When I don’t understand something, I try to stay positive and keep trying.",
     "scale": {
       "1": "Strongly disagree",
       "2": "Disagree",
@@ -132,9 +132,9 @@
     }
   },
   {
-    "id": "tf_4",
-    "dimension": "T/F",
-    "statement": "I believe empathy is essential in group work.",
+    "id": "af_4",
+    "dimension": "Affective Strategies",
+    "statement": "Even if I get nervous before a test, I try to stay calm and focused.",
     "scale": {
       "1": "Strongly disagree",
       "2": "Disagree",
@@ -144,9 +144,9 @@
     }
   },
   {
-    "id": "jp_1",
-    "dimension": "J/P",
-    "statement": "I prefer having a structured plan when starting a new task.",
+    "id": "sr_5",
+    "dimension": "Self-Regulation",
+    "statement": "I try to stay motivated even if the topic isn’t interesting to me.",
     "scale": {
       "1": "Strongly disagree",
       "2": "Disagree",
@@ -156,9 +156,9 @@
     }
   },
   {
-    "id": "jp_2",
-    "dimension": "J/P",
-    "statement": "I work best when I can adapt and be spontaneous.",
+    "id": "ls_5",
+    "dimension": "Learning Strategies",
+    "statement": "I use real-life or tech-related examples to better understand what I’m learning.",
     "scale": {
       "1": "Strongly disagree",
       "2": "Disagree",
@@ -168,9 +168,9 @@
     }
   },
   {
-    "id": "jp_3",
-    "dimension": "J/P",
-    "statement": "I like to organize my work before I begin.",
+    "id": "ls_6",
+    "dimension": "Learning Strategies",
+    "statement": "I like to go over what I’ve learned to make sure I really understood it.",
     "scale": {
       "1": "Strongly disagree",
       "2": "Disagree",
@@ -180,9 +180,9 @@
     }
   },
   {
-    "id": "jp_4",
-    "dimension": "J/P",
-    "statement": "I'm comfortable adjusting my plans if something unexpected happens.",
+    "id": "af_5",
+    "dimension": "Affective Strategies",
+    "statement": "When something doesn’t go well, I look for another way to do it.",
     "scale": {
       "1": "Strongly disagree",
       "2": "Disagree",
@@ -191,4 +191,4 @@
       "5": "Strongly agree"
     }
   }
-] 
+]

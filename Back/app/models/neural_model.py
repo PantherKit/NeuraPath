@@ -22,17 +22,18 @@ class NeuralCareerModel:
         self.load_models()
         
     def prepare_input_features(self, mbti_vector: List[int], mbti_weights: Dict[str, float], 
-                              mi_scores: Dict[str, float]) -> np.ndarray:
+                              mi_scores: Dict[str, float], srlas_scores: Dict[str, float] = None) -> np.ndarray:
         """
-        Prepara las características de entrada combinando el vector MBTI y los scores MI.
+        Prepara las características de entrada combinando MBTI, MI y SRLAS.
         
         Args:
             mbti_vector: Vector binario de MBTI (ej. [0, 1, 0, 1])
             mbti_weights: Pesos de las dimensiones MBTI (ej. {"E/I": 0.8, "S/N": 0.6, ...})
             mi_scores: Puntuaciones de inteligencias múltiples (ej. {"Lin": 0.7, "LogMath": 0.9, ...})
+            srlas_scores: Puntuaciones SRLAS (ej. {"Self_Regulation": 0.8, ...}) - opcional
             
         Returns:
-            Vector numpy de 16 dimensiones (4 MBTI + 4 pesos MBTI + 8 MI)
+            Vector numpy de 19 dimensiones (4 MBTI + 4 pesos MBTI + 8 MI + 3 SRLAS)
         """
         # Convertir mbti_weights a vector (mismas dimensiones que mbti_vector pero con intensidades)
         mbti_dimensions = ["E/I", "S/N", "T/F", "J/P"]
@@ -42,8 +43,16 @@ class NeuralCareerModel:
         mi_types = ["Lin", "LogMath", "Spa", "BodKin", "Mus", "Inter", "Intra", "Nat"]
         mi_vector = [mi_scores.get(mi_type, 0.0) for mi_type in mi_types]
         
-        # Combinar ambos vectores
-        combined_vector = np.array(mbti_vector + mbti_weight_vector + mi_vector)
+        # Convertir srlas_scores a vector (asegurando orden consistente)
+        srlas_types = ["Self_Regulation", "Learning_Strategies", "Affective_Strategies"]
+        if srlas_scores is not None:
+            srlas_vector = [srlas_scores.get(srlas_type, 0.0) for srlas_type in srlas_types]
+        else:
+            # Valores por defecto para compatibilidad
+            srlas_vector = [0.5] * 3  # Neutral scores
+        
+        # Combinar todos los vectores (19 dimensiones total)
+        combined_vector = np.array(mbti_vector + mbti_weight_vector + mi_vector + srlas_vector)
         
         return combined_vector.reshape(1, -1)  # Formato para predicción (batch_size=1)
     
@@ -62,20 +71,20 @@ class NeuralCareerModel:
         # Reestructurar datos para CNN (samples, timesteps, features)
         X_reshaped = X.reshape(X.shape[0], X.shape[1], 1)
         
-        # Definir arquitectura CNN mejorada
+        # Definir arquitectura CNN para 19 dimensiones de entrada (MBTI + MI + SRLAS)
         self.cnn_model = Sequential([
             # Primera capa convolucional
-            Conv1D(64, 2, activation='relu', input_shape=(X.shape[1], 1), 
+            Conv1D(64, 3, activation='relu', input_shape=(X.shape[1], 1), 
                    kernel_regularizer=tf.keras.regularizers.l2(0.001)),
             BatchNormalization(),
             
-            # Segunda capa convolucional sin MaxPooling
-            Conv1D(128, 2, activation='relu',
+            # Segunda capa convolucional
+            Conv1D(128, 3, activation='relu',
                    kernel_regularizer=tf.keras.regularizers.l2(0.001)),
             BatchNormalization(),
             MaxPooling1D(2),
             
-            # Tercera capa convolucional con kernel más pequeño
+            # Tercera capa convolucional
             Conv1D(256, 2, activation='relu',
                    kernel_regularizer=tf.keras.regularizers.l2(0.001)),
             BatchNormalization(),
@@ -83,14 +92,18 @@ class NeuralCareerModel:
             # Aplanar para las capas densas
             Flatten(),
             
-            # Capas densas con regularización
-            Dense(256, activation='relu', 
+            # Capas densas con regularización mejoradas para más dimensiones
+            Dense(512, activation='relu', 
                   kernel_regularizer=tf.keras.regularizers.l2(0.001)),
             Dropout(0.4),
             
-            Dense(128, activation='relu',
+            Dense(256, activation='relu',
                   kernel_regularizer=tf.keras.regularizers.l2(0.001)),
             Dropout(0.3),
+            
+            Dense(128, activation='relu',
+                  kernel_regularizer=tf.keras.regularizers.l2(0.001)),
+            Dropout(0.2),
             
             # Capa de salida
             Dense(num_classes, activation='softmax')
@@ -130,13 +143,14 @@ class NeuralCareerModel:
         return history
     
     def predict_career(self, mbti_vector: List[int], mbti_weights: Dict[str, float], 
-                      mi_scores: Dict[str, float], career_names: List[str]) -> List[Tuple[str, float]]:
+                      mi_scores: Dict[str, float], career_names: List[str], 
+                      srlas_scores: Dict[str, float] = None) -> List[Tuple[str, float]]:
         """
-        Predice carreras recomendadas basado en el perfil MBTI y MI del usuario usando solo CNN.
+        Predice carreras recomendadas basado en el perfil MBTI, MI y SRLAS del usuario usando CNN.
         """
         if self.cnn_model is None:
             raise ValueError("El modelo CNN no está entrenado. Entrena el modelo primero.")
-        X = self.prepare_input_features(mbti_vector, mbti_weights, mi_scores)
+        X = self.prepare_input_features(mbti_vector, mbti_weights, mi_scores, srlas_scores)
         X = X.reshape(X.shape[0], X.shape[1], 1)
         probs = self.cnn_model.predict(X)[0]
         results = [(career, float(prob)) for career, prob in zip(career_names, probs)]

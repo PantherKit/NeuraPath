@@ -3,7 +3,7 @@ import numpy as np
 import json
 from pathlib import Path
 import os
-from sentence_transformers import SentenceTransformer
+# from sentence_transformers import SentenceTransformer  # Temporalmente deshabilitado
 from sklearn.metrics.pairwise import cosine_similarity
 
 class CareerRecommender:
@@ -26,8 +26,10 @@ class CareerRecommender:
         
         # Initialize the sentence transformer model for text embeddings
         # In a production environment, you would want to load this once and reuse
+        # Temporalmente deshabilitado para resolver dependencias
         try:
-            self.model = SentenceTransformer('all-MiniLM-L6-v2')
+            # self.model = SentenceTransformer('all-MiniLM-L6-v2')
+            self.model = None  # Placeholder temporal
             # Pre-compute embeddings for all career descriptions
             self.career_embeddings = self._compute_career_embeddings()
         except Exception as e:
@@ -100,6 +102,9 @@ class CareerRecommender:
             profile_text += f"Preferencias fuertes en dimensiones: {', '.join(strong_dimensions)}."
         
         # Convert to embedding
+        if not self.model:
+            # Fallback temporal: usar hash del texto como representación
+            return np.array([hash(profile_text) % 1000 / 1000.0] * 384)  # Simular embedding de 384 dimensiones
         return self.model.encode([profile_text])[0]
     
     def recommend_careers(self, mbti_code: str, mbti_vector: List[int], 
@@ -150,8 +155,9 @@ class CareerRecommender:
                 career = self.careers[idx]
                 recommendations.append({
                     "nombre": career["nombre"],
-                    "universidad": career["universidad"],
-                    "ciudad": career["ubicacion"],
+                    "descripcion": career["descripcion"],
+                    "stem_area": career["stem_area"],
+                    "riasec_profile": career["riasec_profile"],
                     "match_score": float(similarities[idx])
                 })
         
@@ -190,16 +196,18 @@ class CareerRecommender:
         # Find the matching careers in our database
         for career_name in affinities:
             for career in self.careers:
-                if location_filter and location_filter.lower() not in career["ubicacion"].lower():
-                    continue
+                # Location filter removed for beta version
+                # if location_filter and location_filter.lower() not in career["ubicacion"].lower():
+                #     continue
                     
                 if career_name in career["nombre"]:
                     # Calculate a synthetic match score based on MI
                     match_score = 0.7 + (sum(mi_scores.values()) / len(mi_scores)) * 0.2
                     matches.append({
                         "nombre": career["nombre"],
-                        "universidad": career["universidad"],
-                        "ciudad": career["ubicacion"],
+                        "descripcion": career["descripcion"],
+                        "stem_area": career["stem_area"],
+                        "riasec_profile": career["riasec_profile"],
                         "match_score": float(match_score)
                     })
         
@@ -208,16 +216,18 @@ class CareerRecommender:
             if len(matches) >= top_n:
                 break
                 
-            if location_filter and location_filter.lower() not in career["ubicacion"].lower():
-                continue
+            # Location filter removed for beta version
+            # if location_filter and location_filter.lower() not in career["ubicacion"].lower():
+            #     continue
                 
             # Check if career is already in matches
             if not any(match["nombre"] == career["nombre"] for match in matches):
                 match_score = 0.65  # Lower match score for these additional recommendations
                 matches.append({
                     "nombre": career["nombre"],
-                    "universidad": career["universidad"],
-                    "ciudad": career["ubicacion"],
+                    "descripcion": career["descripcion"],
+                    "stem_area": career["stem_area"],
+                    "riasec_profile": career["riasec_profile"],
                     "match_score": float(match_score)
                 })
         

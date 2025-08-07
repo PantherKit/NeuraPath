@@ -3,7 +3,9 @@ import json
 import requests
 import logging
 from typing import Dict, Any, Optional, Literal
-from pydantic import BaseSettings, validator
+from pydantic import validator
+from pydantic_settings import BaseSettings
+from app.core.config import settings as app_settings
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
@@ -15,8 +17,27 @@ class LLMApiSettings(BaseSettings):
     ANTHROPIC_API_KEY: Optional[str] = None
     DEFAULT_LLM_PROVIDER: str = "openai"  # Opciones: "openai", "anthropic", "mock"
     
+    # Campos adicionales del .env que pueden estar presentes
+    MONGODB_URL: Optional[str] = None
+    MONGODB_DB_NAME: Optional[str] = None
+    APIKEY: Optional[str] = None
+    DEBUG: Optional[str] = None
+    CORS_ORIGINS: Optional[str] = None
+    CORS_CREDENTIALS: Optional[str] = None
+    CORS_METHODS: Optional[str] = None
+    CORS_HEADERS: Optional[str] = None
+    
+    # Campos legacy de PostgreSQL
+    POSTGRES_USER: Optional[str] = None
+    POSTGRES_PASSWORD: Optional[str] = None
+    POSTGRES_DB: Optional[str] = None
+    POSTGRES_HOST: Optional[str] = None
+    POSTGRES_PORT: Optional[str] = None
+    DATABASE_URL: Optional[str] = None
+    
     class Config:
         env_file = ".env"
+        extra = "ignore"  # Ignorar campos extras en Pydantic V2
 
 class LLMApiService:
     """Servicio para interactuar con APIs de LLM externas"""
@@ -91,7 +112,8 @@ class LLMApiService:
             response = requests.post(
                 "https://api.openai.com/v1/chat/completions",
                 headers=headers,
-                json=payload
+                json=payload,
+                timeout=app_settings.LLM_TIMEOUT_SECONDS
             )
             
             if response.status_code != 200:
@@ -144,7 +166,8 @@ class LLMApiService:
             response = requests.post(
                 "https://api.anthropic.com/v1/messages",
                 headers=headers,
-                json=payload
+                json=payload,
+                timeout=app_settings.LLM_TIMEOUT_SECONDS
             )
             
             if response.status_code != 200:
