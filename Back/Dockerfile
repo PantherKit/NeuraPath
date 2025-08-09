@@ -25,10 +25,11 @@ RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser &&
 USER appuser
 
 # Variables para Cloud Run y runtime Python
-ENV PORT=8080 \\
-    PYTHONDONTWRITEBYTECODE=1 \\
-    PYTHONUNBUFFERED=1 \\
-    TF_CPP_MIN_LOG_LEVEL=2
+ENV PORT=8080 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    TF_CPP_MIN_LOG_LEVEL=2 \
+    MPLBACKEND=Agg
 EXPOSE 8080
 
 # Healthcheck básico (no requerido por Cloud Run pero útil localmente/ECS)

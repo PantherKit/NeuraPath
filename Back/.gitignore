@@ -83,11 +83,3 @@ local_settings.py
 *.__pycache__
 .mypy_cache/
 .ruff_cache/ 
-
-# Docker ignore mirror (build context hygiene)
-docker-context-logs/
-**/.pytest_cache/
-**/.ipynb_checkpoints/
-**/.venv/
-**/node_modules/
-**/.DS_Store
