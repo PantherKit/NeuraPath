@@ -1,0 +1,40 @@
+# Ignore VCS
+.git
+.gitignore
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual envs
+venv/
+.venv/
+env/
+ENV/
+
+# Dev / IDE
+.vscode/
+.idea/
+
+# Data and models (large)
+*.bin
+*.pt
+*.pth
+models/
+**/node_modules/
+
+# Tests and notebooks
+.pytest_cache/
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# Docker overrides
+docker-compose.override.yml
+
+# Logs
+*.log
+logs/
+
