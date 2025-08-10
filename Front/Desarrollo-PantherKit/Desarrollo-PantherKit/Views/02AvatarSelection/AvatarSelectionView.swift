@@ -91,7 +91,7 @@ struct AvatarSelectionView: View {
                                 )
                         )
                     }
-                    .buttonStyle(SpaceButtonStyle())
+                    .buttonStyle(ScaleButtonStyle())
                     .disabled(viewModel.selectedAvatar == nil)
                     .opacity(showButton ? 1.0 : 0)
                     .offset(y: showButton ? 0 : 20)

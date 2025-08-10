@@ -90,7 +90,7 @@ struct WelcomeView: View {
                                 )
                         )
                     }
-                    .buttonStyle(SpaceButtonStyle())
+                    .buttonStyle(ScaleButtonStyle())
                     .opacity(showButton ? 1.0 : 0)
                     .offset(y: showButton ? 0 : 20)
                 }

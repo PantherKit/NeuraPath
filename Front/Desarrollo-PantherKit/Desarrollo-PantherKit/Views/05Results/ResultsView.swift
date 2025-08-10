@@ -217,11 +217,11 @@ struct ResultsView: View {
                     )
                 
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(getMBTIDescription(profile.code))
+                    Text(ResultsView.getMBTIDescription(profile.code))
                         .font(.system(size: 16, weight: .medium, design: .rounded))
                         .foregroundColor(.white.opacity(0.9))
                     
-                    Text(getMBTITraits(profile.code))
+                    Text(ResultsView.getMBTITraits(profile.code))
                         .font(.system(size: 14, weight: .regular))
                         .foregroundColor(.white.opacity(0.7))
                 }
@@ -809,7 +809,7 @@ struct ResultsView: View {
         }
     }
     
-    private func getMBTIDescription(_ code: String) -> String {
+    static func getMBTIDescription(_ code: String) -> String {
         // Aquí podrías incluir descripciones personalizadas para cada tipo MBTI
         switch code {
         case "INFP":
@@ -824,7 +824,7 @@ struct ResultsView: View {
         }
     }
     
-    private func getMBTITraits(_ code: String) -> String {
+    static func getMBTITraits(_ code: String) -> String {
         // Rasgos específicos para cada tipo MBTI
         switch code {
         case "INFP":

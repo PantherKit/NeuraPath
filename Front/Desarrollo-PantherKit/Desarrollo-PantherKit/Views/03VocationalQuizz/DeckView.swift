@@ -41,10 +41,10 @@ struct DeckView: View {
             // Main content
             VStack(spacing: 0) {
                 // Top navigation header
-                SpaceNavigationHeader(
-                    number: "03",
-                    title: "MISSION CONTROL",
-                    subtitle: "Answer questions"
+                OnboardingHeaderView(
+                    stepNumber: "03",
+                    panelTitle: "MISSION CONTROL",
+                    rightSubtitle: "Answer questions"
                 )
                 .opacity(showContent ? 1.0 : 0)
                 .offset(y: showContent ? 0 : -20)
@@ -87,10 +87,19 @@ struct DeckView: View {
             
             // Feedback overlay for MBTI
             if showFeedback {
-                SpaceFeedbackOverlay(
-                    text: feedbackText,
-                    color: feedbackColor
-                )
+                Color.black.opacity(0.5)
+                    .ignoresSafeArea()
+                    .overlay(
+                        Text(feedbackText)
+                            .font(AppTheme.Space.spaceBody(16))
+                            .fontWeight(.semibold)
+                            .foregroundColor(feedbackColor)
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(.ultraThinMaterial)
+                            )
+                    )
             }
         }
         .ignoresSafeArea()

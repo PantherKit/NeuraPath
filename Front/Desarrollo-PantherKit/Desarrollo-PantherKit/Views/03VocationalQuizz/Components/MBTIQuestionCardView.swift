@@ -8,7 +8,7 @@ struct MBTIQuestionCardView: View {
     var body: some View {
         ZStack {
             GenericQuestionGlassCard(content: question, isActive: true, onSwipedAway: {}, onShowDetails: {})
-            SpaceSwipeIndicators(
+            SwipeIndicators(
                 dragOffset: dragOffset,
                 swipeThreshold: swipePolicy.swipeThreshold
             )

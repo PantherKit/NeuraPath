@@ -640,16 +640,7 @@ struct QuickDecisionView: View {
         }
     }
     
-    private func startTimer() {
-        timeRemaining = 20.0 // Aumentado de 5 a 20 segundos
-        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
-            if timeRemaining > 0 {
-                timeRemaining -= 0.1
-            } else if selectedOption == nil {
-                selectOption(Int.random(in: 0...1))
-            }
-        }
-    }
+    // Eliminado timer legado; usamos TimerDriver para ticks
     
     private func selectOption(_ option: Int) {
         // Seleccionar la opción
@@ -871,8 +862,8 @@ struct QuickDecisionView: View {
     }
     
     private func resetTimer() {
-        timer?.invalidate()
-        startTimer()
+        // Reinicia solo el contador; TimerDriver ya emite ticks
+        timeRemaining = 20.0
     }
     
     private func startRocketMovement() {

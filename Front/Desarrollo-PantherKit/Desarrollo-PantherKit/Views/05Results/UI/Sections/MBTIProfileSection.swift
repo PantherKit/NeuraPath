@@ -25,11 +25,11 @@ struct MBTIProfileSection: View {
                     )
 
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(ResultsView.getMBTIDescriptionStatic(profile.code))
+                    Text(ResultsView.getMBTIDescription(profile.code))
                         .font(.system(size: 16, weight: .medium, design: .rounded))
                         .foregroundColor(.white.opacity(0.9))
 
-                    Text(ResultsView.getMBTITraitsStatic(profile.code))
+                    Text(ResultsView.getMBTITraits(profile.code))
                         .font(.system(size: 14, weight: .regular))
                         .foregroundColor(.white.opacity(0.7))
                 }
@@ -83,9 +83,6 @@ struct MBTIDimensionBar: View {
     }
 }
 
-extension ResultsView {
-    static func getMBTIDescriptionStatic(_ code: String) -> String { Self().getMBTIDescription(code) }
-    static func getMBTITraitsStatic(_ code: String) -> String { Self().getMBTITraits(code) }
-}
+// Static helpers now defined in ResultsView
 
 
