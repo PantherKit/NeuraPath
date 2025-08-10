@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 
 struct DeckView: View {
     var onComplete: () -> Void
@@ -23,137 +24,97 @@ struct DeckView: View {
     @State private var feedbackText = ""
     @State private var feedbackColor = Color.green
     
-    // Colores del tema
-    private let accentColor = Color(red: 0.25, green: 0.72, blue: 0.85)
-    private let secondaryColor = Color(red: 0.2, green: 0.6, blue: 1.0)
-    private let swipeThreshold: CGFloat = 100
-    private let maxRotation: Double = 15
+    // Animation states
+    @State private var showContent = false
+    @State private var showHeader = false
+    @State private var showCards = false
+    @State private var showProgress = false
+    @State private var progressGlow = false
     
-    var rotationAngle: Double {
-        Double(dragOffset.width / swipeThreshold) * maxRotation
-    }
+    private let swipeThreshold: CGFloat = 100
     
     var body: some View {
         ZStack {
-            // Fondo espacial
-            spaceBackground
+            // Background will be handled by user
+            BasicCosmicBackground()
             
-            VStack {
-                // Header con progreso
-                if mbtiMode {
-                    mbtiProgressHeader
-                } else {
-                    progressHeader
-                }
+            // Main content
+            VStack(spacing: 0) {
+                // Top navigation header
+                OnboardingHeaderView(
+                    stepNumber: "03",
+                    panelTitle: "MISSION CONTROL",
+                    rightSubtitle: "Answer questions"
+                )
+                .opacity(showContent ? 1.0 : 0)
+                .offset(y: showContent ? 0 : -20)
                 
                 Spacer()
                 
-                // Stack de cards
+                // Progress indicator
+                SpaceProgressIndicator(
+                    currentIndex: activeIndex,
+                    totalCount: mbtiMode ? mbtiQuestions.count : cards.count,
+                    progressGlow: $progressGlow
+                )
+                .padding(.horizontal, 24)
+                .opacity(showProgress ? 1.0 : 0)
+                .offset(y: showProgress ? 0 : -20)
+                
+                Spacer()
+                
+                // Question cards
                 if mbtiMode {
                     mbtiCardView
+                        .opacity(showCards ? 1.0 : 0)
+                        .offset(y: showCards ? 0 : 30)
                 } else {
                     cardStackView
+                        .opacity(showCards ? 1.0 : 0)
+                        .offset(y: showCards ? 0 : 30)
                 }
                 
                 Spacer()
                 
+                // Swipe instructions
+                if mbtiMode {
+                    spaceSwipeInstructions
+                        .opacity(showContent ? 1.0 : 0)
+                        .offset(y: showContent ? 0 : 20)
+                }
             }
+            .padding(.bottom, 40)
             
-            // Feedback overlay para MBTI
+            // Feedback overlay for MBTI
             if showFeedback {
-                Color.black.opacity(0.7)
+                Color.black.opacity(0.5)
                     .ignoresSafeArea()
                     .overlay(
                         Text(feedbackText)
-                            .font(.title)
-                            .fontWeight(.bold)
+                            .font(AppTheme.Space.spaceBody(16))
+                            .fontWeight(.semibold)
                             .foregroundColor(feedbackColor)
                             .padding()
-                            .background(.ultraThinMaterial)
-                            .cornerRadius(15)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(.ultraThinMaterial)
+                            )
                     )
             }
         }
-        .sheet(isPresented: $showDetails) {
-            if let card = selectedCard {
-                CardDetailView(card: card)
-            }
-        }
+        .ignoresSafeArea()
         .onAppear {
-            print("DeckView appeared with \(mbtiQuestions.count) MBTI questions")
+            startSpaceAnimation()
+            AppLogger.make(category: "DeckView").debug("Appeared with MBTI questions: \(mbtiQuestions.count)")
         }
     }
     
-    // MARK: - Componentes Comunes
-    
-    private var spaceBackground: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
-            
-            // Estrellas
-            ForEach(0..<100) { _ in
-                Circle()
-                    .fill(Color.white)
-                    .frame(width: CGFloat.random(in: 1...3))
-                    .opacity(Double.random(in: 0.1...0.8))
-                    .position(
-                        x: CGFloat.random(in: 0..<UIScreen.main.bounds.width),
-                        y: CGFloat.random(in: 0..<UIScreen.main.bounds.height)
-                    )
-            }
-            
-            // Nébulas
-            ForEach(0..<3) { i in
-                let colors: [Color] = [
-                    Color(red: 0.5, green: 0.2, blue: 0.8),
-                    Color(red: 0.1, green: 0.4, blue: 0.9),
-                    Color(red: 0.3, green: 0.8, blue: 0.9)
-                ]
-                
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            gradient: Gradient(colors: [
-                                colors[i % colors.count].opacity(0.2),
-                                colors[i % colors.count].opacity(0)
-                            ]),
-                            center: .center,
-                            startRadius: 0,
-                            endRadius: 200
-                        )
-                    )
-                    .frame(width: 300, height: 300)
-                    .position(
-                        x: CGFloat.random(in: 0..<UIScreen.main.bounds.width),
-                        y: CGFloat.random(in: 0..<UIScreen.main.bounds.height)
-                    )
-                    .blur(radius: 60)
-            }
-        }
-    }
-    
-    // MARK: - Componentes STEM
-    
-    private var progressHeader: some View {
-        HStack {
-            Text("Explora Carreras STEM")
-                .font(.system(size: 22, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
-            
-            Spacer()
-            
-            Text("\(activeIndex + 1)/\(cards.count)")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.white.opacity(0.7))
-        }
-        .padding()
-    }
-    
+    // MARK: - Space-style Card Stack View
     private var cardStackView: some View {
         ZStack {
             ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
-                CardView(
-                    card: card,
+                GenericQuestionGlassCard(
+                    content: card,
                     isActive: index == activeIndex,
                     onSwipedAway: handleSwipe,
                     onShowDetails: { selectedCard = card; showDetails = true }
@@ -161,118 +122,93 @@ struct DeckView: View {
                 .zIndex(Double(cards.count - index))
             }
         }
-        .frame(width: 320, height: 450)
+        .frame(width: 340, height: 480)
     }
     
-    
-    // MARK: - Componentes MBTI
-    
-    private var mbtiProgressHeader: some View {
-        HStack {
-            Text("Test de Personalidad MBTI")
-                .font(.system(size: 22, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
-            
-            Spacer()
-            
-            Text("\(activeIndex + 1)/\(mbtiQuestions.count)")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.white.opacity(0.7))
-        }
-        .padding()
-    }
-    
+    // MARK: - MBTI Card View
     private var mbtiCardView: some View {
-        // Convert MBTI question to STEMCard for consistent UI
-        let stemCard = mbtiQuestions[activeIndex].toSTEMCard()
-        
-        return ZStack {
-            // Use CardView with the converted STEMCard
-            CardView(
-                card: stemCard,
-                isActive: true,
-                onSwipedAway: { /* handled by gesture */ },
-                onShowDetails: { /* no details for MBTI cards */ }
-            )
-            
-            // Swipe indicators
-            Group {
-                // Right swipe indicator
-                VStack {
-                    Image(systemName: "arrow.right.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.green)
-                    
-                    Text("Opción A")
-                        .font(.headline)
-                        .foregroundColor(.green)
-                }
-                .padding()
-                .background(.ultraThinMaterial)
-                .cornerRadius(15)
-                .opacity(dragOffset.width > 0 ? Double(min(dragOffset.width / swipeThreshold, 1)) : 0)
-                .position(x: UIScreen.main.bounds.width * 0.75, y: 100)
-                
-                // Left swipe indicator
-                VStack {
-                    Image(systemName: "arrow.left.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.blue)
-                    
-                    Text("Opción B")
-                        .font(.headline)
-                        .foregroundColor(.blue)
-                }
-                .padding()
-                .background(.ultraThinMaterial)
-                .cornerRadius(15)
-                .opacity(dragOffset.width < 0 ? Double(min(-dragOffset.width / swipeThreshold, 1)) : 0)
-                .position(x: UIScreen.main.bounds.width * 0.25, y: 100)
+        let provider = DeckQuestionProvider(items: mbtiQuestions, startIndex: activeIndex)
+        return Group {
+            if let question = provider.current() {
+                MBTIQuestionCardView(
+                    question: question,
+                    swipePolicy: DefaultSwipePolicy(threshold: swipeThreshold),
+                    dragOffset: $dragOffset
+                )
+                .gesture(
+                    DragGesture(minimumDistance: 5)
+                        .onChanged { value in
+                            withAnimation(.interactiveSpring()) {
+                                dragOffset = value.translation
+                            }
+                        }
+                        .onEnded { value in
+                            handleMBTISwipe(value)
+                        }
+                )
+            } else {
+                EmptyView()
             }
         }
-        .frame(width: UIScreen.main.bounds.width - 40, height: 500)
-        .rotationEffect(.degrees(rotationAngle))
-        .offset(dragOffset)
-        .gesture(
-            DragGesture(minimumDistance: 5)
-                .onChanged { value in
-                    withAnimation(.interactiveSpring()) {
-                        dragOffset = value.translation
-                    }
-                }
-                .onEnded { value in
-                    handleMBTISwipe(value)
-                }
-        )
     }
     
-    private var mbtiSwipeInstructions: some View {
-        HStack(spacing: 50) {
-            VStack {
+    private var spaceSwipeInstructions: some View {
+        HStack(spacing: 60) {
+            VStack(spacing: 8) {
                 Image(systemName: "arrow.left")
-                    .font(.system(size: 24))
+                    .font(.system(size: 24, weight: .medium, design: .default))
                 Text("Opción B")
-                    .font(.caption)
+                    .font(AppTheme.Space.spaceCaption(12))
+                    .fontWeight(.medium)
             }
-            .foregroundColor(.blue)
+            .foregroundColor(AppTheme.Colors.spaceAlertRed)
             
-            VStack {
+            VStack(spacing: 8) {
                 Image(systemName: "arrow.right")
-                    .font(.system(size: 24))
+                    .font(.system(size: 24, weight: .medium, design: .default))
                 Text("Opción A")
-                    .font(.caption)
+                    .font(AppTheme.Space.spaceCaption(12))
+                    .fontWeight(.medium)
             }
-            .foregroundColor(.green)
+            .foregroundColor(AppTheme.Colors.spaceElectricBlue)
         }
-        .padding(.bottom, 30)
+        .padding(.bottom, 40)
     }
     
-    // MARK: - Funciones
+    // MARK: - Animation Functions
+    private func startSpaceAnimation() {
+        // Main content entrance
+        withAnimation(.easeOut(duration: 1.2).delay(0.3)) {
+            showContent = true
+        }
+        
+        // Header entrance
+        withAnimation(.easeOut(duration: 1.0).delay(0.6)) {
+            showHeader = true
+        }
+        
+        // Progress entrance
+        withAnimation(.easeOut(duration: 1.0).delay(0.9)) {
+            showProgress = true
+        }
+        
+        // Cards entrance
+        withAnimation(.easeOut(duration: 1.0).delay(1.2)) {
+            showCards = true
+        }
+        
+        // Progress glow animation
+        withAnimation(.easeInOut(duration: 3.0).repeatForever(autoreverses: true).delay(2.0)) {
+            progressGlow = true
+        }
+    }
     
+    // MARK: - Handler Functions
     private func handleSwipe() {
-        if activeIndex < cards.count - 1 {
+        let provider = ArrayQuestionProvider(items: cards, startIndex: activeIndex)
+        if provider.hasNext() {
             withAnimation(.spring()) {
-                activeIndex += 1
+                activeIndex = provider.nextIndex()
             }
         } else {
             onComplete()
@@ -280,13 +216,13 @@ struct DeckView: View {
     }
     
     private func swipeCard(accepted: Bool) {
-        guard activeIndex < cards.count else { return }
-        
-        // Aquí podrías registrar la selección del usuario
+        let provider = ArrayQuestionProvider(items: cards, startIndex: activeIndex)
+        guard provider.current() != nil else { return }
+
         if accepted {
-            print("Aceptado: \(cards[activeIndex].title)")
+            AppLogger.make(category: "DeckView").info("Accepted: \(cards[activeIndex].title)")
         }
-        
+
         withAnimation(.spring()) {
             handleSwipe()
         }
@@ -305,84 +241,77 @@ struct DeckView: View {
         }
     }
     
-  private func handleMBTISwipe(_ value: DragGesture.Value) {
-    print("Handling MBTI swipe, current index: \(activeIndex)/\(mbtiQuestions.count)")
-    
-    if abs(value.translation.width) > swipeThreshold {
-        // Determine which option was selected
-        let selectedRight = value.translation.width > 0
+    private func handleMBTISwipe(_ value: DragGesture.Value) {
+        AppLogger.make(category: "DeckView").debug("Handling MBTI swipe: index \(activeIndex)/\(mbtiQuestions.count)")
         
-        // Verificar que el índice sea válido
-        guard activeIndex < mbtiQuestions.count else {
-            print("Error: activeIndex (\(activeIndex)) out of bounds for mbtiQuestions.count (\(mbtiQuestions.count))")
-            return
-        }
-        
-        let currentQuestion = mbtiQuestions[activeIndex]
-        
-        // Record the selected MBTI type
-        let selectedType = selectedRight ? currentQuestion.optionA.type : currentQuestion.optionB.type
-        mbtiResults[selectedType, default: 0] += 1
-        
-        // Note: We now just track the selection, processing is done by backend
-        print("MBTI trait selection recorded: \(selectedType)")
-        
-        print("Selected \(selectedRight ? "Option A" : "Option B") for question \(activeIndex + 1)")
-        
-        // Show feedback
-        showFeedback = true
-        feedbackText = selectedRight ? "Opción A seleccionada" : "Opción B seleccionada"
-        feedbackColor = selectedRight ? .green : .blue
-        
-        // Animate card away
-        withAnimation(.spring()) {
-            dragOffset = CGSize(
-                width: selectedRight ? 1000 : -1000,
-                height: 0
-            )
-        }
-        
-        // Store the next index to move to
-        let nextIndex = activeIndex + 1
-        let isComplete = nextIndex >= mbtiQuestions.count
-        
-        print("Next index will be: \(nextIndex), isComplete: \(isComplete)")
-        
-        // Reducir el retraso para una respuesta más rápida y asegurar que se ejecute
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            // Reset drag offset first
-            self.dragOffset = .zero
+        if abs(value.translation.width) > swipeThreshold {
+            let selectedRight = value.translation.width > 0
             
-            // Hide feedback
+            guard activeIndex < mbtiQuestions.count else {
+                AppLogger.make(category: "DeckView").error("activeIndex out of bounds: \(activeIndex) >= \(mbtiQuestions.count)")
+                return
+            }
+            
+            let currentQuestion = mbtiQuestions[activeIndex]
+            let selectedType = selectedRight ? currentQuestion.optionA.type : currentQuestion.optionB.type
+            mbtiResults[selectedType, default: 0] += 1
+            
+            AppLogger.make(category: "DeckView").info("MBTI selected: \(selectedType.rawValue), option: \(selectedRight ? "A" : "B") @Q\(activeIndex + 1)")
+            
+            // Show feedback
+            showFeedback = true
+            feedbackText = selectedRight ? "Opción A seleccionada" : "Opción B seleccionada"
+            feedbackColor = selectedRight ? AppTheme.Colors.spaceElectricBlue : AppTheme.Colors.spaceAlertRed
+            
+            // Animate card away
             withAnimation(.spring()) {
-                self.showFeedback = false
+                dragOffset = CGSize(
+                    width: selectedRight ? 1000 : -1000,
+                    height: 0
+                )
             }
             
-            // Check if there are more questions
-            if !isComplete {
-                print("Moving to next question: \(nextIndex + 1)/\(self.mbtiQuestions.count)")
-                // Actualizar el índice inmediatamente
-                withAnimation(.easeInOut) {
-                    self.activeIndex = nextIndex
+            let provider = ArrayQuestionProvider(items: mbtiQuestions, startIndex: activeIndex)
+            let nextIndex = provider.nextIndex()
+            let isComplete = !provider.hasNext()
+            
+            AppLogger.make(category: "DeckView").debug("Next index: \(nextIndex), complete: \(isComplete)")
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                self.dragOffset = .zero
+                
+                withAnimation(.spring()) {
+                    self.showFeedback = false
                 }
-                print("Active index updated to: \(self.activeIndex)")
-            } else {
-                // Test complete
-                print("MBTI test complete, calling completion handler")
-                // Asegurarse de que el callback se ejecute
-                if let onComplete = self.onMBTIComplete {
-                    onComplete(self.mbtiResults)
+                
+                if !isComplete {
+                    AppLogger.make(category: "DeckView").debug("Next question: \(nextIndex + 1)/\(self.mbtiQuestions.count)")
+                    withAnimation(.easeInOut) {
+                        self.activeIndex = nextIndex
+                    }
+                    AppLogger.make(category: "DeckView").debug("Active index: \(self.activeIndex)")
                 } else {
-                    print("Warning: onMBTIComplete is nil")
+                    AppLogger.make(category: "DeckView").info("MBTI test complete, calling completion handler")
+                    if let onComplete = self.onMBTIComplete {
+                        onComplete(self.mbtiResults)
+                    } else {
+                        AppLogger.make(category: "DeckView").error("onMBTIComplete is nil")
+                    }
                 }
             }
-        }
-    } else {
-        // Not enough to trigger a selection, reset position
-        withAnimation(.spring()) {
-            dragOffset = .zero
+        } else {
+            withAnimation(.spring()) {
+                dragOffset = .zero
+            }
         }
     }
 }
 
+// MARK: - Preview
+#Preview {
+    DeckView(
+        onComplete: {},
+        viewModel: VocationalTestViewModel()
+    )
+    .preferredColorScheme(.dark)
 }

@@ -2,8 +2,9 @@ import SwiftUI
 
 struct QuickDecisionView: View {
     @ObservedObject var viewModel: VocationalTestViewModel
-    @State private var timeRemaining: Double = 5.0
-    @State private var timer: Timer?
+    @State private var timeRemaining: Double = 20.0 // Aumentado de 5 a 20 segundos
+    @Environment(\.scenePhase) private var scenePhase
+    @StateObject private var timerDriver = TimerDriver(interval: 0.1)
     @State private var currentQuestion = 0
     @State private var selectedOption: Int?
     @State private var showFeedback = false
@@ -17,7 +18,7 @@ struct QuickDecisionView: View {
     @State private var rocketHoverOffset: CGFloat = 0.0
     @State private var rocketTrailOpacity: Double = 0.0
     @State private var showNebulas = false
-    @State private var showStars = false
+
     @State private var planetGlowIntensity: [Double] = Array(repeating: 0.0, count: 8)
     @State private var finalDestinationOpacity: Double = 0.0
     @State private var finalDestinationScale: CGFloat = 0.3
@@ -38,19 +39,19 @@ struct QuickDecisionView: View {
     
     let onContinue: () -> Void
     
-    // Colores definidos directamente
-    private let accentColor = Color(red: 0.25, green: 0.72, blue: 0.85)
-    private let secondaryColor = Color(red: 0.2, green: 0.6, blue: 1.0)
-    private let warningColor = Color(red: 1.0, green: 0.4, blue: 0.4)
+    // Colores unificados a AppTheme
+    private let accentColor = AppTheme.Colors.cosmicCyan
+    private let secondaryColor = AppTheme.Colors.cosmicBlue
+    private let warningColor = AppTheme.Colors.spaceAlertRed
     private let planetColors: [Color] = [
-        Color(red: 0.4, green: 0.2, blue: 0.9),  // Morado
-        Color(red: 0.9, green: 0.3, blue: 0.3),  // Rojo
-        Color(red: 0.2, green: 0.7, blue: 0.5),  // Verde
-        Color(red: 0.9, green: 0.6, blue: 0.1),  // Naranja
-        Color(red: 0.2, green: 0.4, blue: 0.9),  // Azul
-        Color(red: 0.8, green: 0.3, blue: 0.8),  // Rosa
-        Color(red: 0.3, green: 0.8, blue: 0.8),  // Turquesa
-        Color(red: 0.9, green: 0.8, blue: 0.2),  // Amarillo
+        AppTheme.Colors.cosmicPurple, // Morado
+        AppTheme.Colors.error,        // Rojo (theme)
+        AppTheme.Colors.cosmicCyan,   // Verde/Azulado
+        AppTheme.Colors.highlight,    // Naranja (theme)
+        AppTheme.Colors.cosmicBlue,   // Azul
+        AppTheme.Colors.cosmicPink,   // Rosa
+        AppTheme.Colors.cosmicIndigo, // Turquesa/Índigo
+        AppTheme.Colors.warning       // Amarillo (theme)
     ]
     
     // Nuevas preguntas basadas en inteligencias múltiples
@@ -132,16 +133,25 @@ struct QuickDecisionView: View {
             
             // Pantalla de finalización
             if gameCompleted {
-                CompletionView()
+                CompletionPanel {
+                    withAnimation { isSendingResponses = true }
+                }
             }
         }
         .onAppear {
             startAnimations()
-            startTimer()
-            
-            // Asegurarse de que el avatar esté seleccionado
-            if viewModel.selectedAvatar == nil {
-                viewModel.selectedAvatar = Avatar.allAvatars.first
+            timeRemaining = 20.0
+            timerDriver.start()
+
+            // Asegurarse de que el avatar esté seleccionado (MainActor)
+            Task { @MainActor in
+                if viewModel.selectedAvatar == nil {
+                    viewModel.selectedAvatar = Avatar(
+                        id: UUID(),
+                        name: "Default",
+                        imageName: "person.circle.fill"
+                    )
+                }
             }
             
             // Iniciar animación de brillo del primer planeta
@@ -152,8 +162,19 @@ struct QuickDecisionView: View {
             // Calcular puntos de trayectoria del cohete
             calculateRocketPathPoints()
         }
-        .onDisappear {
-            timer?.invalidate()
+        .onDisappear { timerDriver.stop() }
+        .onReceive(timerDriver.$tick) { _ in
+            if timeRemaining > 0 {
+                timeRemaining = max(0, timeRemaining - 0.1)
+            } else if selectedOption == nil {
+                selectOption(Int.random(in: 0...1))
+            }
+        }
+        .onChange(of: scenePhase) { phase in
+            switch phase {
+            case .active: timerDriver.start()
+            default: timerDriver.stop()
+            }
         }
     }
     
@@ -161,12 +182,7 @@ struct QuickDecisionView: View {
     
     private var spaceBackground: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
-            
-            // Estrellas
-            if showStars {
-                StarField()
-            }
+            WelcomeCosmicBackground()
             
             // Nébulas - versión mejorada
             if showNebulas {
@@ -201,96 +217,44 @@ struct QuickDecisionView: View {
     }
     
     private var headerSection: some View {
-        HStack {
-            Text("Decisión Rápida")
-                .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
-            
-            Spacer()
-            
-            // Temporizador circular
-            ZStack {
-                Circle()
-                    .stroke(lineWidth: 4)
-                    .opacity(0.3)
-                    .foregroundColor(accentColor)
-                
-                Circle()
-                    .trim(from: 0.0, to: CGFloat(timeRemaining / 5.0))
-                    .stroke(style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
-                    .foregroundColor(timeRemaining > 2 ? accentColor : warningColor)
-                    .rotationEffect(Angle(degrees: 270.0))
-                    .animation(.linear, value: timeRemaining)
-                
-                Text("\(Int(timeRemaining))")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(timeRemaining > 2 ? accentColor : warningColor)
-            }
-            .frame(width: 40, height: 40)
-        }
-        .padding(.horizontal)
+        HeaderTimerView(title: "Decisión Rápida", timeRemaining: $timeRemaining)
     }
     
     private var rocketGameArea: some View {
         ZStack(alignment: .bottom) {
-            // Trayectoria del cohete
-            rocketPath
-                .trim(from: 0, to: pathProgress)
-                .stroke(style: StrokeStyle(lineWidth: 2, dash: [5, 5]))
-                .foregroundColor(.white.opacity(0.5))
-                .animation(.easeInOut(duration: 0.8), value: pathProgress)
-            
-            // Estela del cohete
-            if rocketTrailOpacity > 0 {
-                rocketTrailView
-                    .offset(x: rocketPositionX, y: -rocketPosition + 40)
-                    .opacity(rocketTrailOpacity)
-            }
-            
-            // Destino final (solo visible cuando se está acercando al final)
-            finalDestinationView
+            RocketPathView(
+                pathProgress: $pathProgress,
+                rocketPosition: $rocketPosition,
+                rocketPositionX: $rocketPositionX,
+                rocketRotation: $rocketRotation,
+                showRocketBoost: $showRocketBoost,
+                rocketTrailOpacity: $rocketTrailOpacity,
+                showRocketParticles: $showRocketParticles
+            )
+
+            FinalDestinationView(isAnimating: $isAnimating)
                 .opacity(finalDestinationOpacity)
                 .scaleEffect(finalDestinationScale)
                 .offset(y: -280)
 
-            // Cohete
-            rocketView
-                .offset(x: rocketPositionX)
-
-            // Planetas para cada pregunta
             ForEach(0..<8) { index in
                 if index <= currentQuestion {
-                    planetView(index: index)
+                    PlanetView(
+                        index: index,
+                        color: planetColors[index],
+                        glow: Binding<Double>(
+                            get: { planetGlowIntensity[index] },
+                            set: { planetGlowIntensity[index] = $0 }
+                        ),
+                        isCurrent: currentQuestion == index
+                    )
                         .offset(
                             x: index % 2 == 0 ? -80 : 80,
                             y: -CGFloat(index + 1) * (220 / 8)
                         )
-                        .scaleEffect(planetGlowIntensity[index] > 0.5 ? 1.1 : 1.0)
-                        .animation(.easeInOut(duration: 1.0), value: planetGlowIntensity[index])
-                }
-            }
-            
-            // Partículas espaciales para el cohete
-            if showRocketParticles {
-                ForEach(0..<15) { i in
-                    Circle()
-                        .fill(Color.white.opacity(Double.random(in: 0.3...0.7)))
-                        .frame(width: CGFloat.random(in: 1...3), height: CGFloat.random(in: 1...3))
-                        .offset(
-                            x: rocketPositionX + CGFloat.random(in: -20...20),
-                            y: -rocketPosition + CGFloat.random(in: 30...60)
-                        )
-                        .animation(
-                            Animation.easeOut(duration: Double.random(in: 0.5...1.5))
-                                .repeatForever(autoreverses: false)
-                                .delay(Double.random(in: 0...1)),
-                            value: showRocketParticles
-                        )
                 }
             }
         }
-        .frame(height: 280)
-        .padding(.vertical)
     }
     
     private var rocketPath: Path {
@@ -466,14 +430,18 @@ struct QuickDecisionView: View {
     private var questionSection: some View {
         VStack(spacing: 10) {
             Text("Pregunta \(currentQuestion + 1)/8")
-                .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundColor(.white.opacity(0.8))
+                .font(.custom("ZonaPro-Light", size: 16))
+                .foregroundColor(AppTheme.Colors.cosmicCyan.opacity(0.8))
+                .tracking(1)
             
             Text(questions[currentQuestion])
-                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .font(.custom("ZonaPro-Bold", size: 24))
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
+                .lineSpacing(4)
+                .tracking(0.5)
                 .padding(.horizontal, 20)
+                .shadow(color: AppTheme.Colors.cosmicCyan.opacity(0.3), radius: 10, x: 0, y: 2)
                 .scaleEffect(isAnimating ? 1.02 : 1.0)
                 .animation(
                     .easeInOut(duration: 1.5).repeatForever(autoreverses: true),
@@ -483,12 +451,12 @@ struct QuickDecisionView: View {
     }
     
     private var optionsSection: some View {
-        VStack(spacing: 15) {
-            ForEach(0..<2) { index in
-                optionButton(index: index)
-            }
-        }
-        .padding(.horizontal, 20)
+        OptionsListView(
+            options: [options[currentQuestion][0], options[currentQuestion][1]],
+            icons: [optionIcons[currentQuestion][0], optionIcons[currentQuestion][1]],
+            selectedIndex: $selectedOption,
+            onSelect: { idx in selectOption(idx) }
+        )
     }
     
     private func optionButton(index: Int) -> some View {
@@ -501,19 +469,21 @@ struct QuickDecisionView: View {
                     .foregroundColor(selectedOption == index ? .white : accentColor)
                 
                 Text(options[currentQuestion][index])
-                    .font(.system(size: 18, weight: .semibold, design: .rounded))
+                    .font(.custom("ZonaPro-SemiBold", size: 18))
                     .foregroundColor(selectedOption == index ? .white : .white)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .tracking(0.3)
             }
             .padding()
             .frame(height: 60)
             .background(optionBackground(isSelected: selectedOption == index))
-            .cornerRadius(15)
+            .cornerRadius(20)
             .overlay(
-                RoundedRectangle(cornerRadius: 15)
-                    .stroke(selectedOption == index ? Color.white : accentColor, lineWidth: 2)
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(selectedOption == index ? Color.white : AppTheme.Colors.cosmicCyan.opacity(0.6), lineWidth: 1.5)
             )
-            .shadow(color: selectedOption == index ? accentColor.opacity(0.5) : .clear, radius: 10, x: 0, y: 5)
+            .shadow(color: selectedOption == index ? AppTheme.Colors.cosmicCyan.opacity(0.6) : Color.white.opacity(0.1), radius: 15, x: 0, y: 8)
+            .scaleEffect(selectedOption == index ? 1.05 : 1.0)
         }
         .disabled(showFeedback || gameCompleted)
         .scaleEffect(selectedOption == index ? 1.03 : 1.0)
@@ -524,12 +494,38 @@ struct QuickDecisionView: View {
         Group {
             if isSelected {
                 LinearGradient(
-                    gradient: Gradient(colors: [accentColor, secondaryColor]),
-                    startPoint: .leading,
-                    endPoint: .trailing
+                    gradient: Gradient(colors: [
+                        AppTheme.Colors.cosmicCyan,
+                        AppTheme.Colors.cosmicBlue,
+                        AppTheme.Colors.cosmicPurple
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
                 )
             } else {
-                Color.white.opacity(0.1)
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(.ultraThinMaterial)
+                    .opacity(0.4)
+                    .background {
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(.thinMaterial)
+                            .opacity(0.3)
+                    }
+                    .overlay {
+                        // Efecto de brillo sutil
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.15),
+                                        Color.white.opacity(0.05),
+                                        Color.clear
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                    }
             }
         }
     }
@@ -550,21 +546,23 @@ struct QuickDecisionView: View {
     @ViewBuilder
     private func CompletionView() -> some View {
         ZStack {
-            AnimatedStarField(numberOfStars: 200, starSpeed: 0.7)
-                .edgesIgnoringSafeArea(.all)
+            WelcomeCosmicBackground()
             
             VStack(spacing: 30) {
                 // Título
                 Text("¡Misión Cumplida!")
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .font(.custom("ZonaPro-Bold", size: 36))
                     .foregroundColor(.white)
-                    .shadow(color: .blue.opacity(0.6), radius: 5)
+                    .shadow(color: AppTheme.Colors.cosmicCyan.opacity(0.8), radius: 10, x: 0, y: 4)
+                    .tracking(1)
                 
                 // Mensaje
                 Text("Hemos recopilado información valiosa para conocer tus habilidades y perfil.")
-                    .font(.system(size: 18))
+                    .font(.custom("ZonaPro-Light", size: 18))
                     .foregroundColor(.white.opacity(0.9))
                     .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                    .tracking(0.3)
                     .padding(.horizontal, 20)
                 
                 // Imagen
@@ -583,13 +581,22 @@ struct QuickDecisionView: View {
                     }
                 }) {
                     Text("Continuar")
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(.custom("ZonaPro-Bold", size: 20))
                         .foregroundColor(.white)
                         .padding(.horizontal, 40)
                         .padding(.vertical, 15)
-                        .background(Color.blue)
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    AppTheme.Colors.cosmicCyan,
+                                    AppTheme.Colors.cosmicBlue
+                                ]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
                         .cornerRadius(30)
-                        .shadow(color: .blue.opacity(0.6), radius: 8)
+                        .shadow(color: AppTheme.Colors.cosmicCyan.opacity(0.6), radius: 12, x: 0, y: 6)
                         .overlay(
                             RoundedRectangle(cornerRadius: 30)
                                 .stroke(Color.white.opacity(0.3), lineWidth: 2)
@@ -615,7 +622,6 @@ struct QuickDecisionView: View {
     
     private func startAnimations() {
         withAnimation(.easeInOut(duration: 1.0)) {
-            showStars = true
             showNebulas = true
             isAnimating = true
             showRocketParticles = true
@@ -634,16 +640,7 @@ struct QuickDecisionView: View {
         }
     }
     
-    private func startTimer() {
-        timeRemaining = 5.0
-        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
-            if timeRemaining > 0 {
-                timeRemaining -= 0.1
-            } else if selectedOption == nil {
-                selectOption(Int.random(in: 0...1))
-            }
-        }
-    }
+    // Eliminado timer legado; usamos TimerDriver para ticks
     
     private func selectOption(_ option: Int) {
         // Seleccionar la opción
@@ -683,7 +680,7 @@ struct QuickDecisionView: View {
                 } else {
                     // Terminar la fase de preguntas e iniciar la animación del cohete
                     withAnimation {
-                        showStars = true
+            
                         withAnimation(.easeInOut(duration: 2.0)) {
                             pathProgress = 0.3
                         }
@@ -833,8 +830,10 @@ struct QuickDecisionView: View {
         
         // Después de llegar al destino, enviar datos al servidor y mostrar pantalla de finalización
         DispatchQueue.main.asyncAfter(deadline: .now() + duration + 0.5) {
-            // Guardar respuestas en ResponseService
-            ResponseService.shared.saveQuickDecisionResponses(viewModel: viewModel)
+            // Guardar respuestas en ResponseService (MainActor)
+            Task { @MainActor in
+                ResponseService.shared.saveQuickDecisionResponses(viewModel: viewModel)
+            }
             
             // Mostrar pantalla de finalización
             withAnimation(.easeInOut(duration: 0.5)) {
@@ -856,15 +855,15 @@ struct QuickDecisionView: View {
     private func prepareTestResult() {
         // For frontend-only version, we just record the selections
         // All processing will be done by the backend
-        print("Quick decision selections recorded: \(selectedIndices)")
+        AppLogger.make(category: "QuickDecision").info("Selections: \(selectedIndices)")
         
         // Store selections in ViewModel for backend submission
         // This can be added to the payload when submitting to backend
     }
     
     private func resetTimer() {
-        timer?.invalidate()
-        startTimer()
+        // Reinicia solo el contador; TimerDriver ya emite ticks
+        timeRemaining = 20.0
     }
     
     private func startRocketMovement() {

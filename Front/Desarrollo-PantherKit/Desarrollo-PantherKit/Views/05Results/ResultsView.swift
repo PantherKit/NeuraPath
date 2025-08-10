@@ -34,13 +34,8 @@ struct ResultsView: View {
             backgroundGradient
                 .ignoresSafeArea()
             
-            // Estrellas animadas
-            AnimatedStarField(
-                numberOfStars: 150,
-                starBrightness: 0.7,
-                starSpeed: 0.5
-            )
-            .opacity(animateBackground ? 1 : 0)
+            WelcomeCosmicBackground()
+                .opacity(animateBackground ? 1 : 0)
             
             // Nebulosas decorativas
             ForEach(0..<3) { i in
@@ -78,7 +73,7 @@ struct ResultsView: View {
                         
                         // Perfil MBTI
                         if let mbti = apiResponse?.mbtiProfile {
-                            mbtiProfileView(mbti)
+                            MBTIProfileSection(profile: mbti)
                                 .padding(.horizontal)
                                 .opacity(animateCards ? 1 : 0)
                                 .offset(y: animateCards ? 0 : 20)
@@ -86,15 +81,17 @@ struct ResultsView: View {
                         
                         // Carreras recomendadas
                         if let recommendations = apiResponse?.careerRecommendations, !recommendations.isEmpty {
-                            careerRecommendationsView(recommendations)
-                                .padding(.horizontal)
-                                .opacity(animateCards ? 1 : 0)
-                                .offset(y: animateCards ? 0 : 30)
+                            CareerRecommendationsSection(careers: recommendations) { career in
+                                selectedCareer = career
+                            }
+                            .padding(.horizontal)
+                            .opacity(animateCards ? 1 : 0)
+                            .offset(y: animateCards ? 0 : 30)
                         }
                         
                         // Inteligencias múltiples
                         if let scores = apiResponse?.miScores {
-                            multipleIntelligencesView(scores)
+                            MultipleIntelligencesSection(scores: scores)
                                 .padding(.horizontal)
                                 .opacity(animateCards ? 1 : 0)
                                 .offset(y: animateCards ? 0 : 40)
@@ -110,7 +107,7 @@ struct ResultsView: View {
                         
                         // Análisis global detallado (si está disponible)
                         if let analysis = apiResponse?.analysis {
-                            globalAnalysisView(analysis)
+                            GlobalAnalysisSection(analysis: analysis, isExpanded: $showGlobalAnalysis)
                                 .padding(.horizontal)
                                 .opacity(animateCards ? 1 : 0)
                                 .offset(y: animateCards ? 0 : 45)
@@ -220,11 +217,11 @@ struct ResultsView: View {
                     )
                 
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(getMBTIDescription(profile.code))
+                    Text(ResultsView.getMBTIDescription(profile.code))
                         .font(.system(size: 16, weight: .medium, design: .rounded))
                         .foregroundColor(.white.opacity(0.9))
                     
-                    Text(getMBTITraits(profile.code))
+                    Text(ResultsView.getMBTITraits(profile.code))
                         .font(.system(size: 14, weight: .regular))
                         .foregroundColor(.white.opacity(0.7))
                 }
@@ -812,7 +809,7 @@ struct ResultsView: View {
         }
     }
     
-    private func getMBTIDescription(_ code: String) -> String {
+    static func getMBTIDescription(_ code: String) -> String {
         // Aquí podrías incluir descripciones personalizadas para cada tipo MBTI
         switch code {
         case "INFP":
@@ -827,7 +824,7 @@ struct ResultsView: View {
         }
     }
     
-    private func getMBTITraits(_ code: String) -> String {
+    static func getMBTITraits(_ code: String) -> String {
         // Rasgos específicos para cada tipo MBTI
         switch code {
         case "INFP":

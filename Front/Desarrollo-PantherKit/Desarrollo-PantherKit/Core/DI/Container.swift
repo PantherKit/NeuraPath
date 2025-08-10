@@ -20,6 +20,15 @@ final class DIContainer {
     lazy var apiService: APIService = {
         return APIService()
     }()
+
+    // MARK: - Stores (Persistence)
+    lazy var userResponseStore: UserResponseStoring = {
+        UserDefaultsUserResponseStore()
+    }()
+
+    lazy var apiResponseStore: APIResponseStoring = {
+        UserDefaultsAPIResponseStore()
+    }()
     
     // MARK: - Public Factory Methods
     
