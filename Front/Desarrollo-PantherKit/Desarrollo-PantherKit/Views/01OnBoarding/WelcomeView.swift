@@ -20,58 +20,11 @@ struct WelcomeView: View {
             // Main content
             VStack(spacing: 0) {
                 // Top navigation area
-                HStack {
-                    // Left side - Navigation panels
-                    HStack(spacing: 12) {
-                        // Circle with number
-                        Circle()
-                            .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.6))
-                            .frame(width: 32, height: 32)
-                            .overlay(
-                                Circle()
-                                    .stroke(AppTheme.Colors.spacePureWhite, lineWidth: 1)
-                            )
-                            .overlay(
-                                Text("01")
-                                    .font(AppTheme.Space.spaceCaption(12))
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(AppTheme.Colors.spacePureWhite)
-                            )
-                        
-                        // Rectangle with text
-                        Text("MISSION CONTROL")
-                            .font(AppTheme.Space.spaceCaption(10))
-                            .fontWeight(.medium)
-                            .foregroundColor(AppTheme.Colors.spacePureWhite)
-                            .tracking(0.5)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(
-                                RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
-                                    .fill(AppTheme.Colors.spaceDeepBlack.opacity(0.6))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: AppTheme.Space.panelCornerRadius)
-                                            .stroke(AppTheme.Colors.spacePureWhite, lineWidth: 1)
-                                    )
-                            )
-                    }
-                    
-                    Spacer()
-                    
-                    // Right side - Number and phrase
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Text("01")
-                            .font(AppTheme.Space.spaceCaption(12))
-                            .fontWeight(.semibold)
-                            .foregroundColor(AppTheme.Colors.spacePureWhite)
-                        
-                        Text("Begin your journey")
-                            .font(AppTheme.Space.spaceCaption(10))
-                            .foregroundColor(AppTheme.Colors.spaceGray)
-                            .multilineTextAlignment(.trailing)
-                    }
-                }
-                .padding(.horizontal, 20)
+                OnboardingHeaderView(
+                    stepNumber: "01",
+                    panelTitle: "MISSION CONTROL",
+                    rightSubtitle: "Begin your journey"
+                )
                 .padding(.top, 60)
                 .opacity(showContent ? 1.0 : 0)
                 .offset(y: showContent ? 0 : -20)
@@ -107,17 +60,8 @@ struct WelcomeView: View {
                     
                     // Metrics row
                     HStack(spacing: 40) {
-                        SpaceMetricPanel(
-                            label: "Available Paths",
-                            value: "180",
-                            unit: nil
-                        )
-                        
-                        SpaceMetricPanel(
-                            label: "Match Rate",
-                            value: "94.7",
-                            unit: "%"
-                        )
+                        MetricPanel(label: "Available Paths", value: "180", unit: nil)
+                        MetricPanel(label: "Match Rate", value: "94.7", unit: "%")
                     }
                     .opacity(showTitle ? 1.0 : 0)
                     .offset(y: showTitle ? 0 : 20)

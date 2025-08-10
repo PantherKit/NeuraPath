@@ -19,12 +19,7 @@ struct AvatarSelectionView: View {
             
             // Main content
             VStack(spacing: 0) {
-                // Top navigation header
-                SpaceNavigationHeader(
-                    number: "02",
-                    title: "MISSION CREW",
-                    subtitle: "Select your avatar"
-                )
+                OnboardingHeaderView(stepNumber: "02", panelTitle: "MISSION CREW", rightSubtitle: "Select your avatar")
                 .opacity(showContent ? 1.0 : 0)
                 .offset(y: showContent ? 0 : -20)
                 
@@ -57,7 +52,9 @@ struct AvatarSelectionView: View {
                     .offset(y: showHeader ? 0 : -30)
                     
                     // Avatar grid
-                    SpaceAvatarGrid(viewModel: viewModel)
+                    AvatarGridView(avatars: Avatar.allAvatars, selectedAvatar: viewModel.selectedAvatar) { avatar in
+                        viewModel.selectAvatar(avatar)
+                    }
                         .opacity(showGrid ? 1.0 : 0)
                         .offset(y: showGrid ? 0 : 30)
                     

@@ -30,6 +30,7 @@ final class VocationalTestViewModel: ObservableObject {
     // MARK: - Private Dependencies
     
     private let apiService: APIService
+    private let logger = AppLogger.make(category: "VocationalTestVM")
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Computed Properties (Simple UI Logic Only)
@@ -149,16 +150,14 @@ final class VocationalTestViewModel: ObservableObject {
                     self.apiResponse = response
                     self.testCompleted = true
                     self.isLoading = false
-            
-            print("✅ Test completed successfully")
-                    print("📊 Received \(response.careerRecommendations.count) career recommendations")
+                    self.logger.info("Test completed successfully. Recommendations: \(response.careerRecommendations.count)")
                 }
             
         } catch {
                 await MainActor.run {
                     self.errorMessage = "Failed to submit test: \(error.localizedDescription)"
                     self.isLoading = false
-                    print("❌ Test submission failed: \(error)")
+                    self.logger.error("Test submission failed: \(error.localizedDescription)")
                 }
             }
         }
@@ -215,7 +214,7 @@ final class VocationalTestViewModel: ObservableObject {
         self.apiResponse = DemoData.sampleAPIResponse
         
         // Mark as completed (no processing needed, just UI state)
-        print("✅ Demo data loaded successfully")
+        logger.info("Demo data loaded successfully")
     }
     
     // MARK: - Compatibility Methods for Views

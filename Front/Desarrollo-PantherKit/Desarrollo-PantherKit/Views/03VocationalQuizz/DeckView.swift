@@ -96,7 +96,7 @@ struct DeckView: View {
         .ignoresSafeArea()
         .onAppear {
             startSpaceAnimation()
-            print("DeckView appeared with \(mbtiQuestions.count) MBTI questions")
+            AppLogger.make(category: "DeckView").debug("Appeared with MBTI questions: \(mbtiQuestions.count)")
         }
     }
     
@@ -104,8 +104,8 @@ struct DeckView: View {
     private var cardStackView: some View {
         ZStack {
             ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
-                SpaceQuestionCard(
-                    card: card,
+                GenericQuestionGlassCard(
+                    content: card,
                     isActive: index == activeIndex,
                     onSwipedAway: handleSwipe,
                     onShowDetails: { selectedCard = card; showDetails = true }
@@ -118,35 +118,29 @@ struct DeckView: View {
     
     // MARK: - MBTI Card View
     private var mbtiCardView: some View {
-        let stemCard = mbtiQuestions[activeIndex].toSTEMCard()
-        
-        return ZStack {
-            // Use SpaceQuestionCard with the converted STEMCard
-            SpaceQuestionCard(
-                card: stemCard,
-                isActive: true,
-                onSwipedAway: { /* handled by gesture */ },
-                onShowDetails: { /* no details for MBTI cards */ }
-            )
-            
-            // Space swipe indicators
-            SpaceSwipeIndicators(
-                dragOffset: dragOffset,
-                swipeThreshold: swipeThreshold
-            )
+        let provider = DeckQuestionProvider(items: mbtiQuestions, startIndex: activeIndex)
+        return Group {
+            if let question = provider.current() {
+                MBTIQuestionCardView(
+                    question: question,
+                    swipePolicy: DefaultSwipePolicy(threshold: swipeThreshold),
+                    dragOffset: $dragOffset
+                )
+                .gesture(
+                    DragGesture(minimumDistance: 5)
+                        .onChanged { value in
+                            withAnimation(.interactiveSpring()) {
+                                dragOffset = value.translation
+                            }
+                        }
+                        .onEnded { value in
+                            handleMBTISwipe(value)
+                        }
+                )
+            } else {
+                EmptyView()
+            }
         }
-        .frame(width: UIScreen.main.bounds.width - 48, height: 520)
-        .gesture(
-            DragGesture(minimumDistance: 5)
-                .onChanged { value in
-                    withAnimation(.interactiveSpring()) {
-                        dragOffset = value.translation
-                    }
-                }
-                .onEnded { value in
-                    handleMBTISwipe(value)
-                }
-        )
     }
     
     private var spaceSwipeInstructions: some View {
@@ -202,9 +196,10 @@ struct DeckView: View {
     
     // MARK: - Handler Functions
     private func handleSwipe() {
-        if activeIndex < cards.count - 1 {
+        let provider = ArrayQuestionProvider(items: cards, startIndex: activeIndex)
+        if provider.hasNext() {
             withAnimation(.spring()) {
-                activeIndex += 1
+                activeIndex = provider.nextIndex()
             }
         } else {
             onComplete()
@@ -212,12 +207,13 @@ struct DeckView: View {
     }
     
     private func swipeCard(accepted: Bool) {
-        guard activeIndex < cards.count else { return }
-        
+        let provider = ArrayQuestionProvider(items: cards, startIndex: activeIndex)
+        guard provider.current() != nil else { return }
+
         if accepted {
-            print("Aceptado: \(cards[activeIndex].title)")
+            AppLogger.make(category: "DeckView").info("Accepted: \(cards[activeIndex].title)")
         }
-        
+
         withAnimation(.spring()) {
             handleSwipe()
         }
@@ -237,13 +233,13 @@ struct DeckView: View {
     }
     
     private func handleMBTISwipe(_ value: DragGesture.Value) {
-        print("Handling MBTI swipe, current index: \(activeIndex)/\(mbtiQuestions.count)")
+        AppLogger.make(category: "DeckView").debug("Handling MBTI swipe: index \(activeIndex)/\(mbtiQuestions.count)")
         
         if abs(value.translation.width) > swipeThreshold {
             let selectedRight = value.translation.width > 0
             
             guard activeIndex < mbtiQuestions.count else {
-                print("Error: activeIndex (\(activeIndex)) out of bounds for mbtiQuestions.count (\(mbtiQuestions.count))")
+                AppLogger.make(category: "DeckView").error("activeIndex out of bounds: \(activeIndex) >= \(mbtiQuestions.count)")
                 return
             }
             
@@ -251,8 +247,7 @@ struct DeckView: View {
             let selectedType = selectedRight ? currentQuestion.optionA.type : currentQuestion.optionB.type
             mbtiResults[selectedType, default: 0] += 1
             
-            print("MBTI trait selection recorded: \(selectedType)")
-            print("Selected \(selectedRight ? "Option A" : "Option B") for question \(activeIndex + 1)")
+            AppLogger.make(category: "DeckView").info("MBTI selected: \(selectedType.rawValue), option: \(selectedRight ? "A" : "B") @Q\(activeIndex + 1)")
             
             // Show feedback
             showFeedback = true
@@ -267,10 +262,11 @@ struct DeckView: View {
                 )
             }
             
-            let nextIndex = activeIndex + 1
-            let isComplete = nextIndex >= mbtiQuestions.count
+            let provider = ArrayQuestionProvider(items: mbtiQuestions, startIndex: activeIndex)
+            let nextIndex = provider.nextIndex()
+            let isComplete = !provider.hasNext()
             
-            print("Next index will be: \(nextIndex), isComplete: \(isComplete)")
+            AppLogger.make(category: "DeckView").debug("Next index: \(nextIndex), complete: \(isComplete)")
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 self.dragOffset = .zero
@@ -280,17 +276,17 @@ struct DeckView: View {
                 }
                 
                 if !isComplete {
-                    print("Moving to next question: \(nextIndex + 1)/\(self.mbtiQuestions.count)")
+                    AppLogger.make(category: "DeckView").debug("Next question: \(nextIndex + 1)/\(self.mbtiQuestions.count)")
                     withAnimation(.easeInOut) {
                         self.activeIndex = nextIndex
                     }
-                    print("Active index updated to: \(self.activeIndex)")
+                    AppLogger.make(category: "DeckView").debug("Active index: \(self.activeIndex)")
                 } else {
-                    print("MBTI test complete, calling completion handler")
+                    AppLogger.make(category: "DeckView").info("MBTI test complete, calling completion handler")
                     if let onComplete = self.onMBTIComplete {
                         onComplete(self.mbtiResults)
                     } else {
-                        print("Warning: onMBTIComplete is nil")
+                        AppLogger.make(category: "DeckView").error("onMBTIComplete is nil")
                     }
                 }
             }

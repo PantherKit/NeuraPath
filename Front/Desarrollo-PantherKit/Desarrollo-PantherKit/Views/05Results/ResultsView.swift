@@ -73,7 +73,7 @@ struct ResultsView: View {
                         
                         // Perfil MBTI
                         if let mbti = apiResponse?.mbtiProfile {
-                            mbtiProfileView(mbti)
+                            MBTIProfileSection(profile: mbti)
                                 .padding(.horizontal)
                                 .opacity(animateCards ? 1 : 0)
                                 .offset(y: animateCards ? 0 : 20)
@@ -81,15 +81,17 @@ struct ResultsView: View {
                         
                         // Carreras recomendadas
                         if let recommendations = apiResponse?.careerRecommendations, !recommendations.isEmpty {
-                            careerRecommendationsView(recommendations)
-                                .padding(.horizontal)
-                                .opacity(animateCards ? 1 : 0)
-                                .offset(y: animateCards ? 0 : 30)
+                            CareerRecommendationsSection(careers: recommendations) { career in
+                                selectedCareer = career
+                            }
+                            .padding(.horizontal)
+                            .opacity(animateCards ? 1 : 0)
+                            .offset(y: animateCards ? 0 : 30)
                         }
                         
                         // Inteligencias múltiples
                         if let scores = apiResponse?.miScores {
-                            multipleIntelligencesView(scores)
+                            MultipleIntelligencesSection(scores: scores)
                                 .padding(.horizontal)
                                 .opacity(animateCards ? 1 : 0)
                                 .offset(y: animateCards ? 0 : 40)
@@ -105,7 +107,7 @@ struct ResultsView: View {
                         
                         // Análisis global detallado (si está disponible)
                         if let analysis = apiResponse?.analysis {
-                            globalAnalysisView(analysis)
+                            GlobalAnalysisSection(analysis: analysis, isExpanded: $showGlobalAnalysis)
                                 .padding(.horizontal)
                                 .opacity(animateCards ? 1 : 0)
                                 .offset(y: animateCards ? 0 : 45)
