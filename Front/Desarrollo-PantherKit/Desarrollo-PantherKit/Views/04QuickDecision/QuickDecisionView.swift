@@ -29,6 +29,8 @@ struct QuickDecisionView: View {
     @State private var currentPathPoint: Int = 0
     @State private var rocketMoving: Bool = false
     @State private var selectedIndices: [Int] = []
+    @State private var completionPulse = false
+    @State private var completionBadgeRotation = false
     // Estados para envío de respuestas
     @State private var isSendingResponses: Bool = false
     @State private var sendingProgress: CGFloat = 0.0
@@ -553,29 +555,27 @@ struct QuickDecisionView: View {
             AnimatedStarField(numberOfStars: 200, starSpeed: 0.7)
                 .edgesIgnoringSafeArea(.all)
             
-            VStack(spacing: 30) {
-                // Título
-                Text("¡Misión Cumplida!")
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
-                    .shadow(color: .blue.opacity(0.6), radius: 5)
+            VStack(spacing: 24) {
+                Spacer(minLength: 0)
                 
-                // Mensaje
+                Text("¡Misión Cumplida!")
+                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                    .shadow(color: .blue.opacity(0.6), radius: 8)
+                
                 Text("Hemos recopilado información valiosa para conocer tus habilidades y perfil.")
-                    .font(.system(size: 18))
+                    .font(.system(size: 18, weight: .medium))
                     .foregroundColor(.white.opacity(0.9))
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 8)
                 
-                // Imagen
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 80))
-                    .foregroundColor(.green)
-                    .shadow(color: .green.opacity(0.6), radius: 10)
+                missionBadge
                 
-                Spacer()
+                HStack(spacing: 16) {
+                    insightPill(title: "Habilidades", value: "12 señales clave")
+                    insightPill(title: "Perfil", value: "3 rutas ideales")
+                }
                 
-                // Botón de continuar
                 Button(action: {
                     // Mostrar la vista de análisis antes de continuar
                     withAnimation {
@@ -585,19 +585,28 @@ struct QuickDecisionView: View {
                     Text("Continuar")
                         .font(.system(size: 20, weight: .semibold))
                         .foregroundColor(.white)
-                        .padding(.horizontal, 40)
-                        .padding(.vertical, 15)
-                        .background(Color.blue)
-                        .cornerRadius(30)
-                        .shadow(color: .blue.opacity(0.6), radius: 8)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.blue, Color.purple]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(32)
+                        .shadow(color: .blue.opacity(0.6), radius: 12, x: 0, y: 8)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 30)
-                                .stroke(Color.white.opacity(0.3), lineWidth: 2)
+                            RoundedRectangle(cornerRadius: 32)
+                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
                         )
                 }
-                .padding(.bottom, 30)
+                .padding(.top, 8)
+                
+                Spacer(minLength: 0)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.horizontal, 32)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             .transition(.opacity)
             
             // Vista de análisis de respuestas
@@ -609,6 +618,81 @@ struct QuickDecisionView: View {
                 .transition(.opacity)
             }
         }
+    }
+    
+    private var missionBadge: some View {
+        let orbitOffsets: [CGSize] = [
+            CGSize(width: -100, height: -80),
+            CGSize(width: 110, height: -40),
+            CGSize(width: 80, height: 90)
+        ]
+        
+        return ZStack {
+            RoundedRectangle(cornerRadius: 40, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color.purple.opacity(0.95), Color.blue]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 40, style: .continuous)
+                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                )
+                .shadow(color: Color.purple.opacity(0.5), radius: 20, x: 0, y: 15)
+            
+            ForEach(Array(orbitOffsets.enumerated()), id: \.offset) { index, offset in
+                Circle()
+                    .fill(Color.white.opacity(0.25))
+                    .frame(width: CGFloat(40 + (index * 15)), height: CGFloat(40 + (index * 15)))
+                    .blur(radius: 12)
+                    .offset(offset)
+            }
+            
+            VStack(spacing: 8) {
+                Text("Perfil STEM Analizado")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.white.opacity(0.8))
+                    .textCase(.uppercase)
+                    .kerning(1.2)
+                
+                Text("113 datos procesados")
+                    .font(.system(size: 26, weight: .heavy, design: .rounded))
+                    .foregroundColor(.white)
+                
+                Text("Listo para desbloquear tus próximos pasos.")
+                    .font(.system(size: 15))
+                    .foregroundColor(.white.opacity(0.85))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 16)
+            }
+            .padding(.horizontal, 16)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 190)
+    }
+    
+    private func insightPill(title: String, value: String) -> some View {
+        VStack(spacing: 6) {
+            Text(title.uppercased())
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(.white.opacity(0.7))
+                .kerning(1)
+            
+            Text(value)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .background(Color.white.opacity(0.08))
+        .cornerRadius(20)
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color.white.opacity(0.15), lineWidth: 1)
+        )
     }
     
     // MARK: - Funciones

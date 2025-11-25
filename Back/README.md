@@ -172,6 +172,17 @@ print(f"Tu tipo MBTI es: {mbti_result['MBTI_code']}")
 └── README.md
 ```
 
+## Diagramas del backend neural
+
+El flujo MBTI + MI + CNN descrito arriba se puede visualizar con el script `docs/diagrams/neural_backend_flow.py` (usa [diagrams](https://diagrams.mingrammer.com/)). Para regenerarlo:
+
+```bash
+pip install diagrams graphviz
+python3 docs/diagrams/neural_backend_flow.py
+```
+
+La imagen resultante se guarda en `docs/diagrams/neural_backend_flow.png`.
+
 ## Contribuciones
 
 Las contribuciones son bienvenidas. Por favor, abre un issue para discutir cambios importantes. 
