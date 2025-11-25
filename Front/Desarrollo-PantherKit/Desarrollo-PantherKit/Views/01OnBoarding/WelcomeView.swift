@@ -217,6 +217,14 @@ struct WelcomeCard: View {
             .padding(.horizontal, 40)
             .opacity(cardExpanded ? 0 : 1)
             
+            Text("🔒 Tus datos son privados. El análisis se realiza únicamente para generar tu recomendación y no se comparte con terceros.")
+                .font(AppTheme.Typography.zonaPro(.light, size: 11))
+                .foregroundColor(AppTheme.Colors.secondaryText)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+                .padding(.top, 4)
+                .opacity(cardExpanded ? 0 : 0.8)
+            
             Spacer()
         }
         .background(
